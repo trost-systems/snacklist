@@ -18825,3 +18825,28 @@ last tick only). The job 29b and job 455 entries above stay as they were.
 4. **The public page check is exact now.** Play renders each `\n` as `<br>`, which maps back, so the check compares exactly and logs both sha256s. A failure says whether only whitespace differs.
 5. **No shared concurrency group with release.yml.** GitHub cancels a pending run when a third run queues in the same group, which would drop a Release upload. The runbook says to start the listing run when no Release run is in progress, and a refused commit is safe to rerun.
 6. **The lane body is `PlayListing.run`**, tested with a fake client factory: an upload reads back in a second edit, a validate never reads back, and a differing read-back fails with "committed".
+
+## Job 470: English is a catalog language (Peter's CP4)
+
+CP4, ML1, Addendum 2 (26 Nov 2026); details in `docs/done/470-english-catalog.md`.
+
+1. **One file per language, German the base.** `dictionary.<lang>.tsv` words sit on a German
+   concept (one canonical key: milk and Milch) or are their own (`classifier_terms.lang`). The
+   letters of other Latin alphabets are allowed and folded by `item_key`, so a language is data.
+2. **Classification ignores the language** (no insert path knows it, households mix languages);
+   paprika stays the German Paprika in English (NEEDS_LEAD).
+3. **Suggestions follow the app language.** Released apps get the same German catalog; others ask
+   `p_lang`. English completes phrases from their first words; German keeps its last-word rule.
+4. **A guess is no correction:** `p_category_guess` only where the server would answer Other, `device`, not learned.
+5. **The device guess reads the server's terms and homographs.** Seven German parity pins now
+   agree; the cost is no device guess for half-typed words the server reads as typos (Grapef,
+   aubergi): the server's row corrects them about 120 ms later.
+6. **Drafted and machine-reviewed rows, approved by Peter (Legal N-215, t1388u)** with the
+   suggested answers EN1 to EN8; EN6 drops the English rows of the unshipped German draft.
+7. **Rebase onto #753 (job 470b): goldens regenerated, not picked.** #753 re-rendered the English
+   x0.85 add-sheet goldens with its longer Erste Schritte card. The rebase took main's images, then
+   `flutter test --update-goldens test/design/rd1_golden_test.dart --plain-name add-sheet` rendered
+   them on the combined code. The new images differ from main's only in the suggestion rows and
+   field (y 544 to 749) and from the PR's only in the card (y 146 to 379). The x3.1 and German
+   goldens came out byte-identical. `dictionary.en.tsv` is byte-identical to the reviewed head
+   3d090848b.

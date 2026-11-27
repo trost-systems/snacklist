@@ -282,6 +282,19 @@ void main() {
       expect(jsonEncode(events), isNot(contains('Paradeiser')));
     });
 
+    test(
+      'a word the classifier keeps the guess of says device (job 470)',
+      () async {
+        repo.categorizedVia = 'device';
+        await reset();
+        cubit.addEntry(parseEntry('Zwurbelquix'));
+        await settle();
+        final events = await sent();
+        expect(props(events.last)['via'], 'device');
+        expect(jsonEncode(events), isNot(contains('Zwurbelquix')));
+      },
+    );
+
     test('an add whose answer was lost is categorized once', () async {
       repo
         ..categorizedVia = 'fuzzy'

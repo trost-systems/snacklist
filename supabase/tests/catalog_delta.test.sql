@@ -100,7 +100,7 @@ select is(d -> 'full', 'true'::jsonb, 'an unknown version gets the full catalog'
 select is(
   (select array[jsonb_array_length(d -> 'terms' -> 'put'), jsonb_array_length(d -> 'forms' -> 'put'),
      jsonb_array_length(d -> 'brands' -> 'put')] from unknown),
-  array[(select count(*)::int from public.classifier_terms), (select count(*)::int from public.classifier_lexicon),
+  array[(select count(*)::int from public.classifier_terms where lang = 'de'), (select count(*)::int from public.classifier_lexicon),
     (select count(*)::int from public.brands)],
   'every row of each table');
 select is(public.catalog_rows() -> 'terms', d -> 'terms' -> 'put', 'as catalog_rows lists them') from unknown;

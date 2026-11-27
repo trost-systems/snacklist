@@ -8,8 +8,9 @@ The first draft is `drafts/2026-11-16-claude.tsv` (job 279, Legal Review S4, N-2
 229 dictionary terms and 290 synonyms, drafted by Claude. Claude Opus then reviewed it (job 283,
 [`REVIEW-opus.md`](REVIEW-opus.md)). That review fixed 9 rows and added 23, all with source
 `opus-review`. It asks about 15 rows as questions CD1 to CD15, each with a suggested answer, and
-lists the rows to accept or reject together. The draft now has 542 rows: 240 terms and 302
-synonyms. The Opus review is
+lists the rows to accept or reject together. The draft had 542 rows (240 terms and 302
+synonyms); job 470 dropped its 199 English rows (EN6, `REVIEW-en.md`), which leaves 343. The Opus
+review is
 not the person's review that N-215 requires: every `review` cell is still empty.
 
 ## The rules the draft was made under
@@ -95,15 +96,33 @@ Running it again moves nothing. Then, on a local stack:
 
 ```
 supabase db reset                               # applies the new migrations
-supabase/classifier/client_lexicon.sh           # the app's offline copy of the word forms
+supabase/classifier/client_catalog.sh           # the catalog the app bundles
 scripts/verify.sh --only functions,db           # parsing, migrations, wordlist and sweep
 ```
 
-Open the PR with the TSVs, the two migrations, `app/lib/list/lexicon_forms.dart` and the shorter
+Open the PR with the TSVs, the two migrations, `app/lib/list/catalog/catalog_index.g.dart` and the shorter
 draft. Its `## Changelog` item is `improved` (the app now recognises more words). If main gets a
 newer migration before you land, delete the two generated migrations, run `generate.ts` and
-`generate_synonyms.ts` into fresh ones (their headers say how), and rerun `client_lexicon.sh`.
+`generate_synonyms.ts` into fresh ones (their headers say how), and rerun `client_catalog.sh`.
 Delete the draft file once no row waits for review.
+
+## Language drafts (job 470)
+
+A draft of another language's words (English: `drafts/2026-11-26-en.tsv`, reviewed in
+[`REVIEW-en.md`](REVIEW-en.md)) has its own header:
+
+```
+lang	word	category	concept	forms	source	confidence	review	note
+```
+
+Its rows go to `supabase/classifier/dictionary.<lang>.tsv` (format in that file's header and in
+`supabase/classifier/languages.ts`): the word the language's catalog offers, its aisle, the
+`dictionary.tsv` term it is (`concept`, empty for a concept of its own) and extra spellings. The
+same rules hold (N-215, no brands, no medicines), the same review and the same commands:
+`probe_drafts.sh` loads the terms and synonyms the words make (`draft_rows.ts`), and
+`accept_drafts.ts` moves the accepted rows and writes both migrations from every TSV.
+`expected.<lang>.tsv` is the language's exam, written apart from its words; `sweep.sh` (db gate)
+and the app's `catalog_language_test.dart` require every row's aisle.
 
 ## Rows the drafter was unsure about
 

@@ -95,23 +95,34 @@ class const ShoppingList({
       key: ObjectKey(list),
       providers: [
         BlocProvider(
-          create: (context) => AddSheetCubit(
-            list,
-            // Read on every key: a flag PostHog turns while the sheet is
-            // open counts from the next key.
-            stableRows: () =>
-                context.read<Flags?>()?.isOn(inputStableRowsFlag) ?? false,
-            onDeviceCatalog: () =>
-                context.read<Flags?>()?.isOn(onDeviceCatalogFlag) ?? false,
-            catalogIndex: () =>
-                context.read<CatalogCubit?>()?.state ?? CatalogIndex.bundled,
-            addFeedback: () =>
-                context.read<Flags?>()?.isOn(addFeedbackListFlag) ?? false,
-            compact: () =>
-                context.read<Flags?>()?.isOn(addSheetCompactFlag) ?? false,
-            matchRows: () =>
-                context.read<Flags?>()?.isOn(addMatchRowsFlag) ?? false,
-          ),
+          create: (context) {
+            // The language last shown, read on every key while mounted;
+            // English before any read, as CatalogIndex.languageFor falls back.
+            String? shown;
+            return AddSheetCubit(
+              list,
+              // Read on every key: a flag PostHog turns while the sheet is
+              // open counts from the next key.
+              stableRows: () =>
+                  context.read<Flags?>()?.isOn(inputStableRowsFlag) ?? false,
+              onDeviceCatalog: () =>
+                  context.read<Flags?>()?.isOn(onDeviceCatalogFlag) ?? false,
+              catalogIndex: () =>
+                  context.read<CatalogCubit?>()?.state ?? CatalogIndex.bundled,
+              language: () {
+                if (context.mounted) {
+                  shown = Localizations.localeOf(context).languageCode;
+                }
+                return shown ?? 'en';
+              },
+              addFeedback: () =>
+                  context.read<Flags?>()?.isOn(addFeedbackListFlag) ?? false,
+              compact: () =>
+                  context.read<Flags?>()?.isOn(addSheetCompactFlag) ?? false,
+              matchRows: () =>
+                  context.read<Flags?>()?.isOn(addMatchRowsFlag) ?? false,
+            );
+          },
         ),
       ],
       child: ProvideHints(

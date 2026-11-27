@@ -139,6 +139,45 @@ export const deltaTexts: readonly string[] = [
   "2 Quarkkeulchen",
 ];
 
+/**
+ * Texts typed with the app in English (job 470): suggest_entries with p_lang en, the device with
+ * the English catalog. Words, phrases completed from their first words, descriptors, German words.
+ */
+export const englishTexts: readonly string[] = [
+  "mil",
+  "milk",
+  "Milch",
+  "tomat",
+  "bana",
+  "yogh",
+  "eggpl",
+  "aubergi",
+  "kitch",
+  "toilet p",
+  "toilet pap",
+  "2 toilet p",
+  "olive o",
+  "paper tow",
+  "orange j",
+  "peanut b",
+  "peanut butter",
+  "organic peanut butt",
+  "bell pep",
+  "chicken br",
+  "tortilla ch",
+  "ice cr",
+  "dish so",
+  "oat milk",
+  "bio mil",
+  "vegan chees",
+  "diaper",
+  "brocoli",
+  "strawbery",
+  "Kaffee",
+  "2x milk",
+  "1 kg rice",
+];
+
 /** Spaces around a line, which suggest_parity_lines.txt would not keep. */
 const spaced = ["Milch, ", " Milch "];
 

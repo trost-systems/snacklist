@@ -20,6 +20,8 @@ import 'package:family_groceries/list/model.dart';
 /// `p_category_store` = [categoryStore], from the household's store memory
 /// and stores in [household]; the category it reads is the guessed one.
 /// `supabase/tests/suggest_parity.json` is the table both sides pass.
+/// The catalog rows are in [language], the app's (job 470,
+/// [CatalogIndex.languageFor]), as `p_lang` asks the server for them.
 ///
 /// [pending] rows add history, not store memory: the server learns a store
 /// from a change, a tick or a pick that differs from its guess, which a
@@ -33,8 +35,9 @@ List<Suggestion> suggestEntries(
   Iterable<HistoryRow> pending = const [],
   bool categoryStore = false,
   int limit = mergedRows,
+  String language = CatalogIndex.baseLanguage,
 }) {
-  final context = _Context(catalog, household, pending);
+  final context = _Context(catalog, household, pending, language);
   final suggestions = <Suggestion>[];
   for (final (:source, :entry, :storeSeed) in _rows(text, context, limit)) {
     final categoryId = guessCategory(
@@ -79,10 +82,11 @@ List<(SuggestionSource, ParsedEntry)> suggestRows(
   required HouseholdIndex household,
   Iterable<HistoryRow> pending = const [],
   int limit = mergedRows,
+  String language = CatalogIndex.baseLanguage,
 }) => [
   for (final (:source, :entry, storeSeed: _) in _rows(
     text,
-    _Context(catalog, household, pending),
+    _Context(catalog, household, pending, language),
     limit,
   ))
     (source, entry),
@@ -138,7 +142,12 @@ ParsedEntry parseItem(
   required CatalogIndex catalog,
   required HouseholdIndex household,
   Iterable<HistoryRow> pending = const [],
-}) => _Context(catalog, household, pending).read(text).entry;
+}) => _Context(
+  catalog,
+  household,
+  pending,
+  CatalogIndex.baseLanguage,
+).read(text).entry;
 
 /// How a normalized [name] matches the normalized [typed] text, as
 /// public.suggest_match: 0 the same, 1 it starts with it, 2 it holds it
@@ -459,17 +468,37 @@ Iterable<_Row> _candidates(
     );
   }
 
-  for (final term in context.terms(lastKey, typed.name)) {
+  final german = context.language == CatalogIndex.baseLanguage;
+  for (final (:term, :n) in context.terms(lastKey, typed.name, trimmed)) {
+    // Written the way a German noun list shows it: "rote bete" -> "Rote
+    // Bete". Another language's list capitalises the name only: "Peanut
+    // butter", "Organic peanut butter". A phrase takes the place of the
+    // [n] words it completes.
     final (:entry, :storeSeed) = context.read(
-      trimmed.replaceFirst(_lastWord, initcap(term)),
+      trimmed.replaceFirst(
+        n == 1 ? _lastWord : RegExp('(\\S+\\s+){${n - 1}}\\S+\$'),
+        german ? initcap(term) : term,
+      ),
     );
     yield (
       source: SuggestionSource.catalog,
-      entry: entry,
+      entry: german
+          ? entry
+          : ParsedEntry(
+              name: _capitalized(entry.name),
+              brand: entry.brand,
+              properties: entry.properties,
+              quantity: entry.quantity,
+            ),
       storeSeed: storeSeed,
     );
   }
 }
+
+/// upper(left(name, 1)) || substr(name, 2).
+String _capitalized(String name) => name.isEmpty
+    ? name
+    : '${name.substring(0, 1).toUpperCase()}${name.substring(1)}';
 
 /// Whether [a] sorts before or with [b] in `at desc nulls last`.
 bool _laterOrSame(DateTime? a, DateTime? b) => _laterFirst(a, b) <= 0;
@@ -500,8 +529,12 @@ final class _Context(
   CatalogIndex index,
   HouseholdIndex household,
   Iterable<HistoryRow> pending,
+  String language,
 ) {
   final catalog = _CatalogLookups.of(index);
+
+  /// The catalog's language the rows are in.
+  final String language = index.languageFor(language);
   final household = _HouseholdLookups.of(household);
 
   /// The caller's list as it is: the household lookups keep the history
@@ -542,34 +575,80 @@ final class _Context(
   }
 
   /// The dictionary terms public.suggest_entries offers for the last word
-  /// typed ([lastKey], its item key), best first, up to three.
-  List<String> terms(String lastKey, String name) {
-    if (lastKey.length < 2) {
-      return const [];
-    }
+  /// typed ([lastKey], its item key), best first, up to three, each with the
+  /// number of words of [text] it replaces. Another language's catalog
+  /// (job 470 review) offers no typo rows for a word the lexicon knows
+  /// ("Milch" offers no "Mulch"), a one-word term after other words only
+  /// when those are descriptors ("bio mil"), and its phrases from their first
+  /// words ("toilet p" offers "Toilet paper", which replaces two words).
+  List<({String term, int n})> terms(String lastKey, String name, String text) {
+    final german = language == CatalogIndex.baseLanguage;
     final nameKey = itemKey(name);
     final multiWord = _whitespace.hasMatch(name);
     final unserved = household.index.unserved;
-    final lastTrigrams = trigrams(lastKey);
-    final found = <({String term, int tier, double sim})>[];
-    for (final (:key, :words, :terms) in catalog.termKeys) {
-      final tier = _match(lastKey, key, words);
-      if (tier == null ||
-          key == nameKey ||
-          !(tier < 2 || !multiWord || (tier == 2 && !key.contains(' ')))) {
-        continue;
+    final found = <({String term, int tier, double sim, int n})>[];
+    var known = false;
+    var afterDescriptors = true;
+    if (!german) {
+      known = catalog.index.forms.containsKey(foldKey(lastKey));
+      final words = _btrim(name).split(_spaces);
+      afterDescriptors = words
+          .take(words.length - 1)
+          .every(
+            (w) => catalog.oneWordDescriptors.contains(normalizeItemName(w)),
+          );
+    }
+    if (lastKey.length >= 2) {
+      final lastTrigrams = trigrams(lastKey);
+      for (final (:key, :words, :terms) in catalog.termKeysIn(language)) {
+        final tier = _match(lastKey, key, words);
+        if (tier == null ||
+            key == nameKey ||
+            !(tier < 2 || !multiWord || (tier == 2 && !key.contains(' '))) ||
+            (!german &&
+                !((tier < 3 || !known) && (!multiWord || afterDescriptors)))) {
+          continue;
+        }
+        final term = terms
+            .where((t) => !unserved.contains(t.category) || lastKey.length >= 4)
+            .firstOrNull;
+        if (term != null) {
+          found.add((
+            term: term.term,
+            tier: tier,
+            sim: tier >= 2
+                ? similarity(lastTrigrams, catalog.trigramsOf(key))
+                : 0,
+            n: 1,
+          ));
+        }
       }
-      final term = terms
-          .where((t) => !unserved.contains(t.category) || lastKey.length >= 4)
-          .firstOrNull;
-      if (term != null) {
-        found.add((
-          term: term.term,
-          tier: tier,
-          sim: tier >= 2
-              ? similarity(lastTrigrams, catalog.trigramsOf(key))
-              : 0,
-        ));
+    }
+    if (!german) {
+      final words = text.split(_spaces);
+      final tails = [
+        for (var n = 2; n <= words.length; n++)
+          (n: n, tail: itemKey(words.sublist(words.length - n).join(' '))),
+      ].where((t) => t.tail.split(' ').length == t.n && t.tail.isNotEmpty);
+      for (final (:key, words: _, :terms) in catalog.termKeysIn(language)) {
+        if (!key.contains(' ') || key == nameKey) {
+          continue;
+        }
+        ({String term, int tier, int n})? best;
+        for (final (:n, :tail) in tails) {
+          if (!key.startsWith(tail) || (best != null && best.n >= n)) {
+            continue;
+          }
+          final term = terms
+              .where((t) => !unserved.contains(t.category) || tail.length >= 4)
+              .firstOrNull;
+          if (term != null) {
+            best = (term: term.term, tier: key == tail ? 0 : 1, n: n);
+          }
+        }
+        if (best case (:final term, :final tier, :final n)?) {
+          found.add((term: term, tier: tier, sim: 0, n: n));
+        }
       }
     }
     found.sort(
@@ -580,7 +659,7 @@ final class _Context(
         () => collate(a.term, b.term),
       ]),
     );
-    return [for (final t in found.take(3)) t.term];
+    return [for (final t in found.take(3)) (term: t.term, n: t.n)];
   }
 
   /// public.parse_item(household, text) without category and store.
@@ -1000,11 +1079,14 @@ final class _CatalogLookups._(final CatalogIndex index) {
 
   static final _built = Expando<_CatalogLookups>();
 
-  /// Each term key with its terms, shortest first, then in the database's
-  /// order: public.suggest_entries offers the first one.
-  late final Map<String, List<CatalogTerm>> termsByKey = () {
+  /// Each term key of [language]'s catalog with its terms, shortest first,
+  /// then in the database's order (public.suggest_entries offers the first
+  /// one), and the key's [_wordsOf].
+  List<({String key, List<String>? words, List<CatalogTerm> terms})> termKeysIn(
+    String language,
+  ) => _termKeys[language] ??= () {
     final byKey = <String, List<CatalogTerm>>{};
-    for (final term in index.terms.values) {
+    for (final term in index.termsIn(language).values) {
       (byKey[term.key] ??= []).add(term);
     }
     for (final terms in byKey.values) {
@@ -1015,14 +1097,33 @@ final class _CatalogLookups._(final CatalogIndex index) {
         ]),
       );
     }
+    return [
+      for (final MapEntry(:key, value: terms) in byKey.entries)
+        (key: key, words: _wordsOf(key), terms: terms),
+    ];
+  }();
+
+  final _termKeys =
+      <
+        String,
+        List<({String key, List<String>? words, List<CatalogTerm> terms})>
+      >{};
+
+  /// public.classifier_terms by key, every language's, as
+  /// [dictionaryCategory] reads them.
+  late final Map<String, List<CatalogTerm>> _classifierTermsByKey = () {
+    final byKey = <String, List<CatalogTerm>>{};
+    for (final term in index.classifierTerms) {
+      (byKey[term.key] ??= []).add(term);
+    }
     return byKey;
   }();
 
-  /// [termsByKey] as a list, each key with its [_wordsOf].
-  late final termKeys = [
-    for (final MapEntry(:key, value: terms) in termsByKey.entries)
-      (key: key, words: _wordsOf(key), terms: terms),
-  ];
+  /// public.item_descriptors' one-word aliases.
+  late final Set<String> oneWordDescriptors = {
+    for (final (alias, _, words) in descriptors)
+      if (words == 1) alias,
+  };
 
   /// The global brands by their product, normalized.
   late final Map<String, List<CatalogBrand>> brandsByProduct = () {
@@ -1060,7 +1161,7 @@ final class _CatalogLookups._(final CatalogIndex index) {
     final words = key.split(' ').where((w) => w.isNotEmpty).toList();
     final hits = <({int tier, int len, int ord, String category})>[];
     void hit(String term, int tier, int ord) {
-      for (final t in termsByKey[term] ?? const <CatalogTerm>[]) {
+      for (final t in _classifierTermsByKey[term] ?? const <CatalogTerm>[]) {
         hits.add((
           tier: tier,
           len: term.length,
@@ -1244,7 +1345,7 @@ final class _CatalogLookups._(final CatalogIndex index) {
     }
     if ((hit, name) case (final form?, final name?)) {
       if (index.homographs[form.form] case final spellings?) {
-        if (_homographPick(spellings, name, form.form) case final pick?) {
+        if (homographPick(spellings, name, form.form) case final pick?) {
           hit = (
             form: form.form,
             canonical: pick.canonical,
@@ -1273,7 +1374,7 @@ final _phraseToken = RegExp(r'^#(\d+)$');
 
 /// public.homograph_pick: of [form]'s [spellings], the one the last word of
 /// [name] on [form] ends with, plus at most an inflection; the longest.
-CatalogHomograph? _homographPick(
+CatalogHomograph? homographPick(
   List<CatalogHomograph> spellings,
   String name,
   String form,

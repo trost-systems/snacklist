@@ -1,4 +1,5 @@
 import { assertEquals, assertThrows } from "@std/assert";
+import { readTables } from "./languages.ts";
 import {
   dictionaryUrl,
   migrationsUrl,
@@ -6,7 +7,7 @@ import {
   toMigration,
 } from "./generate.ts";
 
-Deno.test("the newest dictionary migration is generated from dictionary.tsv", async () => {
+Deno.test("the newest dictionary migration is generated from dictionary.tsv and every language", async () => {
   const names: string[] = [];
   for await (const entry of Deno.readDir(migrationsUrl)) {
     if (entry.name.includes("_classifier_dictionary")) names.push(entry.name);
@@ -16,9 +17,8 @@ Deno.test("the newest dictionary migration is generated from dictionary.tsv", as
     throw new Error("no _classifier_dictionary migration");
   }
   const migration = await Deno.readTextFile(new URL(newest, migrationsUrl));
-  const expected = toMigration(
-    parseDictionary(await Deno.readTextFile(dictionaryUrl)),
-  );
+  const tables = await readTables();
+  const expected = toMigration(tables.terms, tables.words);
   assertEquals(migration, expected, `regenerate ${newest} with generate.ts`);
 });
 

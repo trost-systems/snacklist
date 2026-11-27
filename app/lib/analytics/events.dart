@@ -104,8 +104,9 @@ final class const IsBool() extends PropertyRule;
 
 /// How the server chose an added item's category (`items.categorized_via`,
 /// job 32a): a household correction, the dictionary (also after folding the
-/// spelling), a synonym, a typo match, the fallback Sonstiges, or picked (the
-/// add brought another category than the guess).
+/// spelling), a synonym, a typo match, the fallback Sonstiges, picked (the
+/// add brought another category than the guess), or device (a word the
+/// classifier does not know kept the app's guess, job 470).
 const categorizedVia = {
   'household',
   'exact',
@@ -113,6 +114,7 @@ const categorizedVia = {
   'fuzzy',
   'fallback',
   'picked',
+  'device',
 };
 
 const _roles = OneOf({'owner', 'admin', 'member'});

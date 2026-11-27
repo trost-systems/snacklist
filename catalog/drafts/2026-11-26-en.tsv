@@ -1,0 +1,30 @@
+# Catalog draft, 2026-11-26: the English words of the catalog (job 470, languages.ts), drafted by Claude.
+# Machine review: catalog/REVIEW-en.md (Claude Opus) filled the review cells; a person still reviews every row in the PR (catalog/REVIEW.md, Legal N-215).
+# Inputs: only the repo's catalog TSVs (dictionary.tsv, synonyms.tsv, dictionary.en.tsv) and general
+# knowledge. No user data, no Open Food Facts, no Wikipedia. No allergen, nutrition or health facts;
+# no medicines or supplements (no plasters, painkillers, vitamins, tests). No brands.
+# Columns: word as an English list writes it (plural for countables, singular for mass nouns and
+# one-off items); concept is the dictionary.tsv term it joins (empty: a concept of its own); forms
+# are irregular or extra plurals, US/UK spelling variants and real misspellings. The generator adds
+# the singular of a plural word itself (englishInflections), so a singular word lists its plural.
+# Order: high, then medium confidence; within each, by aisle.
+# Probe (supabase/classifier/probe_drafts.sh, local stack, all rows): no broken rows; dips and
+# smoothies are listed (German terms already). No dictionary term, synonym, wordlist, sweep or
+# expected.en.tsv text changes aisle. Changed aisles are all English compounds of probe_compounds.txt.
+# Wrong ones kept, because the head word is far more common than the compound:
+#   oil: bike oil, motor oil, oil cloth -> pantry; fruit: fruit bowl, fruit fly trap, fruit knife -> produce;
+#   mint: peppermint -> produce; fennel: fennel seeds -> produce; pumpkin: pumpkin pie -> produce;
+#   red peppers: red pepper paste -> produce; peas: mangetout peas, pea protein -> frozen;
+#   soup: soup bowls -> pantry; nutmeg: nutmeg grinder -> pantry; cake: candles for cake -> bakery;
+#   biscuits: biscuit mix -> sweets; fries: fries seasoning -> frozen; iced tea: iced tea powder -> drinks;
+#   figs: dried figs -> produce; sorbet: Sorbetschale -> frozen (as Weinglas -> drinks on main).
+# Rows added only to keep a compound right: air conditioner, breath mints, fish cakes, mince pies,
+# mincemeat, split peas, mushy peas, sourdough starter, matcha (Matcha Latte), roasted red peppers,
+# meatloaf; chili flakes carries red pepper flakes and crushed red pepper.
+# Left out on purpose: champagne (its row breaks the fuzzy match of wordlist.tsv's "Champions"
+# typo; Champagne already reaches drinks by fuzzy match), jelly as dessert, UK chips (fries),
+# sprouts, squash, tap, dummy, plasters, duck, corn, peppers, mints.
+# expected.en.tsv rows no word row can fix: paprika (a German produce term: an English row must
+# name it as concept, so it stays produce), tooth paste and toiletpaper (split or joined spelling).
+lang	word	category	concept	forms	source	confidence	review	note
+en	skim milk	chilled	milch		claude-draft	high	reject	US; review: reject, now a form of skimmed milk (the same product, US spelling)

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:family_groceries/list/catalog/catalog_index.dart';
 import 'package:family_groceries/list/catalog/catalog_index.g.dart';
+import 'package:family_groceries/list/catalog/suggest_entries.dart';
 import 'package:family_groceries/list/entry.dart';
 import 'package:family_groceries/list/model.dart';
 
@@ -68,31 +69,63 @@ String? lexiconSeed(String name, CatalogIndex index) {
 
 final _seeds = Expando<Map<String, String?>>();
 
+/// [CatalogIndex.classifierTerms]' categories by key: the first category
+/// in byte order where terms of two share a key, as the tie in
+/// public.dictionary_hit's order picks it.
+Map<String, String> _termKeys(CatalogIndex index) => _keys[index] ??= () {
+  final byKey = <String, String>{};
+  for (final (term: _, :key, :category) in index.classifierTerms) {
+    if (byKey[key] case final other? when other.compareTo(category) <= 0) {
+      continue;
+    }
+    byKey[key] = category;
+  }
+  return byKey;
+}();
+
+final _keys = Expando<Map<String, String>>();
+
 String? _lexiconSeed(String name, CatalogIndex index) {
   final key = itemKey(name);
   if (key.isEmpty) {
     return null;
   }
-  final exact = _lastWordHit(foldKey(key).split(' '), index.forms);
-  final dict = _dictionaryHit(key.split(' '), index.forms);
+  final exact = _lastWordHit(foldKey(key).split(' '), name, index);
+  final dict = _dictionaryHit(key.split(' '), _termKeys(index));
   return switch ((dict, exact)) {
-    ((tier: 2, :final len, seed: _), (len: final exactLen, :final seed)?)
+    // The dictionary's hit on a homograph's form loses to the homograph the
+    // typed text spells (beer is not Beere), as in classify_item_detail.
+    (
+      (tier: 2 || 4, :final len, seed: final dictSeed),
+      (len: final exactLen, :final seed, :final form)?,
+    )
+        when exactLen >= len &&
+            seed != dictSeed &&
+            index.homographs.containsKey(form) =>
+      seed,
+    (
+      (tier: 2, :final len, seed: _),
+      (len: final exactLen, :final seed, form: _)?,
+    )
         when exactLen > len =>
       seed,
     ((:final tier, :final seed, len: _)?, _) when tier >= 2 => seed,
-    (_, (:final seed, len: _)?) => seed,
+    (_, (:final seed, len: _, form: _)?) => seed,
     ((tier: 1, :final seed, len: _)?, null) => seed,
     _ => null,
   };
 }
 
 /// public.classifier_words without its fuzzy path: phrases first, longest
-/// first, then each word or the longest form of 4+ letters it ends with.
-/// The last word with a hit wins.
-({String seed, int len})? _lastWordHit(
+/// first, then each word or the longest form of 4+ letters it ends with,
+/// a homograph's form read as [name] spells it. The last word with a hit
+/// wins.
+({String seed, int len, String form})? _lastWordHit(
   List<String> words,
-  Map<String, CatalogForm> forms,
+  String name,
+  CatalogIndex index,
 ) {
+  final forms = index.forms;
   var tokens = words;
   final phrases = <String>[];
   if (words.length > 1) {
@@ -112,7 +145,7 @@ String? _lexiconSeed(String name, CatalogIndex index) {
     }
     tokens = folded.trim().split(' ');
   }
-  ({String seed, int len})? hit;
+  ({String seed, int len, String form})? hit;
   for (final token in tokens) {
     final phrase = RegExp(r'^#(\d+)$').firstMatch(token);
     final form = phrase != null
@@ -122,7 +155,15 @@ String? _lexiconSeed(String name, CatalogIndex index) {
               token.substring(i),
           ].where(forms.containsKey).firstOrNull;
     if (form != null) {
-      hit = (seed: forms[form]!.category, len: form.length);
+      final spelled = switch (index.homographs[form]) {
+        final spellings? => homographPick(spellings, name, form)?.category,
+        null => null,
+      };
+      hit = (
+        seed: spelled ?? forms[form]!.category,
+        len: form.length,
+        form: form,
+      );
     }
   }
   return hit;
@@ -131,13 +172,14 @@ String? _lexiconSeed(String name, CatalogIndex index) {
 /// public.dictionary_hit over [words], the name's item key: runs of words
 /// (tier 5), the whole name (4), a frozen marker (3), the longest term of
 /// 3+ letters a word ends with (2), the longest a word starts with (1);
-/// within a tier the longest term, then the later word. The device has
-/// the terms folded only, so a part counts when its folding is a form.
+/// within a tier the longest term, then the later word, then the
+/// category. Its terms are public.classifier_terms by key, every
+/// language's ([CatalogIndex.classifierTerms]); synonyms do not count.
 ({int tier, String seed, int len})? _dictionaryHit(
   List<String> words,
-  Map<String, CatalogForm> forms,
+  Map<String, String> terms,
 ) {
-  String? term(String part) => forms[foldKey(part)]?.category;
+  String? term(String part) => terms[part];
   final hits = <({int tier, String seed, int len, int ord})>[
     for (var a = 0; a < words.length; a++)
       for (var b = a + 2; b <= words.length; b++)

@@ -1,0 +1,45 @@
+# Job 470: public.item_key and public.fold_key, and the app's itemKey and foldKey, on the same names
+# (supabase/functions/_shared/item_keys_integration_test.ts, app/test/list/item_key_test.dart):
+# name<TAB>item_key<TAB>fold_key of it. German, English, and the letters of other languages.
+Möhren 500 g	mohr	mohr
+Äpfel	apfel	apfel
+Straße	strass	stras
+Crème fraîche	crem fraich	crem fraich
+Rote Bete	rot bet	rot bet
+2 l Milch	milch	milch
+Würstchen	wurstch	wurstch
+Kräutertee	krauterte	krauterte
+Fleisch ùý	fleisch ou	fleisch ou
+apples	apple	aple
+tomatoes	tomato	tomato
+peanut butter	peanut butter	peanut buter
+Cherries	cherrie	cherie
+őszibarack	oszibarack	oszibarak
+ŐSZIBARACK 2 kg	oszibarack	oszibarak
+tejföl	tejfol	tejfol
+túró	turo	turo
+görögdinnye	gorogdinny	gorogdiny
+Csirkemell	csirkemell	ksirkemel
+kenyér	kenyer	kenyer
+masło	maslo	maslo
+śmietana	smietana	smietana
+Żółty ser	zolty ser	zolty ser
+chleb	chleb	chleb
+rohlík	rohlik	rolik
+čočka	cocka	koka
+řepa	repa	repa
+smør	smor	smor
+Rødkål	rodkal	rodkal
+æbler	abler	abler
+Øl	ol	ol
+şeker	seker	seker
+çay	cay	cay
+dağ	dag	dag
+İskender	iskender	iskender
+œufs	oufs	oufs
+þorskur	thorskur	torskur
+harðfiskur	hardfiskur	hardfiskur
+brânză	branza	branza
+ţuică	tuica	tuika
+Ålesund	alesund	alesund
+ĳsje	ijsj	ijsj

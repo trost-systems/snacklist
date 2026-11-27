@@ -1,0 +1,13 @@
+[23:30:39.492Z] signed in as mia (de) on http://127.0.0.1:61081
+[23:30:40.935Z] de "mil": catalogue rows ["Milch","Schokolade","Milchreis"]
+[23:30:42.256Z] switched to English under Mehr › Einstellungen › Sprache, no reload
+[23:30:43.481Z] en "mil": catalogue rows ["Milk","Millet","Oat milk"]
+[23:30:44.747Z] en "tomat": catalogue rows ["Tomatoes","Tomato paste","Tomato puree"]
+[23:30:45.998Z] en "peanut butt": catalogue rows ["Peanut butter","Peanut butter cups"]
+[23:30:47.249Z] en "toilet p": catalogue rows ["Toilet paper"]
+[23:30:48.397Z] en "chicken br": catalogue rows ["Chicken breast"]
+[23:30:49.549Z] en "Milch": catalogue rows []
+[23:30:49.932Z] database: {"name":"eggplant","categorized_via":"synonym","categories":{"seed_key":"produce"}}
+[23:30:50.273Z] database: {"name":"nappies","categorized_via":"synonym","categories":{"seed_key":"drugstore"}}
+[23:30:50.550Z] database: {"name":"peanut butter","categorized_via":"synonym","categories":{"seed_key":"pantry"}}
+[23:30:50.759Z] PASS

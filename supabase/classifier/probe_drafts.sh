@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Job 279: what a catalog draft (catalog/drafts/*.tsv, catalog/REVIEW.md) would change, on the local
-# stack. In one rolled-back transaction it classifies each draft row's text and the regression set
-# (every dictionary term, synonym, wordlist.tsv, sweep.tsv and probe_compounds.txt text), loads the draft's rows into the
+# stack. A language draft (job 470) loads the terms and synonyms its words make (draft_rows.ts).
+# In one rolled-back transaction it classifies each draft row's text and the regression set
+# (every dictionary term, synonym, wordlist.tsv, sweep.tsv, expected.<lang>.tsv and probe_compounds.txt text), loads the draft's rows into the
 # classifier, refreshes the lexicon and classifies them again. Prints a TSV report:
 #   draft  <kind> <text> <value> <expected> <before> <before via> <after> <after via> <status>
 #   regress <text> <before> <after>        (only texts whose category the draft changes)
@@ -11,6 +12,7 @@
 # listed (the text is already a dictionary term or synonym; the draft row is not loaded).
 # --rows accept|all: which rows to load (default all; accept loads only rows reviewed "accept").
 # CLASSIFIER_PSQL="psql -h ... -d ..." runs it against another database (default: the local stack).
+# Run one at a time: two runs deadlock on catalog_snapshots (the classifier tables' trigger).
 set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
 rows_filter=all
@@ -20,26 +22,9 @@ project_id="$(sed -n 's/^project_id = "\(.*\)"$/\1/p' "$here/../config.toml")"
 db() {
   if [[ -n ${CLASSIFIER_PSQL:-} ]]; then $CLASSIFIER_PSQL "$@"; else docker exec -i "supabase_db_$project_id" psql -U postgres "$@"; fi
 }
-rows="$(python3 -I - "$draft" "$rows_filter" <<'PY'
-import json, sys
-path, which = sys.argv[1], sys.argv[2]
-out, header = [], None
-for line in open(path, encoding="utf-8"):
-    line = line.rstrip("\n")
-    if not line or line.startswith("#"):
-        continue
-    cells = line.split("\t")
-    if header is None:
-        header = cells
-        continue
-    row = dict(zip(header, cells))
-    if which == "accept" and row.get("review") != "accept":
-        continue
-    out.append([row["kind"], row["term"], row["value"]])
-print(json.dumps(out, ensure_ascii=False))
-PY
-)"
-texts="$(cat "$here/wordlist.tsv" "$here/sweep.tsv" "$here/probe_compounds.txt" | grep -v '^#' | cut -f1 | python3 -I -c 'import sys, json; print(json.dumps(sorted({l.strip() for l in sys.stdin if l.strip()}), ensure_ascii=False))')"
+draft="$(realpath "$draft")"
+rows="$(cd "$here" && deno run --allow-read draft_rows.ts "$draft" "$rows_filter")"
+texts="$(cat "$here/wordlist.tsv" "$here/sweep.tsv" "$here/probe_compounds.txt" "$here"/expected.*.tsv | grep -v '^#' | cut -f1 | python3 -I -c 'import sys, json; print(json.dumps(sorted({l.strip() for l in sys.stdin if l.strip()}), ensure_ascii=False))')"
 db -q -v ON_ERROR_STOP=1 -At -F $'\t' <<SQL
 begin;
 create temp table d as

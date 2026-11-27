@@ -172,17 +172,34 @@ String _itemKey(String name, {required bool amounts}) {
     ('ö', 'o'),
     ('ü', 'u'),
     ('ß', 'ss'),
+    ('æ', 'ae'),
+    ('œ', 'oe'),
+    ('ð', 'd'),
+    ('þ', 'th'),
+    ('ĳ', 'ij'),
+    ('ŋ', 'ng'),
+    ('ŉ', 'n'),
+    // The dot toLowerCase leaves of a Turkish İ.
+    ('\u0307', ''),
   ]) {
     v = v.replaceAll(from, to);
   }
-  const accents = 'àáâãåçèéêëìíîïñòóôõùúûýÿ';
-  const plain = 'aaaaaceeeeiiiinooooouuuyy';
-  v = String.fromCharCodes(
-    v.runes.map((r) {
-      final at = accents.indexOf(String.fromCharCode(r));
-      return at < 0 ? r : plain.codeUnitAt(at);
-    }),
-  );
+  // Two translates, as public.item_key: the first's strings differ in length
+  // (ù is o, ý u), the second folds Latin Extended-A, ø, ș and ț (job 470).
+  for (final (accents, plain) in const [
+    ('àáâãåçèéêëìíîïñòóôõùúûýÿ', 'aaaaaceeeeiiiinooooouuuyy'),
+    (
+      'āăąćĉċčďđēĕėęěĝğġģĥħĩīĭįıĵķĺļľŀłńņňōŏőŕŗřśŝşšţťŧũūŭůűųŵŷźżžøșț',
+      'aaaccccddeeeeegggghhiiiiijklllllnnnooorrrsssstttuuuuuuwyzzzost',
+    ),
+  ]) {
+    v = String.fromCharCodes(
+      v.runes.map((r) {
+        final at = accents.indexOf(String.fromCharCode(r));
+        return at < 0 ? r : plain.codeUnitAt(at);
+      }),
+    );
+  }
   v = v.replaceAll('ae', 'a').replaceAll('oe', 'o').replaceAll('ue', 'u');
   if (amounts) {
     v = v.replaceAll(_amountWords, ' ');

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Job 274: writes app/lib/list/catalog/catalog_index.g.dart, the catalog the app bundles for its
 # on-device suggestions and category guess: public.catalog_rows() (classifier_terms,
-# classifier_lexicon, brands, and since job 473 the lexicon's homographs) with
+# classifier_lexicon, brands, since job 473 the lexicon's homographs, since job 470 catalog_words) with
 # public.catalog_version(), and the parser's fixed vocabulary (item_units, item_number_words,
 # item_number_names, item_descriptors, hardware_categories). It replaces job 61's
 # client_lexicon.sh. The lines come out as dart format writes them. With --check (the db gate) it
@@ -56,6 +56,13 @@ lines (part, ord, line) as (
   union all select 4, 4 + o::integer, pg_temp.rec(array[pg_temp.lit(e ->> 0), pg_temp.lit(e ->> 1), pg_temp.lit(e ->> 2), pg_temp.lit(e ->> 3), e ->> 4])
     from rows, jsonb_array_elements(r -> 'homographs') with ordinality j (e, o)
   union all select 4, 1000000, '];'
+  union all select 4, 1000001, E'\n/// public.catalog_words (job 470), the words each language besides German'
+  union all select 4, 1000002, '/// offers: (language, word, key, category seed key, own: a concept of its own).'
+  union all select 4, 1000003, 'const catalogWords = <(String, String, String, String, bool)>['
+  union all select 4, 1000004 + o::integer, pg_temp.rec(array[pg_temp.lit(split_part(e ->> 0, ':', 1)),
+      pg_temp.lit(substr(e ->> 0, 4)), pg_temp.lit(e ->> 1), pg_temp.lit(e ->> 2), e ->> 3])
+    from rows, jsonb_array_elements(r -> 'words') with ordinality j (e, o)
+  union all select 4, 3000000, '];'
   union all select 5, 0, E'\n/// public.item_units(), in its order: the units an amount can have.'
   union all select 5, 1, 'const units = ['
   union all select 5, 2 + o::integer, '  ' || pg_temp.lit(u) || ','

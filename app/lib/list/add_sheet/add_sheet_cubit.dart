@@ -84,13 +84,15 @@ class const AddSheetState({
 /// [deviceRanked], the flag `on-device-catalog` (job 274): the rows
 /// every key shows are [suggestEntries]'s, the server's ranking on the
 /// device, and they answer the text ([AddSheetState.fresh]) at once. It
-/// implies [stableRows].
+/// implies [stableRows]. `language`: the app's, whose catalog words the
+/// rows offer (job 470).
 class AddSheetCubit(
   final ListCubit _list, {
   Duration debounce = const Duration(milliseconds: 120),
   bool Function() stableRows = _off,
   bool Function() onDeviceCatalog = _off,
   CatalogIndex Function() catalogIndex = _bundled,
+  String Function() language = _german,
   bool Function() addFeedback = _off,
   bool Function() compact = _off,
   bool Function() matchRows = _off,
@@ -108,6 +110,8 @@ class AddSheetCubit(
 
   static CatalogIndex _bundled() => CatalogIndex.bundled;
 
+  static String _german() => CatalogIndex.baseLanguage;
+
   final _debounce = debounce;
   final _stableRows = stableRows;
   final _onDeviceCatalog = onDeviceCatalog;
@@ -119,6 +123,12 @@ class AddSheetCubit(
   /// The catalog the device parses and guesses with: the bundled one with
   /// the server's latest changes.
   final _catalogIndex = catalogIndex;
+
+  /// Read on every key: a language switched while the sheet is open counts
+  /// from the next key.
+  final _language = language;
+
+  String? _rowsLanguage;
 
   /// Whether rows stay put while typing now: the flag `input-stable-rows`
   /// or [deviceRanked].
@@ -390,6 +400,11 @@ class AddSheetCubit(
     _typing?.cancel();
     // The next item's first letter: the last one's details are done.
     saveDetails();
+    // Rows kept or on the way are in the language they were asked in.
+    if (_language() case final language when language != _rowsLanguage) {
+      _rowsLanguage = language;
+      _forget();
+    }
     final key = text.trim();
     clock.rank = null;
     if (key.isEmpty) {
@@ -801,6 +816,7 @@ class AddSheetCubit(
         pending: _pending(),
         // The repository sends p_category_store with this flag too.
         categoryStore: _stableRows(),
+        language: _language(),
       );
     } on Object {
       return _local(key);
