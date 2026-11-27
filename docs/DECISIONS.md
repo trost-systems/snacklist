@@ -18972,3 +18972,25 @@ CP4, ML1, Addendum 2 (26 Nov 2026); details in `docs/done/470-english-catalog.md
   untouched; the same five localStorage keys go on main and on this branch (driven, web).
 - **Goldens unchanged.** The golden tests render `LoginScreen()` without `next` and `StartScreen()`;
   neither changed, so no golden was regenerated.
+
+## Job 485: focus highlight, prototype round FH (2026-11-27)
+
+- Draft PR, never merged; no production change (brief). The logout part of Peter's message is job 486.
+- Today was reproduced in the real release web build before the replica was built: the thick ring is the
+  own-store field (a cobalt contour plus a 3 px ring 2 px outside, 5 px past the field, 1 px over the check button),
+  and it shows on touch too because opening the field focuses it. Chips, the text button and rows show focus as a
+  12 % fill that fails 3:1. The replica was calibrated to those screenshots (1 px chip sides, 12 % ink fills).
+- Both looks: `redesign-rd1` is at full rollout, so the soft look is the default on the page and in the table; the
+  brief's "keep the hexagon shapes" is read as "follow the control's own shape", and every option is measured in
+  both looks. The ring geometry is the app's `HexBorder.pathFor`, ported to `src/fh/shape.ts`.
+- Phone density in the replica (32 px chips in 48 px tap targets, 48 px buttons), because Peter uses the phone apps;
+  the real web build on Linux has desktop density. The doc says which number came from where.
+- Largest text = 310 % (iOS AX5) and 200 % (Android's largest), both measured.
+- On honey faces every option uses navy (`onHoney`): light cobalt on honey is 1.6:1 in dark mode, measured in a
+  first run of FH3 (0.2× of the area rule).
+- The own-store field is fixed at 48 px in production, so at 310 % its text is cut whatever the focus style. The
+  verify leaves the field out of the large-text checks and says so; FH-Q5 asks whether to fix it separately.
+- The sandbox is job 465's `docs/design/rounds/` (PR #728, closed without merging), copied unchanged so the overview and rounds
+  T, SR and FH deploy together, as job 465 did with round T.
+- Recommendation FH1 `inset-ring`, runner-up FH4 `accent-bar`; FH-Q1 to FH-Q6 with defaults in
+  `docs/done/485.md`.

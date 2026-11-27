@@ -2648,3 +2648,9 @@ Follows "Job 438" above. Bug 1 (`geometry!` in `_updateSemanticsNodeGeometry`) i
 ## NEEDS_LEAD Job 480: Play listing preflight by 30 November 2026
 
 Owner: Lead. Deadline: 30 Nov 2026, again on 1 Dec before the upload. Run `gh workflow run play-listing.yml -f mode=preflight -f published_version_code=1541` from `main`. It reads production's releases from Play's releases endpoint and opens no edit, so it is no listing edit under Peter's K1. It must log `Production releases: APPROVED_NOT_PUBLISHED 1541` and `Held-release path: the listing may join the held release only from 2026-12-01T00:00:00+01:00 (Peter K1)`, and it must pass. If it fails, the 1 Dec upload would fail as well, and with it the sale's precondition (PAYWALL_RELEASE.md 5.4). Fix the cause before launch day: a missing permission for `play-release@family-groceries-ci`, or 1541 in another state. Job 480 ran it once after its merge; the result is in `docs/done/480.md`.
+
+## NEEDS_LEAD Job 485: mint the share link for round FH (2026-11-27)
+
+Preview to share: https://family-groceries-design-4xgcef2tx-peter-trost.vercel.app/focus/fh/ (`dpl_6Lb9GJLypGc68xogtn5oWEJkkLXT`, family-groceries-design, preview, READY,
+Deployment Protection on). Please mint the 23-hour link with `get_access_to_vercel_url` and note its expiry. `/`
+is the overview of every round. Draft PR, never merge. Details: `docs/done/485.md`.

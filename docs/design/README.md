@@ -30,3 +30,4 @@ python3 -m http.server 8771 --directory docs/design/h-satz-final/h-dist
 ## Feature prototypes
 
 - **Grocery log (job 198):** [`grocery-log/`](grocery-log/), five interactive approaches behind one switcher, plus [`RECOMMENDATION.md`](grocery-log/RECOMMENDATION.md). Serve the repo root (`python3 -m http.server 4198 --bind 127.0.0.1`) and open `/docs/design/grocery-log/index.html`.
+- **Focus highlight, round FH (job 485):** [`rounds/`](rounds/README.md), Today and FH1–FH5 on onboarding step 4 „Where do you shop?“, a list screen and a sheet of every control focused next to an unfocused one, at `/focus/fh/`, with a pixel-measuring verify script and the measured table. Recommendation FH1 `inset-ring`, runner-up FH4 `accent-bar`. The sandbox carries round SR (job 465, PR #728, closed without merging) so both deploy together. Details: [`docs/done/485.md`](../done/485.md).
