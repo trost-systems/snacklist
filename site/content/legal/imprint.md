@@ -4,7 +4,7 @@ description: "Imprint of Snacklist: provider, address and contact."
 locale: en
 path: /en/imprint
 translation_key: imprint
-updated: 2026-11-20
+updated: 2026-11-27
 ---
 
 # Imprint
@@ -45,4 +45,4 @@ We use shop names such as dm, Lidl or EDEKA, and the names of their apps, only s
 
 ## Trademarks
 
-Apple, iPhone, Siri and App Store are trademarks of Apple Inc., registered in the U.S. and other countries and regions. Amazon, Alexa and all related marks are trademarks of Amazon.com, Inc. or its affiliates. Google Play and Android are trademarks of Google LLC. Claude is a trademark of Anthropic. All other trademarks mentioned belong to their owners. Snacklist is independent and isn't affiliated with, sponsored or endorsed by any of these companies.
+Apple, iPhone, Siri and App Store are trademarks of Apple Inc., registered in the U.S. and other countries and regions. Amazon, Alexa and all related marks are trademarks of Amazon.com, Inc. or its affiliates. Google Play and Android are trademarks of Google LLC. Claude is a trademark of Anthropic. ChatGPT is a trademark of OpenAI. All other trademarks mentioned belong to their owners. Snacklist is independent and isn't affiliated with, sponsored or endorsed by any of these companies.
