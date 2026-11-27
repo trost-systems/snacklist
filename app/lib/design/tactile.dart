@@ -1,3 +1,4 @@
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/hex_border.dart';
 import 'package:family_groceries/design/hex_pill.dart' show HexPill;
 import 'package:family_groceries/design/motion.dart';
@@ -20,7 +21,7 @@ final class const TactileColors({
   /// The solid edge the face rests on; null for a flat face.
   required final Color? edge,
 
-  /// The keyboard focus ring.
+  /// The keyboard focus ring and, while focused, the face's contour.
   required final Color focus,
 }) {
   @override
@@ -138,29 +139,34 @@ class _TactilePainter({
     final edge = raisedFaces ? colors.edge : null;
     final depth = edge == null ? 0.0 : HlDepth.edge;
     final rest = Rect.fromLTWH(0, 0, size.width, size.height - depth);
-    final contour = Paint()
+    Paint contour(Color color) => Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = HlBorder.width
-      ..color = colors.contour;
+      ..color = color;
     // Strokes sit inside the face so the contour never grows the control.
     const inset = -HlBorder.width / 2;
     if (edge != null) {
       final below = rest.shift(const Offset(0, HlDepth.edge));
       canvas
         ..drawPath(_shape.pathFor(below), Paint()..color = edge)
-        ..drawPath(_shape.pathFor(below, outset: inset), contour);
+        ..drawPath(
+          _shape.pathFor(below, outset: inset),
+          contour(colors.contour),
+        );
     }
     final face = rest.shift(Offset(0, edge == null ? 0 : offset.value));
     canvas
       ..drawPath(_shape.pathFor(face), Paint()..color = colors.face)
-      ..drawPath(_shape.pathFor(face, outset: inset), contour);
+      ..drawPath(
+        _shape.pathFor(face, outset: inset),
+        contour(focused ? colors.focus : colors.contour),
+      );
     if (focused) {
-      canvas.drawPath(
-        _shape.pathFor(face, outset: HlFocus.ringGap + HlFocus.ringWidth / 2),
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = HlFocus.ringWidth
-          ..color = colors.focus,
+      paintFocusRing(
+        canvas,
+        (outset) => _shape.pathFor(face, outset: outset),
+        colors.focus,
+        contour: HlBorder.width,
       );
     }
   }
@@ -200,10 +206,10 @@ class const _TactileLabel({
 }
 
 /// The tactile button's Material shape. A button with a background builder
-/// clips to its shape, and the face's lift and focus ring reach past the
-/// button's box: this shape is that box grown by the ring.
+/// clips to its shape, and the face's lift reaches past the button's box:
+/// this shape is that box grown by [_room].
 class const _RoomForFocus({super.side}) extends OutlinedBorder {
-  static const _room = HlFocus.ringGap + HlFocus.ringWidth + HlDepth.lift;
+  static const _room = HlDepth.lift + outerRingReach;
 
   @override
   EdgeInsetsGeometry get dimensions => EdgeInsets.zero;

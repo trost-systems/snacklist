@@ -8,6 +8,7 @@ import 'package:family_groceries/core/language.dart';
 import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/core/theme.dart';
+import 'package:family_groceries/design/look.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_cubit.dart';
@@ -34,6 +35,7 @@ import 'package:shared_preferences_platform_interface/in_memory_shared_preferenc
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
 import '../design/fonts.dart';
+import '../design/tab_focus_ring.dart';
 import '../list/fake_repository.dart';
 import '../more/more_harness.dart';
 import '../purchases/fakes.dart';
@@ -49,6 +51,7 @@ Future<void> pumpShell(
   int rows = 0,
   Locale locale = const Locale('de'),
   double textScale = 1,
+  Brightness brightness = Brightness.light,
 
   /// The rating prompt the list's trigger feeds, if any.
   ReviewPrompt? reviewPrompt,
@@ -135,7 +138,7 @@ Future<void> pumpShell(
         child: MaterialApp.router(
           localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          theme: appTheme(Brightness.light),
+          theme: appTheme(brightness),
           locale: locale,
           routerConfig: router,
           builder: (context, child) =>
@@ -445,6 +448,37 @@ void main() {
     await tester.pumpAndSettle();
     expect(field, findsOneWidget);
   });
+
+  for (final look in Look.values) {
+    for (final brightness in Brightness.values) {
+      final variant = '${look.name}, ${brightness.name}';
+      testWidgets('a focused tab draws the ring inside its hex, cobalt '
+          '($variant)', (tester) async {
+        appLook = look;
+        addTearDown(() => appLook = Look.hex);
+        await pumpShell(tester, brightness: brightness);
+        await expectTabFocusRing(
+          tester,
+          more,
+          color: SnacklistColors.of(brightness).accent,
+          contour: 0,
+        );
+      });
+
+      testWidgets('the shown tab focused: its contour and the ring inside, '
+          'navy on its honey ($variant)', (tester) async {
+        appLook = look;
+        addTearDown(() => appLook = Look.hex);
+        await pumpShell(tester, brightness: brightness);
+        await expectTabFocusRing(
+          tester,
+          tabs,
+          color: SnacklistColors.of(brightness).onHoney,
+          contour: 1.5,
+        );
+      });
+    }
+  }
 
   for (final locale in const [Locale('de'), Locale('en')]) {
     testWidgets('large text fits the pill at 320 px, $locale', (tester) async {

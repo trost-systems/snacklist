@@ -148,6 +148,8 @@ class _DictationButtonState() extends State<DictationButton> {
       tooltip: _listening ? l10n.dictationStop : l10n.dictationStart,
       icon: Icon(_listening ? Icons.stop_circle : Icons.mic),
       color: _listening ? Theme.of(context).colorScheme.error : null,
+      // A colour brings its own focus fill; the theme's ring shows focus.
+      focusColor: Colors.transparent,
       onPressed: () => unawaited(_dictate()),
     );
   }

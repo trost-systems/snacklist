@@ -1,3 +1,4 @@
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/chain_suggestions.dart';
@@ -175,16 +176,18 @@ class NewStoresPickerState() extends State<NewStoresPicker> {
           children: [
             for (final chip in chips)
               if (widget.stores.any((s) => _same(s, chip)) case final picked)
-                FilterChip(
-                  key: ValueKey('onboarding-store-${chip.name}'),
-                  label: Text(chip.name),
-                  // The theme's label colour is white in dark; on honey the
-                  // text is navy.
-                  labelStyle: theme.chipTheme.labelStyle?.copyWith(
-                    color: picked ? t.onHoney : t.text,
+                FocusRingChip(
+                  chip: FilterChip(
+                    key: ValueKey('onboarding-store-${chip.name}'),
+                    label: Text(chip.name),
+                    // The theme's label colour is white in dark; on honey the
+                    // text is navy.
+                    labelStyle: theme.chipTheme.labelStyle?.copyWith(
+                      color: picked ? t.onHoney : t.text,
+                    ),
+                    selected: picked,
+                    onSelected: widget.enabled ? (_) => _toggle(chip) : null,
                   ),
-                  selected: picked,
-                  onSelected: widget.enabled ? (_) => _toggle(chip) : null,
                 ),
             if (!_naming)
               // A button, not an ActionChip: Flutter web names a chip a

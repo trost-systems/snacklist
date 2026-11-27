@@ -55,33 +55,55 @@ void main() {
     );
   });
 
-  testWidgets('focused, the contour turns cobalt and gets the focus ring', (
-    tester,
-  ) async {
-    await pumpField(
-      tester,
-      const TextField(
-        autofocus: true,
-        decoration: InputDecoration(hintText: 'E-Mail'),
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(
-      decorator(),
-      paints
-        ..path()
-        ..path(
-          style: PaintingStyle.stroke,
-          strokeWidth: HlBorder.width,
-          color: t.brand,
-        )
-        ..path(
-          style: PaintingStyle.stroke,
-          strokeWidth: HlFocus.ringWidth,
-          color: t.accent,
-        ),
-    );
-  });
+  for (final brightness in Brightness.values) {
+    testWidgets('focused (${brightness.name}), the contour turns cobalt and '
+        'the ring grows inward from it, all inside the field', (tester) async {
+      final colors = SnacklistColors.of(brightness);
+      Future<Rect> pump({required bool focused}) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: appTheme(brightness),
+            home: Scaffold(
+              body: Center(
+                child: SizedBox(
+                  width: 240,
+                  child: TextField(
+                    key: ValueKey(focused),
+                    autofocus: focused,
+                    decoration: const InputDecoration(hintText: 'E-Mail'),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        return tester.getRect(decorator());
+      }
+
+      final idle = await pump(focused: false);
+      final focused = await pump(focused: true);
+      expect(focused, idle, reason: 'focus moves nothing');
+      expect(
+        decorator(),
+        paints
+          ..path()
+          ..path(
+            style: PaintingStyle.stroke,
+            strokeWidth: HlBorder.width,
+            color: colors.accent,
+          )
+          // From 2 to 5 px in from the field's top edge.
+          ..path(
+            style: PaintingStyle.stroke,
+            strokeWidth: HlFocus.ringWidth,
+            color: colors.accent,
+            includes: [const Offset(120, 5.5)],
+            excludes: [const Offset(120, 1.5), const Offset(120, -1)],
+          ),
+      );
+    });
+  }
 
   testWidgets('an error turns the contour to the error colour', (tester) async {
     await pumpField(
@@ -99,6 +121,35 @@ void main() {
           style: PaintingStyle.stroke,
           strokeWidth: HlBorder.width,
           color: t.error,
+        ),
+    );
+  });
+
+  testWidgets('focused with an error, the error contour keeps the cobalt '
+      'ring inside it', (tester) async {
+    await pumpField(
+      tester,
+      const TextField(
+        autofocus: true,
+        decoration: InputDecoration(hintText: 'E-Mail', errorText: 'Nein'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      decorator(),
+      paints
+        ..path()
+        ..path(
+          style: PaintingStyle.stroke,
+          strokeWidth: HlBorder.width,
+          color: t.error,
+        )
+        ..path(
+          style: PaintingStyle.stroke,
+          strokeWidth: HlFocus.ringWidth,
+          color: t.accent,
+          includes: [const Offset(120, 5.5)],
+          excludes: [const Offset(120, 1.5)],
         ),
     );
   });
@@ -151,7 +202,7 @@ void main() {
   ]) {
     for (final error in [true, false]) {
       final kind = error ? 'error' : 'helper';
-      testWidgets('$name: the $kind and counter sit s2 below the focus ring, '
+      testWidgets('$name: the $kind and counter sit 13 px below the field, '
           'in line with the text', (tester) async {
         final focus = FocusNode();
         addTearDown(focus.dispose);
@@ -178,8 +229,8 @@ void main() {
         double below(String text) =>
             tester.getTopLeft(find.text(text)).dy - top - contour;
 
-        const ringOuter = HlFocus.ringGap + HlFocus.ringWidth;
-        expect(below('Nein'), ringOuter + HlSpace.s2);
+        // Where the outer focus ring before FH1 (job 487) ended, plus s2.
+        expect(below('Nein'), 5 + HlSpace.s2);
         expect(below('0/80'), below('Nein'));
         final text = tester.getRect(find.byType(EditableText));
         expect(

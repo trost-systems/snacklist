@@ -647,6 +647,18 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 **Last verified.** 27 November 2026, code version 72516831, in the web app (German): the list, the sheets, Mehr, Einstellungen and Läden. Earlier: 26 November 2026, code version e6697500, in the web app (German): the list, the switcher, the add sheet, Mehr, Einstellungen and „Läden“ in the new look, also at 200 % text. Earlier: 25 November 2026, code version 448caf1d, in the web app (German): the top bar, „Läden“, a store's screen and the edit sheet. Earlier: 24 November 2026, code version 8290425e, in the web app (German): the top bar, „Läden“, a store's screen and the edit sheet without hexagons. Earlier: 23 November 2026, code version d023441d, in the web app (German): every screen rounded, with no switch needed. 22 November 2026, code version 62a33a4da, in the web app with the switch on (German light, English dark, the list at 200 % text) and in the app's goldens (German and English, light and dark, smallest and largest text).
 
+## Keyboard focus
+
+**What it does.** When someone moves through the app with a keyboard (or a switch or remote), the control that has focus gets a blue outline drawn inside its own edge: the edge turns blue and a band grows inward from it. On yellow controls (the main button, a picked store chip, the selected tab) the outline is dark navy instead. Nothing around the control moves or gets covered, so spacing looks the same with or without focus. This works on buttons, text fields, chips, list rows, the suggestions while adding, the stores screen and most cards. A text field keeps the outline while you type in it, also after tapping it. Light and dark, with or without hexagons.
+
+**How to get there.** Nothing to do: press Tab on a keyboard (web, tablet with keyboard), or tap into a text field.
+
+**Never claim.**
+- That every control in the app has the new outline: rows in „Mehr“ (EN "More"), „Einstellungen“ (EN "Settings") and the household pages still show a grey tint when focused, and the „Was brauchst du?“ (EN "What do you need?") field on the list shows only its cursor.
+- That it changes anything for touch use other than text fields.
+
+**Last verified.** 27 November 2026, code version 35ccf3e5, in the web app (German, light and dark): the guided start's „Wo kauft ihr ein?“ step with the own-store field open, the list, the add sheet, „Läden“ and „Einstellungen“, Tab by Tab; nothing drawn past a control, an outline at every stop except the rows and the field named above.
+
 ## App icon
 
 **What it does.** Snacklist has a new app icon for everyone from the version that carries it (planned for the 1 December release): a yellow ring with rounded corners on blue, inside it a white tile with a blue tick. It replaces the hexagon icon. The same icon shows in the browser tab, on the start and sign-in screens, in emails, in the Alexa skill and in the app stores. On iPhone it has a dark and a tinted version, on Android a themed one that takes the phone's colours.

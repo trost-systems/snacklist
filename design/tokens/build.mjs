@@ -189,7 +189,7 @@ ${dims('HlDepth', tokens.depth)}
 }
 
 abstract final class HlFocus {
-${dims('HlFocus', tokens.focus.ring, 'ring-')}
+${dims('HlFocus', { width: tokens.focus.ring.width }, 'ring-')}
 }
 
 abstract final class HlSize {

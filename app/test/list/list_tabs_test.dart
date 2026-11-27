@@ -1,4 +1,7 @@
 import 'package:family_groceries/core/localizations.dart';
+import 'package:family_groceries/core/theme.dart';
+import 'package:family_groceries/design/look.dart';
+import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_screen.dart';
@@ -9,6 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
+import '../design/tab_focus_ring.dart';
 import 'fake_repository.dart';
 import 'memory_cache.dart';
 
@@ -38,6 +42,7 @@ void main() {
     required List<HouseholdList> lists,
     double width = 390,
     String locale = 'de',
+    Brightness? brightness,
   }) async {
     tester.view
       ..devicePixelRatio = 3
@@ -50,6 +55,7 @@ void main() {
       ..remoteAdd('Kuchen', listId: lists.length > 2 ? 'party' : null);
     await tester.pumpWidget(
       MaterialApp(
+        theme: brightness == null ? null : appTheme(brightness),
         localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         locale: Locale(locale),
@@ -69,6 +75,34 @@ void main() {
     for (final row in tester.widgetList<ItemRow>(find.byType(ItemRow)))
       row.item.name,
   ]..sort();
+
+  for (final look in Look.values) {
+    for (final brightness in Brightness.values) {
+      final variant = '${look.name}, ${brightness.name}';
+      for (final (id, shown) in [('diy', false), ('weekly', true)]) {
+        testWidgets(
+          '${shown ? 'the shown' : 'a'} list tab focused: the ring inside its '
+          'hex in ${shown ? 'navy' : 'cobalt'} ($variant)',
+          (tester) async {
+            appLook = look;
+            addTearDown(() => appLook = Look.hex);
+            await pumpList(
+              tester,
+              lists: const [_weekly, _diy],
+              brightness: brightness,
+            );
+            final t = SnacklistColors.of(brightness);
+            await expectTabFocusRing(
+              tester,
+              key('list-tab-$id'),
+              color: shown ? t.onHoney : t.accent,
+              contour: shown ? 1.5 : 0,
+            );
+          },
+        );
+      }
+    }
+  }
 
   testWidgets('one list: no tabs, every item', (tester) async {
     await pumpList(tester, lists: const [_weekly]);

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/core/theme.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/section_label.dart';
 import 'package:family_groceries/design/sticker.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -331,8 +332,13 @@ class const GroupLinkSection({
                 renew(confirm: true),
                 TextButton.icon(
                   key: const ValueKey('invite-group-revoke'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: Theme.of(context).colorScheme.error,
+                  style: withFocusRing(
+                    TextButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.error,
+                    ),
+                    focusRingColor(
+                      SnacklistColors.of(Theme.of(context).brightness),
+                    ),
                   ),
                   icon: const Icon(Icons.block),
                   label: Text(l10n.inviteGroupRevoke),

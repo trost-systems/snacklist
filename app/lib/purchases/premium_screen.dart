@@ -4,6 +4,7 @@ import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/guides.dart';
 import 'package:family_groceries/core/legal_links.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/pointy_hex.dart';
 import 'package:family_groceries/design/sticker.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -381,13 +382,16 @@ class const _Unlocked(
                             Localizations.localeOf(context).languageCode,
                           ).replace(fragment: 'premium-beta'),
                           builder: (context, open) => TextButton(
-                            style: TextButton.styleFrom(
-                              foregroundColor: t.onHoney,
-                              padding: EdgeInsets.zero,
-                              textStyle: theme.textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                decoration: TextDecoration.underline,
+                            style: withFocusRing(
+                              TextButton.styleFrom(
+                                foregroundColor: t.onHoney,
+                                padding: EdgeInsets.zero,
+                                textStyle: theme.textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  decoration: TextDecoration.underline,
+                                ),
                               ),
+                              focusRingColor(t, honey: 1),
                             ),
                             onPressed: open,
                             child: Text(l10n.premiumBetaPrivacyLink),
@@ -704,7 +708,9 @@ class const _PlanTile({
           color: picked ? t.honey : null,
           child: Material(
             type: MaterialType.transparency,
-            child: InkWell(
+            child: FocusRingInkWell(
+              outline: HlSticker.innerOutline,
+              color: focusRingColor(t, honey: picked ? 1 : 0),
               onTap: onTap,
               child: Padding(
                 padding: const EdgeInsets.all(HlSpace.s3),

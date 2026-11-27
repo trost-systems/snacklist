@@ -1,0 +1,38 @@
+id: text-button-focus-ring
+valid:
+  - |
+    final style = withFocusRing(
+      TextButton.styleFrom(foregroundColor: c, padding: p),
+      focusRingColor(t),
+    );
+  # Without its own foreground it keeps the theme's overlay, and with it the theme's ring.
+  - |
+    final style = TextButton.styleFrom(padding: p);
+  - |
+    final style = OutlinedButton.styleFrom(foregroundColor: c);
+  - |
+    final b = IconButton(
+      icon: const Icon(Icons.mic),
+      color: c,
+      focusColor: Colors.transparent,
+      onPressed: f,
+    );
+  # A colour on the icon inside is not the button's.
+  - |
+    final b = IconButton(icon: Icon(Icons.mic, color: c), onPressed: f);
+invalid:
+  - |
+    final style = TextButton.styleFrom(foregroundColor: c);
+  - |
+    Widget build(BuildContext context) => TextButton(
+      style: TextButton.styleFrom(
+        backgroundColor: t.honey,
+        foregroundColor: t.onHoney,
+      ),
+      onPressed: f,
+      child: label,
+    );
+  - |
+    final style = IconButton.styleFrom(foregroundColor: c);
+  - |
+    final b = IconButton(icon: const Icon(Icons.mic), color: c, onPressed: f);

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/notices.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/group_card.dart';
 import 'package:family_groceries/design/hex_segmented.dart';
 import 'package:family_groceries/design/section_label.dart';
@@ -815,17 +816,19 @@ class _ReminderSheetState() extends State<_ReminderSheet> {
       required String semantics,
       required bool selected,
       required VoidCallback onSelected,
-    }) => ChoiceChip(
-      key: key,
-      label: Semantics(
-        label: semantics,
-        excludeSemantics: true,
-        child: Text(text),
+    }) => FocusRingChip(
+      chip: ChoiceChip(
+        key: key,
+        label: Semantics(
+          label: semantics,
+          excludeSemantics: true,
+          child: Text(text),
+        ),
+        selected: selected,
+        // A check would widen the picked chip and move the others.
+        showCheckmark: false,
+        onSelected: (_) => onSelected(),
       ),
-      selected: selected,
-      // A check would widen the picked chip and move the others.
-      showCheckmark: false,
-      onSelected: (_) => onSelected(),
     );
     // Save stays in reach below the scrolling fields, at any text size.
     return Column(

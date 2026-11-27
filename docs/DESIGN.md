@@ -162,16 +162,30 @@ because a button's text style replaces the theme's instead of merging.
 - `hex_border.dart`: `HexBorder`, the soft hexagon (tip 0.2887 of the
   height, corner radius 8 at 48 px, scaled with the height), horizontal or
   pointy-top, with a true parallel outset for strokes and focus rings.
+- `focus_ring.dart`: FH1, the one focus indicator (job 487, Peter's pick of
+  round FH). The control's contour turns the focus colour and a
+  `HlFocus.ringWidth` (3 px) ring grows inward from it; nothing is drawn
+  past the control, so a focused control keeps every gap. Navy (`onHoney`)
+  on a honey face (picked chip, main button, selected tab or segment),
+  cobalt (`accent`) on any other, in both themes. `paintFocusRing` strokes
+  it, `withFocusRing` gives a text button the ring instead of the focus
+  fill (lint `text-button-focus-ring`; the icon button theme uses it too),
+  `FocusRingChip` and `RingHexBorder` do it for chips, `FocusRingInkWell`
+  for InkWell rows and cards (the stores screen's pills, the list and add
+  sheet rows, sticker cards with `HlSticker.innerOutline`). When it shows did not change: a text field keeps it after
+  a tap, the other controls show it for keyboard focus. `ListTile` rows (More,
+  settings, household) still show Material's grey focus fill, and the
+  list's add field shows only its caret (both open, `docs/done/487.md`).
 - `tactile.dart`: `TactileFace` and `tactileButtonStyle`. The face rests on
   its edge, lifts 2 px on hover, sinks 4 px flush into the edge on press in
   70 ms, and springs back in 160 ms on the bounce curve. A disabled face sits
-  flush. The 3 px focus ring sits 2 px outside the face. The button's
-  Material shape is its box grown by the ring, so the ring and the lift are
-  never clipped. A button that sets its own `backgroundColor` (the delete
+  flush. Focused, the face's contour turns the focus colour and the 3 px
+  ring grows inward from it (FH1, below). The button's Material shape is
+  its box grown by 7 px, so the lift is never clipped. A button that sets its own `backgroundColor` (the delete
   confirmation, the Google button, the fold-out chips) opts out and stays a
   plain Material button in its colours.
 - `hex_switch.dart`: `HexSwitch`, a 56 × 30 horizontal hex track in a
-  68 × 48 box (the target and the focus ring), its thumb a hex nested 4 px
+  68 × 48 box (the target), its thumb a hex nested 4 px
   inside with sides parallel to the track's. The thumb travels in 260 ms
   (`HlDuration.medium`, standard curve) while the colours cross-fade, and
   stretches 6 px towards where it goes while pressed. Disabled, the contours
@@ -283,7 +297,7 @@ quarter into its line and struck rows, one wrapped.
   every store; divider rules are cobalt for every store. A logo variant
   (`StoreBadgeStyle.logo`) waits for the Legal Review.
 - Text fields: every single-line field is a hex from the input theme
-  (`field_border.dart`; focus: cobalt contour and the 3 px ring); the
+  (`field_border.dart`; focus: cobalt contour and the 3 px ring inside it); the
   multi-line feedback message is rounded (`RoundedFields`); the add field
   opts out with an empty local theme.
 - New rows from a partner are honey-soft; done rows are mint-soft.

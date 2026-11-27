@@ -3420,3 +3420,25 @@ geht's“ / "New to Snacklist? Get started" (`loginNew`) now also shows on a sig
 Tests: router, your-name gate (real router) and login screen widget tests; seven e2e specs follow
 the new landing; `drive.sh sign-in` PASS (de, en). Not verified: iOS and the native Linux build
 (none on hz). Ships with the next green main build after the merge; no flag.
+
+## Job 487: FH1, the focus ring inside the control
+
+Peter's pick from round FH ships as a fix, no flag. A focused control's contour turns cobalt (navy on a
+honey face) and a 3 px ring grows inward from it; nothing reaches past the control, so no gap changes and
+the own-store field's ring no longer overlaps its check button. Buttons, text and icon buttons, fields,
+chips, the store and category options, list rows, the add sheet's rows, Läden's rows, the hex controls,
+segments, tabs and the InkWell cards show it; the 10–12 % fills there failed WCAG 2.4.13. A row or card
+shows its ring only while it has focus itself, so a focused delete button inside a row is the only ring. When the ring
+shows did not change (a text field keeps it after a tap). Geometry in `app/lib/design/focus_ring.dart`;
+lint `text-button-focus-ring`; web journey `theme-focus.mjs`. Details, screenshots:
+[docs/done/487.md](docs/done/487.md).
+
+COPY-CHANGES: none. No ARB, legal or site text changed.
+
+Tests: `focus_ring_test.dart` (22 controls × both looks × both themes: ring inside, right colour, nothing
+moves), the tiles' focus test, tab and field tests, focus-ring golden sheets; full suite 5107 passed; lint
+passes. Web (release build, light and dark): every stop shows the focus colour and nothing past its
+control (max 0.4 px; main 5.4 px). Not done: `ListTile` rows keep the grey fill (follow-up), the list's
+add field has no ring (a question for the lead), focus can go to a hidden control in the compact add sheet
+(before this job too); all three in NEEDS_LEAD. iOS and Android not driven. Ships with the next green main
+build after the merge.

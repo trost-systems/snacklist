@@ -1,0 +1,37 @@
+# A TextButton.styleFrom or IconButton.styleFrom with its own foregroundColor, or an IconButton with
+# its own color, brings its own overlay, whose 10 % focus fill sits under the theme's inset focus
+# ring and fails WCAG 2.4.13 alone (FH1, job 487: eight text buttons kept the fill). withFocusRing
+# (app/lib/design/focus_ring.dart) swaps the fill for the ring in the colour of the button's face;
+# an IconButton's own color needs focusColor: Colors.transparent.
+id: text-button-focus-ring
+language: dart
+severity: error
+files:
+  - app/lib/**
+rule:
+  kind: call_expression
+  any:
+    - all:
+        - regex: '^(TextButton|IconButton)\s*\.\s*styleFrom\s*\('
+        - has:
+            kind: arguments
+            regex: 'foregroundColor\s*:'
+        - not:
+            inside:
+              kind: call_expression
+              regex: '^withFocusRing\s*\('
+              stopBy: end
+    - all:
+        - regex: '^IconButton\s*\('
+        - has:
+            kind: arguments
+            has:
+              kind: named_argument
+              regex: '^color\s*:'
+        - not:
+            has:
+              kind: arguments
+              has:
+                kind: named_argument
+                regex: '^focusColor\s*:'
+message: 'A button''s own foregroundColor or color brings a focus fill: wrap the style in withFocusRing(style, focusRingColor(t)) (focusRingColor(t, honey: 1) on a honey face), or give an IconButton with a color focusColor: Colors.transparent; app/lib/design/focus_ring.dart'

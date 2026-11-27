@@ -6,6 +6,7 @@ import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/guides.dart';
 import 'package:family_groceries/core/legal_links.dart';
 import 'package:family_groceries/design/field_border.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/hex_checkbox.dart';
 import 'package:family_groceries/design/hex_radio.dart';
 import 'package:family_groceries/design/motion.dart';
@@ -530,7 +531,9 @@ class _FormState() extends State<_Form> {
                 LegalLink(
                   key: const ValueKey('report-privacy'),
                   url: privacy,
-                  builder: (context, open) => InkWell(
+                  builder: (context, open) => FocusRingInkWell(
+                    outline: (rect, outset) =>
+                        Path()..addRect(rect.inflate(outset)),
                     onTap: open,
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(minHeight: 32),

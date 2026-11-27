@@ -1,3 +1,4 @@
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/hex_border.dart';
 import 'package:family_groceries/design/look.dart';
 import 'package:family_groceries/design/sticker.dart';
@@ -10,6 +11,7 @@ import 'package:material_ui/material_ui.dart';
 /// row being dragged is lifted instead: no edge, the sticker-l shadow
 /// ([HexPill.lift] wraps a reorderable list's proxy). Under [Look.soft] a
 /// row is a tile, not a button: no edge, the same room below it (job 368).
+/// Keyboard focus turns the contour cobalt with the ring inside it.
 class const HexPill({
   required final Widget child,
   final VoidCallback? onTap,
@@ -20,7 +22,7 @@ class const HexPill({
   /// its edge like every pressable hex (one depth style, job 148).
   final bool pinned = false,
   super.key,
-}) extends StatelessWidget {
+}) extends StatefulWidget {
   static const height = 56.0;
 
   /// Space around the pill in a list.
@@ -34,7 +36,18 @@ class const HexPill({
       _Lifted(child: child);
 
   @override
+  State<HexPill> createState() => _HexPillState();
+}
+
+class _HexPillState() extends State<HexPill> {
+  var _ring = false;
+
+  static Path _outline(Rect rect, double outset) =>
+      const HexBorder().pathFor(rect, outset: outset);
+
+  @override
   Widget build(BuildContext context) {
+    final HexPill(:child, :onTap, :focusNode, :pinned) = widget;
     final brightness = Theme.of(context).brightness;
     final t = SnacklistColors.of(brightness);
     final lifted =
@@ -42,17 +55,23 @@ class const HexPill({
     final face = Material(
       color: pinned ? t.surfaceSunken : t.surfaceRaised,
       shape: HexBorder(
-        side: BorderSide(color: t.border, width: HlBorder.width),
+        side: BorderSide(
+          color: _ring ? focusRingColor(t) : t.border,
+          width: HlBorder.width,
+        ),
       ),
       clipBehavior: Clip.antiAlias,
       child: Semantics(
         button: onTap != null,
-        child: InkWell(
+        child: FocusRingInkWell(
+          outline: _outline,
+          contour: HlBorder.width,
+          onRingChanged: (ring) => setState(() => _ring = ring),
           customBorder: const HexBorder(),
           focusNode: focusNode,
           onTap: onTap,
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: height),
+            constraints: const BoxConstraints(minHeight: HexPill.height),
             child: Padding(
               padding: const EdgeInsets.only(
                 left: HlSpace.s5,
@@ -65,7 +84,7 @@ class const HexPill({
       ),
     );
     return Padding(
-      padding: margin,
+      padding: HexPill.margin,
       child: switch (lifted) {
         true => DecoratedBox(
           decoration: ShapeDecoration(

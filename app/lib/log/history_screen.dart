@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/device_cache.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/group_card.dart';
 import 'package:family_groceries/design/section_label.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -610,7 +612,8 @@ class const _LockedHint({
         return MergeSemantics(
           child: Semantics(
             button: true,
-            child: InkWell(
+            child: FocusRingInkWell(
+              outline: _rectOutline,
               key: const ValueKey('log-locked-premium'),
               onTap: () => context.go(
                 Uri(
@@ -654,7 +657,8 @@ class const _TripTile({
     return MergeSemantics(
       child: Semantics(
         button: true,
-        child: InkWell(
+        child: FocusRingInkWell(
+          outline: _rectOutline,
           key: ValueKey('log-trip-${trip.id}'),
           onTap: onTap,
           child: Padding(
@@ -952,11 +956,27 @@ class const _Day({
       label: label,
       excludeSemantics: true,
       onTap: () => onTap(day),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(HlRadius.s),
+      child: FocusRingInkWell(
+        outline: _dayOutline,
+        customBorder: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(HlRadius.s)),
+        ),
         onTap: () => onTap(day),
         child: cell,
       ),
     );
   }
 }
+
+/// A row's outline: its box, which the focus ring runs inside.
+Path _rectOutline(Rect rect, double outset) =>
+    Path()..addRect(rect.inflate(outset));
+
+/// A day cell's outline, the ink's rounded box.
+Path _dayOutline(Rect rect, double outset) => Path()
+  ..addRRect(
+    RRect.fromRectAndRadius(
+      rect.inflate(outset),
+      Radius.circular(math.max(0, HlRadius.s + outset)),
+    ),
+  );

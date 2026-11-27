@@ -5,6 +5,7 @@ import 'dart:ui' show SemanticsHitTestBehavior, SemanticsRole;
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/screen_reader.dart';
 import 'package:family_groceries/core/scroll_through.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/hex_border.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/sticker.dart';
@@ -637,6 +638,9 @@ class const _Tab({
 }) extends StatefulWidget {
   static const _indicatorHeight = 44.0;
 
+  /// The selected hex's contour.
+  static const _contour = 1.5;
+
   static const labelStyle = TextStyle(
     fontSize: 13,
     fontWeight: FontWeight.w700,
@@ -644,10 +648,10 @@ class const _Tab({
 
   /// A labelled tab's width beside its label: the indicator's insets, the
   /// selected hex's contour, the icon and the gap.
-  static const chrome = 11.0 + 14 + 2 * 1.5 + 20 + 6;
+  static const chrome = 11.0 + 14 + 2 * _contour + 20 + 6;
 
   /// [chrome] with the indicator's insets of a [tight] tab.
-  static const tightChrome = 8.0 + 10 + 2 * 1.5 + 20 + 6;
+  static const tightChrome = 8.0 + 10 + 2 * _contour + 20 + 6;
 
   /// An unlabelled tab's share of a crowded pill.
   static const iconOnlyWidth = 56.0;
@@ -690,7 +694,7 @@ class _TabState() extends State<_Tab> {
             : null,
         shape: HexBorder(
           side: selected
-              ? BorderSide(color: t.border, width: 1.5)
+              ? BorderSide(color: t.border, width: _Tab._contour)
               : BorderSide.none,
         ),
       ),
@@ -735,7 +739,12 @@ class _TabState() extends State<_Tab> {
               onFocusChange: (focused) => setState(() => _focused = focused),
               child: Center(
                 child: CustomPaint(
-                  foregroundPainter: _focused ? _Ring(t.accent) : null,
+                  foregroundPainter: _focused
+                      ? HexFocusRingPainter(
+                          focusRingColor(t, honey: selected ? 1 : 0),
+                          contour: selected ? _Tab._contour : 0,
+                        )
+                      : null,
                   child: indicator,
                 ),
               ),
@@ -752,24 +761,4 @@ class _TabState() extends State<_Tab> {
       ),
     );
   }
-}
-
-/// The focus ring round a tab's hex, [HlFocus.ringGap] off it.
-class const _Ring(final Color color) extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.drawPath(
-      const HexBorder().pathFor(
-        Offset.zero & size,
-        outset: HlFocus.ringGap + HlFocus.ringWidth / 2,
-      ),
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = HlFocus.ringWidth
-        ..color = color,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_Ring oldDelegate) => oldDelegate.color != color;
 }

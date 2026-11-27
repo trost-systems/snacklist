@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/notices.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/group_card.dart';
 import 'package:family_groceries/design/section_label.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -401,22 +402,24 @@ class _ShoppingDaySettingsState() extends State<ShoppingDaySettings> {
                     runSpacing: HlSpace.s2,
                     children: [
                       for (var weekday = 1; weekday <= 7; weekday++)
-                        FilterChip(
-                          key: ValueKey('shopping-day-$weekday'),
-                          // The chip keeps its own button and selected
-                          // semantics; only its words are the full name.
-                          label: Semantics(
-                            label: DateFormat.EEEE(tag).format(day(weekday)),
-                            excludeSemantics: true,
-                            child: Text(
-                              DateFormat.E(tag)
-                                  .format(day(weekday))
-                                  .replaceAll('.', ''),
+                        FocusRingChip(
+                          chip: FilterChip(
+                            key: ValueKey('shopping-day-$weekday'),
+                            // The chip keeps its own button and selected
+                            // semantics; only its words are the full name.
+                            label: Semantics(
+                              label: DateFormat.EEEE(tag).format(day(weekday)),
+                              excludeSemantics: true,
+                              child: Text(
+                                DateFormat.E(tag)
+                                    .format(day(weekday))
+                                    .replaceAll('.', ''),
+                              ),
                             ),
+                            selected: days.contains(weekday),
+                            onSelected: (_) =>
+                                unawaited(_toggle(service, weekday)),
                           ),
-                          selected: days.contains(weekday),
-                          onSelected: (_) =>
-                              unawaited(_toggle(service, weekday)),
                         ),
                     ],
                   ),

@@ -1812,14 +1812,14 @@
           "value": 3,
           "unit": "px"
         },
-        "$description": "Focus ring around a hex control, drawn on the unmasked control so the hex mask never clips it"
+        "$description": "Focus ring of a control: the app draws it inside the control, from its contour inward, nothing past the control (FH1)"
       },
       "gap": {
         "$value": {
           "value": 2,
           "unit": "px"
         },
-        "$description": "Surface-coloured gap between the control and its focus ring"
+        "$description": "Web pages only (site, join page, nexus, mcp-proxy): the CSS outline-offset of their focus ring; the app draws its ring inside the control"
       }
     }
   },

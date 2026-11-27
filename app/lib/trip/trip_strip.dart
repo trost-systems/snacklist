@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/hex_border.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
@@ -114,13 +115,18 @@ class _TripStripState() extends State<TripStrip> {
       child: IconButton(
         key: const ValueKey('trip-strip-pause'),
         onPressed: paused ? widget.onResume : widget.onPause,
-        style: IconButton.styleFrom(
-          backgroundColor: onInverse.withValues(alpha: 0.14),
-          foregroundColor: onInverse,
-          shape: const HexBorder(),
-          fixedSize: const Size.square(44),
-          minimumSize: const Size.square(44),
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        // On the strip's inverse face cobalt would not stand out: the ring
+        // takes the strip's light ink.
+        style: withFocusRing(
+          IconButton.styleFrom(
+            backgroundColor: onInverse.withValues(alpha: 0.14),
+            foregroundColor: onInverse,
+            shape: const HexBorder(),
+            fixedSize: const Size.square(44),
+            minimumSize: const Size.square(44),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          onInverse,
         ),
         icon: Icon(paused ? Icons.play_arrow : Icons.pause),
       ),
@@ -128,12 +134,15 @@ class _TripStripState() extends State<TripStrip> {
     final end = TextButton(
       key: const ValueKey('trip-strip-end'),
       onPressed: widget.onEnd,
-      style: TextButton.styleFrom(
-        backgroundColor: t.honey,
-        foregroundColor: t.onHoney,
-        minimumSize: const Size(44, 44),
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        padding: const EdgeInsets.symmetric(horizontal: HlSpace.s4),
+      style: withFocusRing(
+        TextButton.styleFrom(
+          backgroundColor: t.honey,
+          foregroundColor: t.onHoney,
+          minimumSize: const Size(44, 44),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          padding: const EdgeInsets.symmetric(horizontal: HlSpace.s4),
+        ),
+        focusRingColor(t, honey: 1),
       ),
       child: Text(autoPaused ? l10n.shopEndAt(lastText) : l10n.shopEnd),
     );
