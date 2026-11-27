@@ -112,12 +112,12 @@ class _LoginScreenState() extends State<LoginScreen> {
               ],
             )
           : const BrandBlock(),
-      // Job 168b: back to the guided start (resumed if under way); not for
-      // an invite or a link, which want this account. Inside the form, so
-      // it never takes the form's height (a phone turned sideways).
+      // Job 168b: back to the guided start (resumed if under way), a link
+      // along (job 486); for an invite JH2's sheet asks instead. Inside the
+      // form, so it never takes the form's height (a phone turned sideways).
       footer: Column(
         children: [
-          if (invite == null && next == null) ...[
+          if (invite == null) ...[
             TextButton(
               key: const ValueKey('login-new'),
               onPressed: () => goToStart(context),

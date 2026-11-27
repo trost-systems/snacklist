@@ -432,7 +432,7 @@ export const driveCommands: Command[] = [
     summary: 'Sign a client out through the More tab (Mehr, then Abmelden).',
     usage: 'fg logout [--client NAME]',
     description:
-      "Closes the add sheet if it is open, opens the More tab, scrolls to Abmelden and taps it, or taps the welcome screen's Abmelden button, then waits for the login screen.",
+      "Closes the add sheet if it is open, opens the More tab, scrolls to Abmelden and taps it, or taps the welcome screen's Abmelden button, then waits for the start screen a sign-out lands on (job 486) and taps „Ich habe schon ein Konto“ to the login screen.",
     flags: [clientFlag],
     examples: ['fg logout', 'fg logout --client lea'],
     async run(ctx, args) {
@@ -462,8 +462,10 @@ export const driveCommands: Command[] = [
         await m.call(['scroll-to', '--key', 'more-sign-out']);
         await m.call(['tap', '--key', 'more-sign-out']);
       }
-      await waitForAnyKey(ctx, m, ['login-email'], 15_000);
-      return { client: name, screen: 'login' };
+      await waitForAnyKey(ctx, m, [SCREEN_KEYS.start], 15_000);
+      await m.call(['tap', '--key', SCREEN_KEYS.start]);
+      await waitForAnyKey(ctx, m, [SCREEN_KEYS.login], 15_000);
+      return { client: name, screen: 'login', landedOn: 'start' };
     },
   },
   {

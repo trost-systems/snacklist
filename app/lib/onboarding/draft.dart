@@ -78,6 +78,10 @@ class const OnboardingDraft({
   /// kill gets the household the first run made (job 168c); null for
   /// drafts from before.
   final String? requestId,
+
+  /// A sign-out left it (job 486): signed out, the start screen shows
+  /// instead of its step until „Los geht's“ takes it up again.
+  final bool parked = false,
 }) {
   /// The first household's kind: the first one picked.
   HouseholdKind? get kind => kinds.firstOrNull;
@@ -108,6 +112,7 @@ class const OnboardingDraft({
     String? householdId,
     String? ownHouseholdFor,
     String? requestId,
+    bool? parked,
   }) => OnboardingDraft(
     step: step ?? this.step,
     kinds: kinds ?? this.kinds,
@@ -119,6 +124,7 @@ class const OnboardingDraft({
     householdId: householdId ?? this.householdId,
     ownHouseholdFor: ownHouseholdFor ?? this.ownHouseholdFor,
     requestId: requestId ?? this.requestId,
+    parked: parked ?? this.parked,
   );
 
   Map<String, Object?> toJson() => {
@@ -134,6 +140,7 @@ class const OnboardingDraft({
     'household_id': householdId,
     'own_household_for': ownHouseholdFor,
     'request_id': requestId,
+    'parked': parked,
   };
 
   /// The draft in [json], or null when it is not one (a newer build's, a
@@ -172,6 +179,7 @@ class const OnboardingDraft({
             {'request_id': final String id} => id,
             _ => null,
           },
+          parked: json['parked'] == true,
         );
       }
     }
@@ -190,7 +198,8 @@ class const OnboardingDraft({
       other.userId == userId &&
       other.householdId == householdId &&
       other.ownHouseholdFor == ownHouseholdFor &&
-      other.requestId == requestId;
+      other.requestId == requestId &&
+      other.parked == parked;
 
   @override
   int get hashCode => Object.hash(
@@ -204,5 +213,6 @@ class const OnboardingDraft({
     householdId,
     ownHouseholdFor,
     requestId,
+    parked,
   );
 }

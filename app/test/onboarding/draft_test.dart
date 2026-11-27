@@ -29,6 +29,18 @@ void main() {
     );
   });
 
+  test('a parked draft reads back parked; one from before job 486 is not', () {
+    final parked = draft.copyWith(parked: true);
+    expect(
+      OnboardingDraft.fromJson(jsonDecode(jsonEncode(parked.toJson()))),
+      parked,
+    );
+    expect(
+      OnboardingDraft.fromJson({...draft.toJson()}..remove('parked'))?.parked,
+      isFalse,
+    );
+  });
+
   test('a draft from before job 168c reads as an ordinary one', () {
     final json = {...draft.toJson()}
       ..remove('own_household_for')

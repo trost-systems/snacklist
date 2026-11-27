@@ -21,6 +21,7 @@ import 'package:family_groceries/session/session_cubit.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// The screen of the guided start's [step]: the counted steps in their
@@ -564,8 +565,17 @@ class const _AccountStep() extends StatelessWidget {
           key: const ValueKey('onboarding-account'),
           // Back at the root, where the router finds the draft (a web
           // sign-in reloads the page, the apps return through their
-          // callback).
-          returnPath: '/',
+          // callback), with the link or MCP authorization the guided start
+          // carries (job 486): a reload forgets the router's memory.
+          returnPath: Uri(
+            path: '/',
+            queryParameters: switch (GoRouterState.of(context)
+                .uri
+                .queryParameters['next']) {
+              final next? => {'next': next},
+              null => null,
+            },
+          ).toString(),
           header: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [

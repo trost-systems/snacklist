@@ -111,11 +111,23 @@ class OnboardingCubit(
   /// Saves run one after the other, so the last change is the one kept.
   Future<void> _saving = Future.value();
 
+  /// Whether the last session [sessionChanged] saw was signed in: a
+  /// sign-out, not a start signed out, parks the draft.
+  var _signedIn = false;
+
   /// „Los geht's“ (signed out) or „Haushalt erstellen“ (signed in, no
   /// household): a new draft at the first step, the usage-data question when
-  /// this install has not answered it yet. A draft under way is kept.
+  /// this install has not answered it yet. A draft under way is kept, and
+  /// one a sign-out parked goes on.
   void start({required bool askUsage, String? ownHouseholdFor}) {
     switch (state) {
+      case final draft? when draft.parked:
+        emit(
+          draft.copyWith(
+            parked: false,
+            ownHouseholdFor: ownHouseholdFor ?? draft.ownHouseholdFor,
+          ),
+        );
       case null:
         emit(
           OnboardingDraft(
@@ -269,10 +281,19 @@ class OnboardingCubit(
   /// Follows the session: a draft whose household exists belongs to that
   /// user and household only, so a sign-out, an account deletion or
   /// another household drops it. A draft without a household stays: it
-  /// waits for a sign-in on this device.
+  /// waits for a sign-in on this device, parked by a sign-out (job 486) so
+  /// that the start screen shows; signed in again, it goes on.
   void sessionChanged(Session session) {
     final draft = state;
-    if (draft == null || !draft.created) {
+    final signedOut = _signedIn && session is SignedOut;
+    _signedIn = session is NeedsHousehold || session is InHousehold;
+    if (draft == null) {
+      return;
+    }
+    if (!draft.created) {
+      if (signedOut || (_signedIn && draft.parked)) {
+        emit(draft.copyWith(parked: signedOut));
+      }
       return;
     }
     final keep = switch (session) {

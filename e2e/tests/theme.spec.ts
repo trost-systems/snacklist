@@ -3,6 +3,7 @@ import { openStores, storeRow } from './catalog';
 import {
   apiAs, closeSheet, editSheet, enterItem, firstOf, itemRow, must, newEmail, openEdit, openMore, openTab, screenshot,
   signUpWithHousehold, storeDivider, inviteCodeLabel,
+  expectSignedOutStart,
 } from './helpers';
 
 // Job 29e: Einstellungen (More) holds the theme, kept on the device, and the language list. Every
@@ -182,7 +183,7 @@ test('Dunkel switches every screen at once and survives a reload; System follows
   await pickTheme(page, 'dark');
   await page.getByRole('button', { name: 'Zurück' }).click();
   await page.getByRole('button', { name: /^Abmelden/ }).click();
-  await expect(page.getByRole('button', { name: 'Weiter mit E-Mail' })).toBeVisible();
+  await expectSignedOutStart(page);
   await expectTheme(page, 'dark', 'the pick outlives the session');
-  await screenshot(page, 'theme-dark-12-login');
+  await screenshot(page, 'theme-dark-12-start');
 });

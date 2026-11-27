@@ -6,6 +6,7 @@ import {
   openEmailSignIn,
   onboardingChip,
   openHouseholds,
+  expectSignedOutStart,
 } from './helpers';
 
 const moreTab = (page: Page) => page.getByRole('tab', { name: 'Mehr' });
@@ -143,8 +144,7 @@ test('More opens every entry; Nutzungsdaten is a page; the legal rows sit on Mor
 
   await wheelTo(page, page.getByRole('button', { name: /^Abmelden/ }));
   await page.getByRole('button', { name: /^Abmelden/ }).click();
-  await expect(page.getByRole('button', { name: 'Weiter mit E-Mail' })).toBeVisible();
-  await expect(page).toHaveURL(/\/login/);
+  await expectSignedOutStart(page);
 });
 
 test('the Impressum is two taps from the list: Mehr, Impressum (DDG §5); old /more/legal links land on More', async ({ page }) => {

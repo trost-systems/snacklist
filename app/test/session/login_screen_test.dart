@@ -7,6 +7,7 @@ import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/session/social_sign_in.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'
@@ -37,6 +38,7 @@ void main() {
     SupabaseClient Function(FakeAuth auth)? client,
     String? invite,
     Flags? flags,
+    GoRouter? router,
   }) async {
     tester.view
       ..devicePixelRatio = 1
@@ -63,17 +65,75 @@ void main() {
             BlocProvider.value(value: session),
             BlocProvider.value(value: flags ?? Flags()),
           ],
-          child: MaterialApp(
-            localizationsDelegates: appLocalizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            locale: locale,
-            home: LoginScreen(invite: invite),
-          ),
+          child: router == null
+              ? MaterialApp(
+                  localizationsDelegates: appLocalizationsDelegates,
+                  supportedLocales: AppLocalizations.supportedLocales,
+                  locale: locale,
+                  home: LoginScreen(invite: invite),
+                )
+              : MaterialApp.router(
+                  localizationsDelegates: appLocalizationsDelegates,
+                  supportedLocales: AppLocalizations.supportedLocales,
+                  locale: locale,
+                  routerConfig: router,
+                ),
         ),
       ),
     );
     await tester.pumpAndSettle();
   }
+
+  // Job 486: one sign-in, „Neu bei Snacklist?“ on it but for an invite,
+  // whose sheet asks instead; a link goes along into the guided start.
+  group('„Neu bei Snacklist?“', () {
+    GoRouter routerAt(String location) {
+      final router = GoRouter(
+        initialLocation: location,
+        routes: [
+          GoRoute(
+            path: '/login',
+            builder: (_, state) => LoginScreen(
+              invite: state.uri.queryParameters['invite'],
+              next: state.uri.queryParameters['next'],
+            ),
+          ),
+          GoRoute(path: '/start', builder: (_, _) => const SizedBox()),
+        ],
+      );
+      addTearDown(router.dispose);
+      return router;
+    }
+
+    String location(GoRouter router) =>
+        router.routerDelegate.currentConfiguration.uri.toString();
+
+    for (final (from, to) in [
+      ('/login', '/start'),
+      ('/login?next=%2Fadd', '/start?next=%2Fadd'),
+      (
+        '/login?next=%2Foauth%2Fconsent%3Fauthorization_id%3Dabc',
+        '/start?next=%2Foauth%2Fconsent%3Fauthorization_id%3Dabc',
+      ),
+    ]) {
+      testWidgets('at $from it shows and opens $to', (tester) async {
+        final router = routerAt(from);
+        await pumpLogin(tester, router: router);
+        expect(find.text("Neu bei Snacklist? Los geht's"), findsOneWidget);
+        expect(find.byKey(const ValueKey('legal-imprint')), findsOneWidget);
+        expect(find.byKey(const ValueKey('legal-privacy')), findsOneWidget);
+        await tester.ensureVisible(find.byKey(const ValueKey('login-new')));
+        await tester.tap(find.byKey(const ValueKey('login-new')));
+        await tester.pumpAndSettle();
+        expect(location(router), to);
+      });
+    }
+
+    testWidgets('not for an invite', (tester) async {
+      await pumpLogin(tester, router: routerAt('/login?invite=ABCD2345'));
+      expect(find.byKey(const ValueKey('login-new')), findsNothing);
+    });
+  });
 
   Finder google() => find.bySemanticsLabel('Mit Google anmelden');
   Finder apple() => find.bySemanticsLabel('Mit Apple anmelden');

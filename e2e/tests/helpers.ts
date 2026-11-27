@@ -419,6 +419,23 @@ export async function openEmailSignIn(page: Page, { button = 'Weiter mit E-Mail'
 }
 
 /**
+ * Signed out by „Abmelden“ (job 486): the start screen, as on a cold start, with „Los geht's“ and
+ * „Ich habe schon ein Konto“.
+ */
+export async function expectSignedOutStart(page: Page): Promise<void> {
+  await expect(page).toHaveURL(/\/start$/);
+  await expect(page.getByRole('button', { name: "Los geht's", exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Ich habe schon ein Konto', exact: true })).toBeVisible();
+}
+
+/** „Ich habe schon ein Konto“ on the start screen: the sign-in, with „Neu bei Snacklist?“ on it. */
+export async function haveAccount(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Ich habe schon ein Konto', exact: true }).click();
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(page.getByRole('button', { name: "Neu bei Snacklist? Los geht's", exact: true })).toBeVisible();
+}
+
+/**
  * Signs up in a fresh browser context, then answers the analytics consent that follows the first
  * sign-in on an install (job 19): declined unless [consent] says otherwise. Ends on onboarding
  * (or its join form for an invite, [invitePath]). [path] `/` opens the sign-in itself: signed out,

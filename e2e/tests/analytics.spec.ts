@@ -28,6 +28,8 @@ import {
   typeInto, createHousehold, skipInvite, confirmJoin,
   openEmailSignIn,
   invitePath,
+  expectSignedOutStart,
+  haveAccount,
 } from './helpers';
 
 // Job 19: analytics to PostHog EU, asked for right after the first sign-in (Peter, 2026-10-27).
@@ -368,10 +370,9 @@ test('a test account sends nothing after a yes, and the answer stays yes (job 46
   await screenshot(page, 'analytics-test-account-switch-on');
   // Signed out, and a cold start signed out: still nothing (Play's robot taps through More).
   await openMore(page, 'Abmelden');
-  await expect(page).toHaveURL(/\/login$/);
+  await expectSignedOutStart(page);
   await page.reload();
-  await expect(page.getByRole('button', { name: 'Weiter mit E-Mail' }).or(page.getByRole('textbox', { name: 'E-Mail' })).first())
-    .toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole('button', { name: 'Ich habe schon ein Konto', exact: true })).toBeVisible({ timeout: 15_000 });
   await quietFor(page, collector, { requests: 0, events: 0, flags: 0 });
   expect(await storedInstallId(page), 'no install id after the sign-out').toBeNull();
   expect(collector.leaks).toEqual([]);
@@ -484,6 +485,8 @@ test('a member with a household is asked once on a new install, then goes to the
 
   // Signing out and in again on this install does not ask again.
   await openMore(page, 'Abmelden');
+  await expectSignedOutStart(page);
+  await haveAccount(page);
   await openEmailSignIn(page);
   await typeInto(page.getByRole('textbox', { name: 'E-Mail' }), email);
   await typeInto(page.getByRole('textbox', { name: 'Passwort' }), password);

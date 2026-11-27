@@ -499,14 +499,86 @@ void main() {
     );
   });
 
-  test('a sign-out carries no link to the next sign-in', () {
+  // Job 486: a sign-out opens the start screen, „Ich habe schon ein Konto“
+  // the sign-in with „Neu bei Snacklist?“.
+  test('a sign-out opens the start screen and carries no link', () {
     expect(
       authRedirect(
         const SignedOut(),
         Uri.parse('/more/account'),
         justSignedOut: true,
       ),
+      '/start',
+    );
+    expect(
+      authRedirect(
+        const SignedOut(),
+        Uri.parse('/welcome?next=%2Fmore%2Finvites'),
+        justSignedOut: true,
+        pendingNext: '/more/invites',
+      ),
+      '/start',
+    );
+  });
+
+  test('a sign-out keeps an invite and an account deletion its notice on '
+      'the sign-in', () {
+    expect(
+      authRedirect(
+        const SignedOut(),
+        Uri.parse('/your-name?invite=ABCD2345'),
+        justSignedOut: true,
+      ),
+      '/login?invite=ABCD2345',
+    );
+    expect(
+      authRedirect(
+        const SignedOut(
+          deleted: AccountDeletedNotice(removeAppleManually: false),
+        ),
+        Uri.parse('/more/account'),
+        justSignedOut: true,
+      ),
       '/login',
+    );
+    // Its „Neu bei Snacklist?“ opens the start screen, not the sign-in again.
+    expect(
+      authRedirect(
+        const SignedOut(
+          deleted: AccountDeletedNotice(removeAppleManually: false),
+        ),
+        Uri.parse('/start'),
+      ),
+      isNull,
+    );
+  });
+
+  test('„Neu bei Snacklist?“ from the sign-in for a link: the guided start '
+      'carries the link', () {
+    expect(
+      authRedirect(const SignedOut(), Uri.parse('/start?next=%2Fadd')),
+      isNull,
+    );
+    expect(
+      authRedirect(const SignedOut(), Uri.parse('/start'), pendingNext: '/add'),
+      '/start?next=%2Fadd',
+    );
+    expect(
+      authRedirect(
+        const SignedOut(),
+        Uri.parse('/start?next=%2Fadd'),
+        draft: const OnboardingDraft(step: OnboardingStep.who),
+      ),
+      '/start/who?next=%2Fadd',
+    );
+    // Not going to the guided start, a link still asks for the sign-in.
+    expect(
+      authRedirect(const SignedOut(), Uri.parse('/'), pendingNext: '/add'),
+      '/login?next=%2Fadd',
+    );
+    expect(
+      authRedirect(const SignedOut(), Uri.parse('/login?next=%2Fadd')),
+      isNull,
     );
   });
 
@@ -546,11 +618,40 @@ void main() {
       expect(memory.redirect(household, Uri.parse('/more/account')), isNull);
       expect(
         memory.redirect(const SignedOut(), Uri.parse('/more/account')),
-        '/login',
+        '/start',
       );
-      // The sign-in shows; the next start opens the guided start's.
+      // Job 486: read again at the sign-out's location before the start
+      // screen shows, it is still no link (it hid „Neu bei Snacklist?“).
+      expect(
+        memory.redirect(const SignedOut(), Uri.parse('/more/account')),
+        '/start',
+      );
+      expect(memory.redirect(const SignedOut(), Uri.parse('/start')), isNull);
       expect(memory.redirect(const SignedOut(), Uri.parse('/login')), isNull);
       expect(memory.redirect(const SignedOut(), Uri.parse('/')), '/start');
+    });
+
+    test("a sign-out at the start screen itself lets „Los geht's“ go on", () {
+      const draft = OnboardingDraft(step: OnboardingStep.who);
+      final memory = RedirectMemory()
+        ..redirect(const NeedsHousehold('u'), Uri.parse('/start'));
+      expect(memory.redirect(const SignedOut(), Uri.parse('/start')), isNull);
+      expect(
+        memory.redirect(const SignedOut(), Uri.parse('/start'), draft: draft),
+        '/start/who',
+      );
+    });
+
+    test('after the start screen showed, a link opened there asks for the '
+        'sign-in again', () {
+      final memory = RedirectMemory()
+        ..redirect(household, Uri.parse('/more/account'))
+        ..redirect(const SignedOut(), Uri.parse('/more/account'))
+        ..redirect(const SignedOut(), Uri.parse('/start'));
+      expect(
+        memory.redirect(const SignedOut(), Uri.parse('/more/account')),
+        '/login?next=%2Fmore%2Faccount',
+      );
     });
 
     test('signed out, a link opened later still continues', () {
@@ -590,8 +691,8 @@ void main() {
       final memory = RedirectMemory()
         ..redirect(const SignedOut(), Uri.parse('/add'))
         ..redirect(const NeedsHousehold('u'), Uri.parse('/'));
-      expect(memory.redirect(const SignedOut(), Uri.parse('/')), '/login');
       expect(memory.redirect(const SignedOut(), Uri.parse('/')), '/start');
+      expect(memory.redirect(const SignedOut(), Uri.parse('/start')), isNull);
     });
   });
 

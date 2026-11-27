@@ -154,14 +154,16 @@ void main() {
     await unmount(tester);
   });
 
-  testWidgets('a sign-out in More goes to plain sign-in', (tester) async {
+  testWidgets('a sign-out in More goes to the plain start screen', (
+    tester,
+  ) async {
     await pumpRouter(tester, household);
     router.go('/more');
     await tester.pumpAndSettle();
     expect(location(), '/more');
     sessions.add(const SignedOut());
     await tester.pumpAndSettle();
-    expect(location(), '/login');
+    expect(location(), '/start');
     await unmount(tester);
   });
 

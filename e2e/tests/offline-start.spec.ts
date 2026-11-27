@@ -1,5 +1,5 @@
 import { expect, test, type Page } from './fixtures';
-import { addField, addItem, answerConsent, apiAs, cutOff, editField, itemRow, newEmail, offlineIndicator, openEdit, openEmailSignIn, openMore, password, saveEdit, screenshot, signUpWithHousehold, tick, typeInto, within } from './helpers';
+import { addField, addItem, answerConsent, apiAs, cutOff, editField, itemRow, newEmail, offlineIndicator, openEdit, openEmailSignIn, openMore, password, saveEdit, screenshot, signUpWithHousehold, tick, typeInto, within, expectSignedOutStart } from './helpers';
 
 /** The list snapshot the app keeps in localStorage, or null. */
 function cachedList(page: Page): Promise<{ server: unknown[]; pending: unknown[] } | null> {
@@ -112,7 +112,7 @@ test('signing out drops the cached list', async ({ page }) => {
   await expect.poll(async () => (await cachedList(page))?.server.length, { message: 'the list is cached' }).toBe(1);
 
   await openMore(page, 'Abmelden');
-  await expect(page.getByRole('button', { name: 'Weiter mit E-Mail' })).toBeVisible();
+  await expectSignedOutStart(page);
   await expect.poll(
     () => page.evaluate(() => Object.keys(localStorage).filter((k) => /\b(list|household)\./.test(k)).length),
     { message: 'nothing of the list stays on the device' },

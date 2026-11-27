@@ -3401,3 +3401,22 @@ German draft lost its 199 English rows (its German terms stay; five English word
 at them once it ships), and `accept_drafts_test.ts` checks that it fits the English words. The add
 sheet falls back to the last language read (English before any read) instead of German.
 - Job 474, VoiceOver / TalkBack pass (announcements, focus, adjustable Menge, no household count, More without title): [docs/done/474.md](docs/done/474.md)
+
+## Job 486: a sign-out opens the start screen, one sign-in page
+
+Signing out (More, the first-run screens' logout icon, the guided start's „Abmelden“, a sign-out
+the server forces) now opens the start screen with „Los geht's“, „Ich habe schon ein Konto“ and the
+Impressum and Datenschutz links, through `go`, so nothing is left to go back to. „Ich habe schon ein
+Konto“ opens the one sign-in page, which shows „Neu bei Snacklist? Los geht's“ on every visit except
+an invite's (the invite sheet asks there). The variant without that button (a sign-in carrying a
+link) is gone; a link now rides along into the guided start. Sign-out itself is unchanged and
+removes the same local data as before (driven on web, main vs branch). An invite waiting and an
+account deletion still end on the sign-in. A sign-out in the middle of the guided start keeps the
+answers on the device; „Los geht's“ goes on with them. Details and screenshots: [docs/done/486.md](docs/done/486.md).
+
+COPY-CHANGES: none. No ARB string was added or changed. The existing „Neu bei Snacklist? Los
+geht's“ / "New to Snacklist? Get started" (`loginNew`) now also shows on a sign-in opened by a link.
+
+Tests: router, your-name gate (real router) and login screen widget tests; seven e2e specs follow
+the new landing; `drive.sh sign-in` PASS (de, en). Not verified: iOS and the native Linux build
+(none on hz). Ships with the next green main build after the merge; no flag.

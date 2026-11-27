@@ -2,6 +2,8 @@ import { expect, test, type Page } from './fixtures';
 import {
   addField, holdFrames, latestLinkFor, newEmail, nextFrames, openMore, password, signUpWithHousehold, typeInto,
   openEmailSignIn,
+  expectSignedOutStart,
+  haveAccount,
 } from './helpers';
 import { watchBuild, withoutWasmGC } from './web-build';
 
@@ -23,7 +25,8 @@ test('email and password: sign out and back in', async ({ page }) => {
   await signUpWithHousehold(page, email);
   await expectNoCredentials(page, email);
   await openMore(page, 'Abmelden');
-  await expect(page).toHaveURL(/\/login$/);
+  await expectSignedOutStart(page);
+  await haveAccount(page);
 
   await openEmailSignIn(page);
   await typeInto(page.getByRole('textbox', { name: 'E-Mail' }), email);
@@ -56,6 +59,8 @@ test('magic link signs in on this device', async ({ page }) => {
   const email = newEmail('magic');
   await signUpWithHousehold(page, email);
   await openMore(page, 'Abmelden');
+  await expectSignedOutStart(page);
+  await haveAccount(page);
 
   await openEmailSignIn(page);
   await typeInto(page.getByRole('textbox', { name: 'E-Mail' }), email);

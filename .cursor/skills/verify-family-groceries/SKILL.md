@@ -101,7 +101,7 @@ scripts/fg wait --text Milch --gone         # never sleep; wait polls (default 1
 scripts/fg marionette -- scroll-to --text "Zuletzt verwendet"   # any other Marionette command
 scripts/fg swipe --key <key> --direction down             # a swipe without a hold (fg marionette -- swipe for coordinates, e.g. reorder handles)
 scripts/fg back                             # the system back button: closes sheets and dialogs, pops routes
-scripts/fg logout --client lea              # signs out through Mehr › Abmelden and waits for the login screen
+scripts/fg logout --client lea              # signs out through Mehr › Abmelden, then from the start screen to the login screen
 ```
 
 `find` and `wait` see what Marionette lists: fields, list texts, tooltips and keys. Text inside buttons is not listed, but `tap --text` still finds it. To wait for a dialog, wait for one of its fields or texts instead. `fg tap` taps and `fg marionette -- long-press` holds without moving, but Marionette's `swipe` never holds first, so a held drag needs `fg drag` (linux surface only: it presses through xdotool on the client's Xvfb display). The list itself has no drag since job 78; `fg drag` remains for other held drags.
