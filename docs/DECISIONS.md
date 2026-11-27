@@ -18858,3 +18858,9 @@ CP4, ML1, Addendum 2 (26 Nov 2026); details in `docs/done/470-english-catalog.md
 4. **The gate reads production before any edit opens**, so a refused upload opens nothing.
 5. **`held_release_from` is a workflow input**, defaulting to K1's launch-day start, instead of a library constant.
 6. **A test reads the workflow's input-to-env mapping.** A change to play-listing.yml now turns on the `fastlane` CI job (`scripts/ci-changes.sh`, with its test).
+
+## Job 480a: the Play listing lane's date floor and the not-sent-for-review commit (2026-11-27)
+
+1. **`held_release_from` has a floor in code, 1 Dec 2026 00:00 Europe/Berlin (`PlayListing::HELD_FROM_FLOOR`).** The check sits in `PlayListing.blockers`, the one gate `run` and `preflight` share, so an earlier value (a typo such as 2026-11-01) refuses an upload before any edit opens and preflight shows the same reason. The input can only move the date later.
+2. **A commit Play will not send for review fails the run.** The listing lane builds supply's client without its `changesNotSentForReview` rescue. On Play's "Please set the query parameter changesNotSentForReview to true" the lane commits with that flag itself, reads the listing back, then fails with `!!! NOT SENT FOR REVIEW !!!` and the Play Console step. A green run would have said the listing is in Google's review when it is not, and the sale waits for it (Legal LK1). Not committing at all was the other option; it leaves Ops with nothing in Console to send, so the commit stays and the run goes red.
+3. **The integration-lock hold flip needs a second listing upload.** `check.mjs` requires the AI assistants in the Premium paragraph once the hold is released, so the flip PR changes the listing. PAYWALL_RELEASE 6.5 and the RELEASE.md checklist now name the after-publish `mode=upload`, Google's approval and `mode=check`.

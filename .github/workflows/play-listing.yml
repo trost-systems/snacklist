@@ -22,7 +22,7 @@ on:
         type: boolean
         default: false
       held_release_from:
-        description: when the held-release path opens (ISO 8601; Peter K1, launch day)
+        description: when the held-release path opens (ISO 8601; Peter K1, launch day). Only later than the default; an earlier value refuses
         type: string
         default: "2026-12-01T00:00:00+01:00"
 

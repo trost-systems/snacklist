@@ -67,11 +67,11 @@ class PlayListingTest < Minitest::Test
 
   # The lane's flow: the gate on production, then the edit, then the read-back edit on upload.
   def run_lane(upload:, plays:, production: LIVE, held: false, now: DEC1, version_code: "1541",
-               texts: { "de-DE" => fields })
+               texts: { "de-DE" => fields }, held_from: DEC1)
     queue = plays.dup
     PlayListing.run(texts: texts, upload: upload, version_code: version_code, production_releases: production,
                     new_client: -> { queue.shift or flunk("no edit left") }, log: @log.method(:push),
-                    with_held_release: held, held_from: DEC1, now: now)
+                    with_held_release: held, held_from: held_from, now: now)
     queue
   end
 
@@ -188,6 +188,65 @@ class PlayListingTest < Minitest::Test
     assert_equal "Neu", play.committed["de-DE"].full_description
     assert_equal [[:listing_for_language, "de-DE"], [:abort]], check.calls
     assert_includes @log, "Production releases: APPROVED_NOT_PUBLISHED 1541"
+  end
+
+  def test_a_held_from_before_launch_day_refuses_and_opens_no_edit
+    # A typo in the dispatch: 1 Nov instead of 1 Dec. Only the date gate stands, and it holds.
+    typo = Time.new(2026, 11, 1, 0, 0, 0, "+01:00")
+    [typo, DEC1 - 1].each do |held_from|
+      error = assert_raises(PlayListing::Refused) do
+        run_lane(upload: true, plays: [], production: HELD, held: true, now: DEC1 + 3600, held_from: held_from)
+      end
+      assert_match "is before launch day 2026-12-01T00:00:00+01:00; it may only move the date later", error.message
+    end
+  end
+
+  def test_held_from_may_move_launch_day_later_only
+    later = Time.new(2026, 12, 2, 9, 0, 0, "+01:00")
+    assert_empty PlayListing.blockers(production_releases: HELD, version_code: "1541", with_held_release: true,
+                                      held_from: Time.iso8601("2026-11-30T23:00:00Z"), now: DEC1)
+    assert_match "only from 2026-12-02T09:00:00+01:00",
+                 PlayListing.blockers(production_releases: HELD, version_code: "1541", with_held_release: true,
+                                      held_from: later, now: DEC1).join
+    play = FakePlay.new
+    assert_empty run_lane(upload: true, plays: [play, same_listing], production: HELD, held: true, now: later,
+                          held_from: later)
+    assert_equal [:commit], play.calls.last
+  end
+
+  # Play's answer, as supply's call_google_api raises it without its rescue.
+  NOT_SENT = "Google Api Error: badRequest: Changes cannot be sent for review automatically. Please set the query " \
+             "parameter changesNotSentForReview to true. Once committed, the changes in this edit can be sent for " \
+             "review from the Google Play Console UI."
+
+  def test_a_commit_play_will_not_send_for_review_fails_the_run_and_tells_ops_to_send_it
+    play = FakePlay.new
+    def play.commit_current_edit!
+      @calls << [:commit]
+      raise NOT_SENT
+    end
+    def play.commit_not_sent_for_review!
+      @calls << [:commit_not_sent_for_review]
+      @committed = @staged
+    end
+    error = assert_raises(PlayListing::Refused) { run_lane(upload: true, plays: [play, same_listing]) }
+    assert_match "NOT SENT FOR REVIEW", error.message
+    assert_match "Send changes for review", error.message
+    assert_equal [[:commit], [:commit_not_sent_for_review]], play.calls.last(2)
+    refute_includes play.calls, [:abort]
+    assert_equal "Neu", play.committed["de-DE"].full_description
+    assert(@log.any? { |l| l.start_with?("!!! NOT SENT FOR REVIEW !!!") })
+  end
+
+  def test_supply_commit_sets_changes_not_sent_for_review_for_that_commit_only
+    require "supply"
+    Supply.config = FastlaneCore::Configuration.create(Supply::Options.available_options, { package_name: "app" })
+    client = Object.new
+    seen = nil
+    client.define_singleton_method(:commit_current_edit!) { seen = Supply.config[:changes_not_sent_for_review] }
+    client.extend(PlayListing::SupplyCommit).commit_not_sent_for_review!
+    assert seen
+    refute Supply.config[:changes_not_sent_for_review]
   end
 
   def test_validate_runs_any_day_and_never_commits

@@ -82,6 +82,11 @@ module PlayListing
   Release = Struct.new(:state, :version_codes)
   HELD = "APPROVED_NOT_PUBLISHED"
   PUBLISHED = "PUBLISHED"
+  # Peter K1: launch day, 1 Dec 2026 00:00 Europe/Berlin. PLAY_LISTING_HELD_FROM may only move it
+  # later; an earlier value (a typo such as 2026-11-01) would let the held path commit too soon.
+  HELD_FROM_FLOOR = Time.new(2026, 12, 1, 0, 0, 0, "+01:00")
+  # Play's answer when this app's changes must be sent for review by hand (supply's rescue matches it too).
+  NOT_SENT_FOR_REVIEW = "changesNotSentForReview to true"
 
   # service is supply's AndroidPublisherService (Supply::Client#client).
   def production_releases(service, package_name)
@@ -115,6 +120,9 @@ module PlayListing
       end
       if held_from.nil?
         found << "PLAY_LISTING_HELD_FROM is not set"
+      elsif held_from < HELD_FROM_FLOOR
+        found << "PLAY_LISTING_HELD_FROM #{held_from.iso8601} is before launch day #{HELD_FROM_FLOOR.iso8601}; " \
+                 "it may only move the date later (Peter K1)"
       elsif now < held_from
         found << "the listing may join the held release only from #{held_from.iso8601} (Peter K1)"
       end
@@ -142,6 +150,7 @@ module PlayListing
   # In the client's open edit: refuse before anything changes if upload is asked and a blocker
   # stands; set each staged locale's title and descriptions (its video stays); commit on upload,
   # else validate and delete the edit. Any failure deletes the edit, so nothing lands half.
+  # Returns :not_sent_for_review when Play took the commit only with changesNotSentForReview.
   def publish(client:, texts:, upload:, blockers:, log:)
     raise Refused, "Not uploading the listing: #{blockers.join('; ')}" if upload && blockers.any?
 
@@ -155,8 +164,9 @@ module PlayListing
       log.call("#{locale}: staged (full_description sha256 #{sha256(fields['full_description'])})")
     end
     if upload
-      client.commit_current_edit!
+      review = commit(client: client, log: log)
       log.call("Committed the listing for #{texts.keys.join(', ')}")
+      review
     else
       client.validate_current_edit!
       client.abort_current_edit
@@ -171,6 +181,25 @@ module PlayListing
     raise
   end
 
+  # Play answers some commits with "Please set the query parameter changesNotSentForReview to
+  # true" (supply's rescue would then commit silently). Such a commit lands in Play Console as a
+  # change nobody sent for review, so it is never published unless Ops sends it by hand.
+  def commit(client:, log:)
+    client.commit_current_edit!
+    :sent_for_review
+  rescue StandardError => e
+    raise unless e.message.include?(NOT_SENT_FOR_REVIEW)
+
+    log.call("Play refuses to send this edit for review automatically: #{e.message}")
+    client.commit_not_sent_for_review!
+    log.call(NOT_SENT_WARNING)
+    :not_sent_for_review
+  end
+
+  NOT_SENT_WARNING = "!!! NOT SENT FOR REVIEW !!! The listing is committed but Google will not review it until " \
+                     "Ops sends it by hand: Play Console > Publishing overview > Send changes for review. " \
+                     "Then, once Google approves and the change is published, run mode=check."
+
   # The `android listing` lane. The gate reads production before any edit opens, so a refused
   # upload opens none. Then publish in one edit and, on upload, read every field back in a
   # second. new_client opens an edit per call.
@@ -181,14 +210,15 @@ module PlayListing
                      with_held_release: with_held_release, held_from: held_from, now: now)
     raise Refused, "Not uploading the listing: #{found.join('; ')}" if upload && found.any?
 
-    publish(client: new_client.call, texts: texts, upload: upload, blockers: found, log: log)
+    review = publish(client: new_client.call, texts: texts, upload: upload, blockers: found, log: log)
     return unless upload
 
     mismatches = read_back(client: new_client.call, texts: texts, log: log)
-    return if mismatches.empty?
-
-    raise Refused, "The listing was committed, but Play's read-back differs from the repo: #{mismatches.join('; ')}. " \
-                   "Running the upload again sends the same text (docs/RELEASE.md, Store listing upload)."
+    unless mismatches.empty?
+      raise Refused, "The listing was committed, but Play's read-back differs from the repo: #{mismatches.join('; ')}. " \
+                     "Running the upload again sends the same text (docs/RELEASE.md, Store listing upload)."
+    end
+    raise Refused, NOT_SENT_WARNING if review == :not_sent_for_review
   end
 
   # Reads Play's listing in the client's open edit, then deletes the edit. Returns one line per
@@ -204,6 +234,17 @@ module PlayListing
     end
   ensure
     client.abort_current_edit
+  end
+
+  # Extends supply's Supply::Client, built with rescue_changes_not_sent_for_review: false, so the
+  # lane, not supply, decides what a commit without review means.
+  module SupplyCommit
+    def commit_not_sent_for_review!
+      Supply.config.set(:changes_not_sent_for_review, true)
+      commit_current_edit!
+    ensure
+      Supply.config.set(:changes_not_sent_for_review, false)
+    end
   end
 
   # The full description as Play's public page shows it ([nil] when the page has none).
