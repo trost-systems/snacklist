@@ -4,7 +4,7 @@ description: "Impressum von Snacklist: Anbieter, Anschrift und Kontakt."
 locale: de
 path: /impressum
 translation_key: imprint
-updated: 2026-11-20
+updated: 2026-11-27
 ---
 
 # Impressum
@@ -43,4 +43,4 @@ Ladennamen wie dm, Lidl oder EDEKA und die Namen ihrer Apps verwenden wir nur, d
 
 ## Marken
 
-Apple, iPhone, Siri und App Store sind Marken von Apple Inc., die in den USA und weiteren Ländern und Regionen eingetragen sind. Amazon, Alexa und alle zugehörigen Marken sind Marken von Amazon.com, Inc. oder verbundenen Unternehmen. Google Play und Android sind Marken von Google LLC. Claude ist eine Marke von Anthropic. Alle anderen genannten Marken gehören ihren jeweiligen Inhabern. Snacklist ist ein unabhängiges Angebot. Keines dieser Unternehmen unterstützt, sponsert oder empfiehlt Snacklist.
+Apple, iPhone, Siri und App Store sind Marken von Apple Inc., die in den USA und weiteren Ländern und Regionen eingetragen sind. Amazon, Alexa und alle zugehörigen Marken sind Marken von Amazon.com, Inc. oder verbundenen Unternehmen. Google Play und Android sind Marken von Google LLC. Claude ist eine Marke von Anthropic. ChatGPT ist eine Marke von OpenAI. Alle anderen genannten Marken gehören ihren jeweiligen Inhabern. Snacklist ist ein unabhängiges Angebot. Keines dieser Unternehmen unterstützt, sponsert oder empfiehlt Snacklist.

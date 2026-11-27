@@ -20,7 +20,7 @@ Legal checks the final wording before any upload. Nothing here replaces that che
 
 - Siri works through an Apple Shortcut that the user sets up. The App Intents version ("Siri without setup") is built but not announced.
 - The Alexa skill is an invite-only beta. Amazon has not certified it, and it is not in the Alexa Skill Store. Our own rules name it "Snacklist-Skill für Amazon Alexa" and never call Alexa "sie".
-- AI assistants connect over MCP at `https://mcp.snacklist.app`. Legal N-80..N-86 forbids naming specific AI assistant brands or their makers in marketing.
+- AI assistants connect over MCP at `https://mcp.snacklist.app`. Legal N-80..N-86 forbade naming specific AI assistant brands or their makers in marketing. Replaced by BN-1 (2026-11-27, `docs/store/LISTING.md` "Brand rule BN-1"): captions, screenshots and media file names never name a brand.
 - The public REST API exists but is off (flag `public-api`). It must not be announced.
 - After the public launch, MCP access becomes part of Snacklist Premium. Siri and Alexa stay free. The screenshots show neither Premium nor a price.
 
@@ -107,7 +107,7 @@ Do not write "Hey Siri", "Sag einfach ...", "Alexa, ..." utterances that suggest
 | Named, MCP and API | Offen für KI-Assistenten (MCP) und Automationen (API). | Open to AI assistants (MCP) and automations (API). | Only after `public-api` is on for everyone and the API is announced. | inferred |
 | Neutral | Snacklist mit KI-Assistenten und Automationen verbinden. | Connect Snacklist to AI assistants and automations. | Now only if "automations" means something users can do today (MCP clients). Otherwise drop "Automationen". | inferred, open |
 
-Never name a specific AI assistant (Legal N-80..N-86).
+Never name a specific AI assistant: BN-1 point 3 keeps every brand off captions and screenshots (it replaced Legal N-80..N-86 on 2026-11-27).
 
 ### Conditions before upload
 

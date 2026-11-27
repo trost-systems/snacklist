@@ -1,0 +1,214 @@
+{
+  "entries": [
+    {
+      "file": "app/fastlane/metadata/android/de-DE/full_description.txt",
+      "brand": "Alexa",
+      "rule": "live",
+      "message": "names Alexa, which docs/store/BRAND_LIVE.md does not mark live (BN-1 point 1)",
+      "reason": "listing copy approved before BN-1 (N-366, 2026-11-22); the brand is not yet verified live in BRAND_LIVE.md"
+    },
+    {
+      "file": "app/fastlane/metadata/android/de-DE/full_description.txt",
+      "brand": "Alexa",
+      "rule": "once",
+      "message": "names Alexa 2 times: one plain mention per text (BN-1 point 3)",
+      "reason": "listing copy approved before BN-1: the feature bullet and the free-without-Premium line both name it"
+    },
+    {
+      "file": "app/fastlane/metadata/android/de-DE/full_description.txt",
+      "brand": "Alexa",
+      "rule": "form",
+      "message": "names Alexa only as „Snacklist-Skill für Amazon Alexa“ / \"Snacklist skill for Amazon Alexa\" (BN-1 point 4): • Mit dem Snacklist-Skill für Alexa fügst du Einträge per Sprache hinzu und lässt dir die Liste vorlesen, auf Deutsch und Englisch.",
+      "reason": "listing copy approved before BN-1 uses the N-366 / Kurzbefehl wording; a Legal copy job moves it to BN-1 point 4"
+    },
+    {
+      "file": "app/fastlane/metadata/android/de-DE/full_description.txt",
+      "brand": "Alexa",
+      "rule": "form",
+      "message": "names Alexa only as „Snacklist-Skill für Amazon Alexa“ / \"Snacklist skill for Amazon Alexa\" (BN-1 point 4): Alexa und die Liste selbst brauchen kein Premium.",
+      "reason": "listing copy approved before BN-1 uses the N-366 / Kurzbefehl wording; a Legal copy job moves it to BN-1 point 4"
+    },
+    {
+      "file": "app/fastlane/metadata/android/de-DE/full_description.txt",
+      "brand": "Alexa",
+      "rule": "premium",
+      "message": "Alexa lines never mention Premium (BN-1 point 6): Alexa und die Liste selbst brauchen kein Premium.",
+      "reason": "listing copy approved before BN-1 says Siri and Alexa need no Premium; BN-1 point 6 keeps them apart"
+    },
+    {
+      "file": "app/fastlane/metadata/android/en-US/full_description.txt",
+      "brand": "Alexa",
+      "rule": "live",
+      "message": "names Alexa, which docs/store/BRAND_LIVE.md does not mark live (BN-1 point 1)",
+      "reason": "listing copy approved before BN-1 (N-366, 2026-11-22); the brand is not yet verified live in BRAND_LIVE.md"
+    },
+    {
+      "file": "app/fastlane/metadata/android/en-US/full_description.txt",
+      "brand": "Alexa",
+      "rule": "once",
+      "message": "names Alexa 2 times: one plain mention per text (BN-1 point 3)",
+      "reason": "listing copy approved before BN-1: the feature bullet and the free-without-Premium line both name it"
+    },
+    {
+      "file": "app/fastlane/metadata/android/en-US/full_description.txt",
+      "brand": "Alexa",
+      "rule": "form",
+      "message": "names Alexa only as „Snacklist-Skill für Amazon Alexa“ / \"Snacklist skill for Amazon Alexa\" (BN-1 point 4): • With the Snacklist skill for Alexa you can add items by voice and have the list read aloud, in German and English.",
+      "reason": "listing copy approved before BN-1 uses the N-366 / Kurzbefehl wording; a Legal copy job moves it to BN-1 point 4"
+    },
+    {
+      "file": "app/fastlane/metadata/android/en-US/full_description.txt",
+      "brand": "Alexa",
+      "rule": "form",
+      "message": "names Alexa only as „Snacklist-Skill für Amazon Alexa“ / \"Snacklist skill for Amazon Alexa\" (BN-1 point 4): Alexa and the list itself do not need Premium.",
+      "reason": "listing copy approved before BN-1 uses the N-366 / Kurzbefehl wording; a Legal copy job moves it to BN-1 point 4"
+    },
+    {
+      "file": "app/fastlane/metadata/android/en-US/full_description.txt",
+      "brand": "Alexa",
+      "rule": "premium",
+      "message": "Alexa lines never mention Premium (BN-1 point 6): Alexa and the list itself do not need Premium.",
+      "reason": "listing copy approved before BN-1 says Siri and Alexa need no Premium; BN-1 point 6 keeps them apart"
+    },
+    {
+      "file": "app/fastlane/metadata/de-DE/description.txt",
+      "brand": "Siri",
+      "rule": "live",
+      "message": "names Siri, which docs/store/BRAND_LIVE.md does not mark live (BN-1 point 1)",
+      "reason": "listing copy approved before BN-1 (N-366, 2026-11-22); the brand is not yet verified live in BRAND_LIVE.md"
+    },
+    {
+      "file": "app/fastlane/metadata/de-DE/description.txt",
+      "brand": "Siri",
+      "rule": "once",
+      "message": "names Siri 2 times: one plain mention per text (BN-1 point 3)",
+      "reason": "listing copy approved before BN-1: the feature bullet and the free-without-Premium line both name it"
+    },
+    {
+      "file": "app/fastlane/metadata/de-DE/description.txt",
+      "brand": "Siri",
+      "rule": "form",
+      "message": "names Siri only as „per Siri-Kurzbefehl“ / \"with a Siri Shortcut\" until the native-siri hold is released (device test) (BN-1 point 4): • Siri: mit einem Kurzbefehl, den du einmal einrichtest (Anleitung auf snacklist.app, bisher auf Deutsch)",
+      "reason": "listing copy approved before BN-1 uses the N-366 / Kurzbefehl wording; a Legal copy job moves it to BN-1 point 4"
+    },
+    {
+      "file": "app/fastlane/metadata/de-DE/description.txt",
+      "brand": "Siri",
+      "rule": "form",
+      "message": "names Siri only as „per Siri-Kurzbefehl“ / \"with a Siri Shortcut\" until the native-siri hold is released (device test) (BN-1 point 4): Siri, Alexa und die Liste selbst brauchen kein Premium.",
+      "reason": "listing copy approved before BN-1 uses the N-366 / Kurzbefehl wording; a Legal copy job moves it to BN-1 point 4"
+    },
+    {
+      "file": "app/fastlane/metadata/de-DE/description.txt",
+      "brand": "Siri",
+      "rule": "premium",
+      "message": "Siri lines never mention Premium (BN-1 point 6): Siri, Alexa und die Liste selbst brauchen kein Premium.",
+      "reason": "listing copy approved before BN-1 says Siri and Alexa need no Premium; BN-1 point 6 keeps them apart"
+    },
+    {
+      "file": "app/fastlane/metadata/de-DE/description.txt",
+      "brand": "Alexa",
+      "rule": "live",
+      "message": "names Alexa, which docs/store/BRAND_LIVE.md does not mark live (BN-1 point 1)",
+      "reason": "listing copy approved before BN-1 (N-366, 2026-11-22); the brand is not yet verified live in BRAND_LIVE.md"
+    },
+    {
+      "file": "app/fastlane/metadata/de-DE/description.txt",
+      "brand": "Alexa",
+      "rule": "once",
+      "message": "names Alexa 2 times: one plain mention per text (BN-1 point 3)",
+      "reason": "listing copy approved before BN-1: the feature bullet and the free-without-Premium line both name it"
+    },
+    {
+      "file": "app/fastlane/metadata/de-DE/description.txt",
+      "brand": "Alexa",
+      "rule": "form",
+      "message": "names Alexa only as „Snacklist-Skill für Amazon Alexa“ / \"Snacklist skill for Amazon Alexa\" (BN-1 point 4): • Mit dem Snacklist-Skill für Alexa fügst du Einträge per Sprache hinzu und lässt dir die Liste vorlesen, auf Deutsch und Englisch.",
+      "reason": "listing copy approved before BN-1 uses the N-366 / Kurzbefehl wording; a Legal copy job moves it to BN-1 point 4"
+    },
+    {
+      "file": "app/fastlane/metadata/de-DE/description.txt",
+      "brand": "Alexa",
+      "rule": "form",
+      "message": "names Alexa only as „Snacklist-Skill für Amazon Alexa“ / \"Snacklist skill for Amazon Alexa\" (BN-1 point 4): Siri, Alexa und die Liste selbst brauchen kein Premium.",
+      "reason": "listing copy approved before BN-1 uses the N-366 / Kurzbefehl wording; a Legal copy job moves it to BN-1 point 4"
+    },
+    {
+      "file": "app/fastlane/metadata/de-DE/description.txt",
+      "brand": "Alexa",
+      "rule": "premium",
+      "message": "Alexa lines never mention Premium (BN-1 point 6): Siri, Alexa und die Liste selbst brauchen kein Premium.",
+      "reason": "listing copy approved before BN-1 says Siri and Alexa need no Premium; BN-1 point 6 keeps them apart"
+    },
+    {
+      "file": "app/fastlane/metadata/en-US/description.txt",
+      "brand": "Siri",
+      "rule": "live",
+      "message": "names Siri, which docs/store/BRAND_LIVE.md does not mark live (BN-1 point 1)",
+      "reason": "listing copy approved before BN-1 (N-366, 2026-11-22); the brand is not yet verified live in BRAND_LIVE.md"
+    },
+    {
+      "file": "app/fastlane/metadata/en-US/description.txt",
+      "brand": "Siri",
+      "rule": "once",
+      "message": "names Siri 2 times: one plain mention per text (BN-1 point 3)",
+      "reason": "listing copy approved before BN-1: the feature bullet and the free-without-Premium line both name it"
+    },
+    {
+      "file": "app/fastlane/metadata/en-US/description.txt",
+      "brand": "Siri",
+      "rule": "form",
+      "message": "names Siri only as „per Siri-Kurzbefehl“ / \"with a Siri Shortcut\" until the native-siri hold is released (device test) (BN-1 point 4): • Siri: through a Shortcut you set up once (guide on snacklist.app, German only for now)",
+      "reason": "listing copy approved before BN-1 uses the N-366 / Kurzbefehl wording; a Legal copy job moves it to BN-1 point 4"
+    },
+    {
+      "file": "app/fastlane/metadata/en-US/description.txt",
+      "brand": "Siri",
+      "rule": "form",
+      "message": "names Siri only as „per Siri-Kurzbefehl“ / \"with a Siri Shortcut\" until the native-siri hold is released (device test) (BN-1 point 4): Siri, Alexa and the list itself do not need Premium.",
+      "reason": "listing copy approved before BN-1 uses the N-366 / Kurzbefehl wording; a Legal copy job moves it to BN-1 point 4"
+    },
+    {
+      "file": "app/fastlane/metadata/en-US/description.txt",
+      "brand": "Siri",
+      "rule": "premium",
+      "message": "Siri lines never mention Premium (BN-1 point 6): Siri, Alexa and the list itself do not need Premium.",
+      "reason": "listing copy approved before BN-1 says Siri and Alexa need no Premium; BN-1 point 6 keeps them apart"
+    },
+    {
+      "file": "app/fastlane/metadata/en-US/description.txt",
+      "brand": "Alexa",
+      "rule": "live",
+      "message": "names Alexa, which docs/store/BRAND_LIVE.md does not mark live (BN-1 point 1)",
+      "reason": "listing copy approved before BN-1 (N-366, 2026-11-22); the brand is not yet verified live in BRAND_LIVE.md"
+    },
+    {
+      "file": "app/fastlane/metadata/en-US/description.txt",
+      "brand": "Alexa",
+      "rule": "once",
+      "message": "names Alexa 2 times: one plain mention per text (BN-1 point 3)",
+      "reason": "listing copy approved before BN-1: the feature bullet and the free-without-Premium line both name it"
+    },
+    {
+      "file": "app/fastlane/metadata/en-US/description.txt",
+      "brand": "Alexa",
+      "rule": "form",
+      "message": "names Alexa only as „Snacklist-Skill für Amazon Alexa“ / \"Snacklist skill for Amazon Alexa\" (BN-1 point 4): • With the Snacklist skill for Alexa you can add items by voice and have the list read aloud, in German and English.",
+      "reason": "listing copy approved before BN-1 uses the N-366 / Kurzbefehl wording; a Legal copy job moves it to BN-1 point 4"
+    },
+    {
+      "file": "app/fastlane/metadata/en-US/description.txt",
+      "brand": "Alexa",
+      "rule": "form",
+      "message": "names Alexa only as „Snacklist-Skill für Amazon Alexa“ / \"Snacklist skill for Amazon Alexa\" (BN-1 point 4): Siri, Alexa and the list itself do not need Premium.",
+      "reason": "listing copy approved before BN-1 uses the N-366 / Kurzbefehl wording; a Legal copy job moves it to BN-1 point 4"
+    },
+    {
+      "file": "app/fastlane/metadata/en-US/description.txt",
+      "brand": "Alexa",
+      "rule": "premium",
+      "message": "Alexa lines never mention Premium (BN-1 point 6): Siri, Alexa and the list itself do not need Premium.",
+      "reason": "listing copy approved before BN-1 says Siri and Alexa need no Premium; BN-1 point 6 keeps them apart"
+    }
+  ]
+}

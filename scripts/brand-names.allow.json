@@ -24,12 +24,12 @@
     {
       "file": "site/content/legal/impressum.md",
       "contains": "Claude ist eine Marke von Anthropic",
-      "reason": "Trademark notice (Legal N-86)."
+      "reason": "Trademark notice: the imprint names every brand we name (Legal N-86, BN-1 point 5)."
     },
     {
       "file": "site/content/legal/imprint.md",
       "contains": "Claude is a trademark of Anthropic",
-      "reason": "Trademark notice (Legal N-86)."
+      "reason": "Trademark notice: the imprint names every brand we name (Legal N-86, BN-1 point 5)."
     },
     {
       "file": "site/content/legal/support.md",

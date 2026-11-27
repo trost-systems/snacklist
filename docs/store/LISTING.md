@@ -25,11 +25,16 @@ Connect and the Play Console after Legal's check.
   `prices-and-trip-total`, `total-priced-only`, `trip-mode`, `grocery-log`). No field names them: no „Preise notieren“,
   „Einkaufssumme“, „Einkaufsmodus“, „Verlauf“, „bezahlte Beträge“, "log a trip", and no `preise`/`verlauf`/`prices`/`history`
   keyword. Put one back only in the PR that turns its flag on for everyone. `check.mjs` refuses these words.
-- No price, no "kostenlos"/"free", no AI brand names (only "KI-Assistenten, die MCP unterstützen" / "AI assistants that support MCP"),
-  Siri only through a Shortcut set up once, no widget, Apple Watch, Google Assistant, push, recipes or price tracking, no retailer or
+- No price, no "kostenlos"/"free". Brand names follow BN-1 (section "Brand rule BN-1" below, status in `docs/store/BRAND_LIVE.md`,
+  checked by `scripts/store-brands.ts`): never in the name, subtitle, keywords, promotional text, Play title, Play short description or
+  in-app purchase texts; in a long description only while `BRAND_LIVE.md` marks the brand live, and then in BN-1's wording. No brand is
+  live yet, so AI assistants stay generic („KI-Assistenten, die MCP unterstützen“ / "AI assistants that support MCP"), and Siri only
+  through a Shortcut set up once. No widget, Apple Watch, Google Assistant, push, recipes or price tracking, no retailer or
   competitor names, no "hexagon".
 - Alexa (Legal N-366, 22 Nov 2026; the skill is live in de-DE and five English locales since 16 Nov):
-  - Name it „der Snacklist-Skill für Alexa“ / "the Snacklist skill for Alexa", never "Amazon Alexa". Say what the skill lets the user
+  - Replaced by BN-1 (2026-11-27) for the name: only „Snacklist-Skill für Amazon Alexa“ / "Snacklist skill for Amazon Alexa". The
+    N-366 form „der Snacklist-Skill für Alexa“ / "the Snacklist skill for Alexa" in today's descriptions is in
+    `scripts/store-brands.baseline.json` until a Legal copy job changes it. Say what the skill lets the user
     do („Mit dem Snacklist-Skill für Alexa fügst du …“), never "Alexa does …".
   - An example sentence starts with "Alexa," (never "Hey Alexa") and must work exactly as written in the certified skill
     (`docs/ALEXA.md`, `alexa/skill-package/interactionModels/custom/`). The descriptions carry none today.
@@ -44,6 +49,30 @@ Connect and the Play Console after Legal's check.
   (`supabase/migrations/20261115100000_key_checks_without_waiting.sql:196`), and the alexa function never asks for Premium. Hence
   „Siri, Alexa und die Liste selbst brauchen kein Premium.“ (Play: „Alexa und die Liste selbst …“).
 - Premium, see the next section.
+
+## Brand rule BN-1
+
+Peter approved BN-1 on 2026-11-27 08:57 Europe/Berlin. It replaces the 2026-10-31 "no assistant brand named" rule
+(Legal N-80..N-86, "no marketing strings naming Claude; keep the brand-free AI line"). Copied verbatim from Legal Review
+`2026-11-26-snacklist-715-release-notes.md`, section "LH4.2 Rule BN-1 (paste-ready)". Each brand's status is in
+`docs/store/BRAND_LIVE.md`; `scripts/store-brands.ts` checks the listing texts against both (`--publish` on the day a
+text goes public).
+
+> **BN-1: naming other companies' products (Snacklist). Replaces the 2026-10-31 "no assistant brand named" rule when Peter approves. Applies to Siri (Apple), Alexa (Amazon), Claude (Anthropic), ChatGPT (OpenAI) and every future brand.**
+>
+> **1. Trigger (all must hold, checked on the day the text goes public).** The integration is public and works for an **ordinary user** (fresh account in Germany, not a tester or admin, on the plan the text names), in the countries the text covers. "In review", "approved but not published", "certified but not enabled" and "coming soon" do not count. Plans and countries that do not work must be named in the text or left out.
+> **2. Who verifies, and how.** Ops runs the end-to-end check on the day and saves dated proof (URL, screenshot, account type, time); Engineering Lead confirms in writing; Legal Review records a hash-bound brand check for the exact text. The result goes into `docs/store/BRAND_LIVE.md` (one row per brand: URL, last verified date, proof path, texts that depend on it). Re-verify on each store release and weekly while a brand is named.
+> **3. Surfaces.**
+> - **Never, for any brand:** app name, subtitle, keywords field, promotional text, Play title and short description, screenshots, preview videos, captions and media file names, in-app purchase names and descriptions, paywall and Premium benefit lines, logos, badges, icons.
+> - **Allowed for a brand that meets the trigger:** store release notes and long description (one plain mention per brand per text), website (landing, guides, support, FAQ), in-app setup and how-to screens (for example "connect Snacklist to Claude"), social posts (plain text, no @-tags or hashtags of the brand, no reposted brand artwork).
+> - **Claude on marketing surfaces** (release notes, store description, landing, social, email) needs Anthropic's written OK for the exact wording first, because its Directory Terms bind us to its Trademark Guidelines. How-to guides, support and in-app setup need no OK.
+> - **Premium benefit lines name the capability, not the brand**: "KI-Assistenten, die MCP unterstützen".
+> **4. Phrasing.** Use only: "in [Brand]" / "available in [Brand]", "für [Brand]", "mit [Brand] nutzen" (Siri: "per Siri-Kurzbefehl" until the native device test has passed, then "mit Siri"); Alexa only as "Snacklist-Skill für Amazon Alexa" / "Snacklist skill for Amazon Alexa". Never: "Works with Alexa" (a certified badge), "works with" or "compatible with" for ChatGPT or Claude, "partner", "official", "certified", "recommended by", "powered by", "built with", "by [Brand]", "[Brand] app" for our own product, a brand inside a product or feature name, "Alexa-Snacklist", Alexa as verb, possessive or plural, a brand more prominent than "Snacklist", ™ or ®, translated brand names, a brand's slogans.
+> **5. Trademark notices.** The imprint names every brand we name (Siri/Apple, Alexa/Amazon, Claude/Anthropic, ChatGPT/OpenAI, Google Play and Android). The App Store release notes and description carry the notice sentences for the brands named in that text: "Siri ist eine Marke von Apple Inc." / "Amazon, Alexa und alle zugehörigen Marken sind Marken von Amazon.com, Inc. oder seinen verbundenen Unternehmen." / "Claude ist eine Marke von Anthropic." / "ChatGPT ist eine Marke von OpenAI." (EN equivalents). Where space is short (Play release notes) the notice may stay in the listing and imprint. No ™ or ®.
+> **6. Premium and plan qualifiers.** Every line that names an AI assistant or the API carries "mit Snacklist Premium" / "with Snacklist Premium" as long as the integration lock is on, and is used only while Premium can be bought. Lines for Siri and Alexa never mention Premium and must not share a sentence with the Premium line. A plan or country limit on the other side (for example ChatGPT plans) is named ("je nach ChatGPT-Tarif und Land") unless the day-of check shows it works for every plan and country the text covers.
+> **7. Removal.** A brand comes out of every surface it is on **within one working day** (store texts at the next update, or at once on Play and the website) when: the listing, plugin or skill is delisted, rejected, paused or disabled; the brand owner objects; a plan, country or Premium change makes the claim untrue; or the weekly check fails. Engineering Lead owns the removal; Ops owns the weekly check; the `BRAND_LIVE.md` row is updated the same day.
+> **8. Keyword and metadata ban.** No brand name in the App Store keywords field, app name, subtitle or promotional text, and none in the Play title, short description or tags (Apple 2.3.7; Play metadata policy). Brand names in URLs only in how-to slugs (for example `/guides/claude`), never in titles or paths of marketing pages.
+> **9. Future brands.** A brand not named above is generic-only until Legal Review adds a row to this rule after checking (a) the owner's trademark and brand guidelines, (b) the platform or directory terms we accepted, (c) plan and region limits, (d) the notice sentence, (e) the live check. No new question to Peter is needed if the brand passes; a brand that fails stays generic.
 
 ## Snacklist Premium in the listing
 

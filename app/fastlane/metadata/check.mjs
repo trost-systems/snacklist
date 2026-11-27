@@ -38,14 +38,9 @@ for (const l of locales) for (const p of ["yearly", "lifetime"]) {
   limit(f, "description", len(lines[1] ?? ""), 45);
 }
 
-const banned = /\b(kostenlos\w*|gratis|free|hexagon\w*|chatgpt|openai|claude|anthropic|kategorie\w*|categor\w*|widget|apple watch|google assistant|push|rezept\w*|recipe\w*|rewe|lidl|edeka|aldi|kaufland|rossmann|penny|netto|migros|coop)\b/i;
+const banned = /\b(kostenlos\w*|gratis|free|hexagon\w*|kategorie\w*|categor\w*|widget|apple watch|google assistant|push|rezept\w*|recipe\w*|rewe|lidl|edeka|aldi|kaufland|rossmann|penny|netto|migros|coop)\b/i;
 // HP2 (Peter, 22 Nov 2026): prices, totals, trip mode and History are off for everyone at launch.
 const HP2 = /\b(preis\w*|price\w*|einkaufssumme|summe|total\w*|verlauf|history|einkaufsmodus|trip mode|trips?\b|stoppuhr|stopwatch|bezahlten beträge\w*|amounts? paid|log (a|one) by hand|von hand eintragbar)/i;
-const SIRI_TM = { "de-DE": "Siri ist eine Marke von Apple Inc.", "en-US": "Siri is a trademark of Apple Inc." };
-const AMAZON_TM = {
-  "de-DE": "Amazon, Alexa und alle zugehörigen Marken sind Marken von Amazon.com, Inc. oder seinen verbundenen Unternehmen.",
-  "en-US": "Amazon, Alexa, and all related marks are trademarks of Amazon.com, Inc. or its affiliates.",
-};
 const priceRe = /[€$£]|\b\d+[.,]\d{2}\b|\bEUR\b|\bUSD\b/;
 const all = files.map(([f]) => f).concat(locales.flatMap((l) => ["yearly", "lifetime"].map((p) => `iap/${l}/${p}.txt`)));
 for (const f of all) {
@@ -55,29 +50,17 @@ for (const f of all) {
   if (priceRe.test(t)) errors.push(`${f}: looks like a price`);
   if (/\bsie\b.*\balexa|\balexa\b.*\bsie\b/i.test(t)) errors.push(`${f}: Alexa as "sie"`);
   if (/hey,? alexa/i.test(t)) errors.push(`${f}: "Hey Alexa" (Legal N-366: utterances start with "Alexa,")`);
-  if (/\bAlexa\b/.test(t) && !/Snacklist-Skill für Alexa|Snacklist skill for Alexa/.test(t)) errors.push(`${f}: Alexa without "Snacklist-Skill für Alexa" / "Snacklist skill for Alexa" (N-366)`);
-  if (/Amazon Alexa/.test(t)) errors.push(`${f}: "Amazon Alexa" (N-366 names it "Snacklist-Skill für Alexa")`);
   const hp2 = t.match(HP2);
   if (hp2) errors.push(`${f}: "${hp2[0]}" names a feature that is off at launch (HP2: prices, totals, trip mode, History)`);
 }
-// N-366 (Apple 2.3.7): no "Alexa" in the name, subtitle, short description or keywords, in any form; and in the
-// long descriptions the skill does things, never "Alexa does".
-for (const l of locales) for (const f of [`${l}/name.txt`, `${l}/subtitle.txt`, `${l}/keywords.txt`, `android/${l}/title.txt`, `android/${l}/short_description.txt`]) {
-  if (/alexa/i.test(read(f))) errors.push(`${f}: names Alexa (N-366: only the long descriptions may)`);
-}
+// Brands (Siri, Alexa, Claude, ChatGPT): which surfaces, which wording, the trademark notice and BRAND_LIVE.md are
+// Legal's rule BN-1, checked by scripts/store-brands.ts. Here only: the skill does things, never "Alexa does" (N-366).
 // German puts the verb first after a fronted word: „Dann trägt Alexa es ein.“
 const ALEXA_DOES_DE = /\b(?!mit\b|nicht\b)[a-zäöüß]+t Alexa\b/;
 const ALEXA_DOES = /\bAlexa (?:sagt|antwortet|sucht|versteht|fragt|liest|schickt|setzt|fügt|says|answers|asks|reads|searches|understands|puts|sends|adds)\b/;
 for (const l of locales) for (const f of [`${l}/description.txt`, `android/${l}/full_description.txt`]) {
   const m = read(f).match(ALEXA_DOES) ?? read(f).match(ALEXA_DOES_DE);
   if (m) errors.push(`${f}: "${m[0]}" (N-366: say what the Snacklist skill for Alexa does)`);
-}
-// N-366: a description naming Alexa ends with the trademark notice; the App Store's names Siri first, Play's only Amazon.
-for (const l of locales) for (const [f, store] of [[`${l}/description.txt`, "appstore"], [`android/${l}/full_description.txt`, "play"]]) {
-  const t = read(f);
-  if (!/\bAlexa\b/.test(t)) continue;
-  const end = (store === "appstore" ? `${SIRI_TM[l]} ` : "") + AMAZON_TM[l];
-  if (!t.endsWith(end)) errors.push(`${f}: does not end with the trademark notice "${end}"`);
 }
 // Premium may list AI assistants and the API only while the integration lock is released (releases/flags.json,
 // hold integration-lock); until then no listing names them under Premium, though the server lock is on (Legal N-354). docs/store/LISTING.md has both blocks.
