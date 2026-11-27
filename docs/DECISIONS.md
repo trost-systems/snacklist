@@ -18850,3 +18850,11 @@ CP4, ML1, Addendum 2 (26 Nov 2026); details in `docs/done/470-english-catalog.md
    field (y 544 to 749) and from the PR's only in the card (y 146 to 379). The x3.1 and German
    goldens came out byte-identical. `dictionary.en.tsv` is byte-identical to the reviewed head
    3d090848b.
+## Job 480, review 1: the gate reads production's lifecycle state
+
+1. **Gate on `tracks/production/releases`, not the edit's track or the store page.** Review 1 found that the gate assumed Play reports a held release as `completed` in the edit's track, which nobody had observed. Play's releases endpoint gives the lifecycle state itself: the store watch has read `APPROVED_NOT_PUBLISHED` for 1541 since 25 Nov 2026. The held path needs that state. The after-publish path needs `PUBLISHED`. The public store page left the upload gate, along with its US-runner problem, and stays only in `check`.
+2. **This puts the managed-publishing safety into code.** A release is only `APPROVED_NOT_PUBLISHED` while managed publishing holds it. So the held path no longer rests on Ops checking the switch by hand, which also covers review 1's first nice-to-have.
+3. **Preflight with no edit.** `mode=preflight` reads only the releases endpoint. That answers review 1's K1 question: preflight opens no listing edit at all. Lead runs it by 30 Nov (NEEDS_LEAD). Job 480 ran it once after merging.
+4. **The gate reads production before any edit opens**, so a refused upload opens nothing.
+5. **`held_release_from` is a workflow input**, defaulting to K1's launch-day start, instead of a library constant.
+6. **A test reads the workflow's input-to-env mapping.** A change to play-listing.yml now turns on the `fastlane` CI job (`scripts/ci-changes.sh`, with its test).

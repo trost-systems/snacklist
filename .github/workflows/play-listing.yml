@@ -1,6 +1,7 @@
 # Uploads the staged Play listing text (app/fastlane/metadata/android/*: title, short and full
 # description per locale; no bundle, track, image or screenshot) with the held production release
-# (from launch day, under managed publishing) or right after it is published, and reads it back. Lanes `android listing` and `android listing_check`
+# (from launch day, under managed publishing) or right after it is published, and reads it back.
+# preflight reads production's releases without opening an edit. Lanes `android listing` and `android listing_check`
 # (app/fastlane/Fastfile), docs/RELEASE.md section "Store listing upload".
 name: Play listing
 
@@ -8,18 +9,22 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: validate (any day, nothing changes on Play), upload (only after the production release is published), check (read back Play and the store pages)
+        description: validate (any day, nothing changes on Play), upload (with or after the production release), check (read back Play and the store pages), preflight (production's release states; no edit)
         type: choice
-        options: [validate, upload, check]
+        options: [validate, upload, check, preflight]
         default: validate
       published_version_code:
-        description: versionCode of the production release (upload refuses unless production carries it as completed)
+        description: versionCode of the production release (an upload needs it PUBLISHED, or held by managed publishing with with_held_release)
         type: string
         default: ""
       with_held_release:
-        description: upload joins the release still held by managed publishing (from 1 Dec 2026 00:00 Berlin; check in Play Console that managed publishing is on first)
+        description: upload joins the release still held by managed publishing (APPROVED_NOT_PUBLISHED), from held_release_from on
         type: boolean
         default: false
+      held_release_from:
+        description: when the held-release path opens (ISO 8601; Peter K1, launch day)
+        type: string
+        default: "2026-12-01T00:00:00+01:00"
 
 concurrency:
   group: play-listing
@@ -57,7 +62,8 @@ jobs:
           service_account: play-release@family-groceries-ci.iam.gserviceaccount.com
       - run: bundle exec fastlane android "$LANE"
         env:
-          LANE: ${{ inputs.mode == 'check' && 'listing_check' || 'listing' }}
+          LANE: ${{ inputs.mode == 'check' && 'listing_check' || inputs.mode == 'preflight' && 'listing_preflight' || 'listing' }}
           RELEASE_UPLOAD: ${{ inputs.mode == 'upload' }}
           PLAY_PUBLISHED_VERSION_CODE: ${{ inputs.published_version_code }}
           PLAY_LISTING_WITH_HELD_RELEASE: ${{ inputs.with_held_release }}
+          PLAY_LISTING_HELD_FROM: ${{ inputs.held_release_from }}

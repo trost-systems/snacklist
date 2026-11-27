@@ -117,10 +117,19 @@ testers ([What to Test](#what-to-test)).
 - [ ] Peter's go for the public release (see [Public releases](#public-releases)).
 - [ ] App Privacy (Apple) and Data safety (Play) cover every data type the build sends; Snacklist Ops confirms.
 
+### Before launch day: Play listing preflight
+
+- [ ] **By 30 November 2026, Lead:** `gh workflow run play-listing.yml -f mode=preflight -f published_version_code=1541`. It opens no edit and changes nothing. It must log `Production releases: APPROVED_NOT_PUBLISHED 1541` and pass ([Store listing upload](#store-listing-upload)). If it fails, the launch-day upload would fail too: fix that first.
+
+### Launch day, before the Play publish (Ops)
+
+- [ ] Preflight once more (as above). It must still show `APPROVED_NOT_PUBLISHED 1541`.
+- [ ] **Required: Play listing upload with read-back** (Peter K1, Legal LK1). From 1 December 2026 00:00 Berlin, before 1541 is published: `gh workflow run play-listing.yml -f mode=upload -f published_version_code=1541 -f with_held_release=true`. The run must end with "Play's listing equals the repo text". It fails on any field whose sha256 differs.
+- [ ] At the planned publish: if Google has approved the listing change, publish 1541 and the listing together in the Publishing overview. If it has not, publish 1541 alone as planned (MP1), and publish the listing change once Google approves it. If the held-release upload did not happen, run it after the publish without `with_held_release`.
+
 ### After both stores have the build live
 
-- [ ] **Required: Play listing upload with read-back** (Peter K1, Legal LK1; [Store listing upload](#store-listing-upload)). On launch day, never before. Default order: before the production release is published, with managed publishing on, `gh workflow run play-listing.yml -f mode=upload -f published_version_code=<versionCode> -f with_held_release=true` (1 December 2026: `1541`). Without `with_held_release`, it runs right after the publish instead. The run must end with "Play's listing equals the repo text"; it fails on any field whose sha256 differs.
-- [ ] Publish the listing change in Play Console's Publishing overview once Google approves it: together with the release in the default order, or as a second publish. Then `gh workflow run play-listing.yml -f mode=check` passes: Play's de-DE and en-US listing and the public store pages equal the repo files by sha256, and the de-DE page no longer has „Kostenlos, ohne Werbung, für den ganzen Haushalt.“
+- [ ] `gh workflow run play-listing.yml -f mode=check` passes once the listing change is published: Play's de-DE and en-US listing and the public store pages equal the repo files by sha256, and the de-DE page no longer has „Kostenlos, ohne Werbung, für den ganzen Haushalt.“ If only the store page part fails on the US runner, use the manual check in [Store listing upload](#store-listing-upload).
 - [ ] Only after that check passes: the sale opens ([`PAYWALL_RELEASE.md`](PAYWALL_RELEASE.md) 5.4, `premium_offer`). Until the staged listing is live, nobody outside the internal testers may be able to buy Premium (Legal LK1).
 - [ ] Public release record workflow ran (see above).
 - [ ] Flag rollouts that wait for a live store build (list below): open each, refresh its dates, get Legal's hash GO, merge.
@@ -381,10 +390,11 @@ workflow (`.github/workflows/play-listing.yml`, lanes `android listing` and
 `android listing_check`):
 
 ```bash
-gh workflow run play-listing.yml                                   # validate only, any day
+gh workflow run play-listing.yml -f mode=preflight -f published_version_code=1541  # production's state, no edit, any day
+gh workflow run play-listing.yml                                                   # validate only
 gh workflow run play-listing.yml -f mode=upload -f published_version_code=1541 -f with_held_release=true   # 1 Dec, before the publish
 gh workflow run play-listing.yml -f mode=upload -f published_version_code=1541                            # or: after the publish
-gh workflow run play-listing.yml -f mode=check                     # read-back, any time
+gh workflow run play-listing.yml -f mode=check                                     # read-back, any time
 ```
 
 It goes out with the production release, never on its own before it (Peter
@@ -392,12 +402,11 @@ K1, 26 Nov 2026). Production build 1541 is approved and held by managed
 publishing until 1 December. Only Play Console's Publishing overview publishes
 it; the API cannot. So the listing gets its own edit, in one of two orders:
 
-1. **With the held release (default on 1 December).** From 1 December 2026
-   00:00 Europe/Berlin, with `with_held_release=true`. Check first that the
-   Publishing overview says managed publishing is on: the lane cannot see that
-   switch, and with it off Play would publish approved changes, the held
-   release among them, without that click. Google reviews the listing change. Once it is approved, one click in
-   the Publishing overview publishes 1541 and the listing together.
+1. **With the held release (default on 1 December).** From
+   `held_release_from` (default 1 December 2026 00:00 Europe/Berlin), with
+   `with_held_release=true`. Google reviews the listing change. Once it is
+   approved, one click in the Publishing overview publishes 1541 and the
+   listing together.
 2. **After the publish.** Without `with_held_release`, once 1541 is published.
    The listing then goes live a Google review and a second publish later.
 
@@ -407,23 +416,30 @@ planned (MP1); the listing follows, and the sale moves to when `check` passes.
 That is the risk to the sale time T ([`PAYWALL_RELEASE.md`](PAYWALL_RELEASE.md)
 5.3a, [`NEEDS_PETER.md`](NEEDS_PETER.md) "Job 480").
 
-An upload refuses, before it changes anything, unless the edit's production
-track has a `completed` release carrying `published_version_code` (Play
-reports the held release as `completed` too), and:
+The gate reads production's releases from Play's releases endpoint
+(`tracks/production/releases`) before it opens any edit. That endpoint gives
+each release's lifecycle state: `APPROVED_NOT_PUBLISHED` while managed
+publishing holds it, `PUBLISHED` once it is out. An upload refuses, and opens
+no edit, unless the release carrying `published_version_code` is:
 
-- with the held release: it is 1 December 2026 or later in Berlin;
-- after the publish: Play's public store page for `com.snacklist.app` answers
-  200. It answers 404 until the app is published (checked 26 Nov 2026). The run
-  logs the answer. The probe runs on a US GitHub runner. If the page still
-  answers something else there after the publish (the app is not offered in
-  the US), the with-held-release path, which needs no page, works as well.
+- with the held release: `APPROVED_NOT_PUBLISHED`, and it is
+  `held_release_from` or later. A held release only exists while managed
+  publishing is on, so this state also shows the switch is on.
+- after the publish: `PUBLISHED`.
+
+The public store page plays no part in an upload. The store watch has read
+`APPROVED_NOT_PUBLISHED` for 1541 from the same endpoint since 25 Nov 2026.
 
 What a run does:
 
+- **preflight**: no edit. Logs production's releases and, for each upload
+  path, whether an upload would commit now or what stops it. Fails unless the
+  named build is held or published.
 - **validate** (default): one edit sets every staged locale's title, short and
   full description, validates the edit and deletes it. Nothing changes on Play.
   It logs each locale's full description sha256 and whether an upload would
-  refuse now.
+  refuse now. Before launch day, use preflight instead: it needs no edit at all
+  (Peter K1).
 - **upload** (`RELEASE_UPLOAD=true`): the same edit, committed, then a second
   edit reads every field back and the run fails unless each equals the repo
   file. The video link stays as it is. No bundle, track, release notes, image
@@ -439,6 +455,13 @@ What a run does:
   Werbung, für den ganzen Haushalt.“ (Legal LK1). If the API read-back matches
   and the page differs only in whitespace, Play renders the text differently
   from how the API stores it; Lead decides, with Legal, whether that closes LK1.
+  The page is fetched from a US GitHub runner. If Play answers it differently
+  there (the app is not offered in the US), check by hand from Germany:
+  `curl -s 'https://play.google.com/store/apps/details?id=com.snacklist.app&hl=de&gl=DE'`,
+  read the description with `PlayListing.public_description` (in `app/`:
+  `ruby -r ./fastlane/play_listing -e 'print PlayListing.public_description(File.read(ARGV[0]))' page.html | sha256sum`),
+  and compare it with the repo hash below. Lead records the result in the
+  release notes of the day; it then stands in for the page part of `check`.
 
 The hash is Legal's: sha256 of the file's text without its trailing newline,
 `head -c -1 app/fastlane/metadata/android/de-DE/full_description.txt | sha256sum`
@@ -473,8 +496,9 @@ Run lanes from `app/` with `bundle exec fastlane <platform> <lane>`.
 | `android build` | `flutter build appbundle`, signed with `android/key.properties`. |
 | `android play_access` | Gets a Google token for the service account (fails if that does not work), then tries to open a Play edit; writes `ok` or Play's refusal to `PLAY_ACCESS_FILE`. |
 | `android internal` | Uploads the AAB to the `internal` track with `PLAY_RELEASE_STATUS`, or validates it only (`RELEASE_UPLOAD` not `true`). Uploads no listing, changelog or images. The listing goes up with `android listing`. |
-| `android listing` | Sets the staged Play listing text (title, short and full description of each locale) in one edit; with `RELEASE_UPLOAD=true` commits it only when production carries `PLAY_PUBLISHED_VERSION_CODE` and either the store page is live or, with `PLAY_LISTING_WITH_HELD_RELEASE=true`, it is 1 Dec 2026 or later, then reads it back and fails on any difference; otherwise validates and deletes the edit. [Store listing upload](#store-listing-upload). |
+| `android listing` | Sets the staged Play listing text (title, short and full description of each locale) in one edit; with `RELEASE_UPLOAD=true` commits it only when production's release `PLAY_PUBLISHED_VERSION_CODE` is `PUBLISHED`, or, with `PLAY_LISTING_WITH_HELD_RELEASE=true`, `APPROVED_NOT_PUBLISHED` and it is `PLAY_LISTING_HELD_FROM` or later, then reads it back and fails on any difference; otherwise validates and deletes the edit. [Store listing upload](#store-listing-upload). |
 | `android listing_check` | Read only: Play's listing and the public store pages must equal the repo text. |
+| `android listing_preflight` | No edit: production's releases and which listing upload path would commit now; fails unless `PLAY_PUBLISHED_VERSION_CODE` is held or published. |
 | `android promote_draft` | Sets `VERSION_CODE` (already in Play's bundle library) as the draft release of `PROMOTE_TRACK` (`alpha` only), keeping the track's other releases; commits with `PROMOTE_COMMIT=true`, else validates only. [Promote a build to closed testing](#promote-a-build-to-closed-testing). |
 
 The lint gate runs `scripts/release/test.sh` and shellchecks

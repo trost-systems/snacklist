@@ -26,6 +26,8 @@
 #                                              release, or only validate it
 #   bundle exec fastlane android listing_check compare Play's listing and store
 #                                              page with the repo text
+#   bundle exec fastlane android listing_preflight production's releases and
+#                                              which listing upload would pass
 
 opt_out_usage
 
@@ -491,20 +493,48 @@ platform :android do
     UI.user_error!("#{track_name} has no draft with versionCode #{version_code}") unless drafts.any? { |r| carries?(r, version_code) }
   end
 
+  # Production's releases with their lifecycle state, read without opening an edit.
+  def production_releases
+    require "supply"
+    Supply.config = FastlaneCore::Configuration.create(Supply::Options.available_options,
+                                                       { json_key: play_json_key, package_name: APP_ID })
+    PlayListing.production_releases(Supply::Client.make_from_config(params: Supply.config).client, APP_ID)
+  end
+
+  # PLAY_LISTING_HELD_FROM (ISO 8601): when the held-release path opens. The Play listing workflow
+  # passes Peter K1's launch-day start unless the dispatch names another.
+  def listing_held_from
+    raw = ENV.fetch("PLAY_LISTING_HELD_FROM", "")
+    raw.empty? ? nil : Time.iso8601(raw)
+  end
+
   # The staged listing text (title, short and full description of every locale under
   # metadata/android) in one edit, nothing else: no bundle, track, changelog, image or screenshot.
-  # RELEASE_UPLOAD=true commits only once the production release is published, or from launch day
-  # on to join the held release with PLAY_LISTING_WITH_HELD_RELEASE=true (PlayListing.blockers;
-  # Peter K1, Legal LK1), then reads every field back and fails on any difference. Otherwise it
-  # validates and deletes the edit, at any time. docs/RELEASE.md "Store listing upload".
+  # RELEASE_UPLOAD=true commits only when production's release PLAY_PUBLISHED_VERSION_CODE is
+  # PUBLISHED, or, with PLAY_LISTING_WITH_HELD_RELEASE=true, still held by managed publishing and
+  # it is PLAY_LISTING_HELD_FROM or later (PlayListing.blockers; Peter K1, Legal LK1); then it
+  # reads every field back and fails on any difference. Otherwise it validates and deletes the
+  # edit. docs/RELEASE.md "Store listing upload".
   desc "Upload the staged Play listing text with or after the production release (RELEASE_UPLOAD=true) or validate it"
   lane :listing do
     texts = PlayListing.load(PLAY_METADATA)
     PlayListing.run(texts: texts, upload: upload?, version_code: ENV.fetch("PLAY_PUBLISHED_VERSION_CODE", ""),
+                    production_releases: production_releases, new_client: -> { play_client },
                     with_held_release: ENV.fetch("PLAY_LISTING_WITH_HELD_RELEASE", "false") == "true",
-                    new_client: -> { play_client }, store_page: PlayListing.fetch_store_page(APP_ID),
-                    log: ->(line) { UI.message(line) })
+                    held_from: listing_held_from, log: ->(line) { UI.message(line) })
     UI.success(upload? ? "Play's listing equals the repo text in #{texts.keys.join(', ')}" : "Validated only")
+  rescue PlayListing::Refused => e
+    UI.user_error!(e.message)
+  end
+
+  # Read only and without an edit: production's releases, and whether each upload path would
+  # commit for PLAY_PUBLISHED_VERSION_CODE now. Fails unless the build is held or published.
+  desc "Show production's releases and which listing upload path would pass, without opening an edit"
+  lane :listing_preflight do
+    PlayListing.preflight(production_releases: production_releases,
+                          version_code: ENV.fetch("PLAY_PUBLISHED_VERSION_CODE", ""), held_from: listing_held_from,
+                          now: Time.now, log: ->(line) { UI.message(line) })
+    UI.success("An upload path can use production #{ENV.fetch('PLAY_PUBLISHED_VERSION_CODE', '')}")
   rescue PlayListing::Refused => e
     UI.user_error!(e.message)
   end
