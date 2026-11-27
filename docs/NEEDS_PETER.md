@@ -2101,10 +2101,10 @@ still be running at the planned publish (~09:00) and at the sale time T.
 Default (applied unless you say otherwise): Ops runs this order on 1 December
 ([RELEASE.md](RELEASE.md), "Store listing upload"):
 
-1. As early as possible from 00:00 Berlin, check in Play Console's Publishing overview that managed
-   publishing is on. Then run `gh workflow run play-listing.yml -f mode=upload -f published_version_code=1541 -f with_held_release=true`
-   from `main`. It must end with "Play's listing equals the repo text". The listing waits with
-   1541 under managed publishing.
+1. As early as possible from 00:00 Berlin, run `gh workflow run play-listing.yml -f mode=upload -f published_version_code=1541 -f with_held_release=true`
+   from `main`. It commits only while Play reports 1541 as approved and held, and it must end
+   with "Play's listing equals the repo text". The listing then waits with 1541 under managed
+   publishing. (Lead runs the edit-free `mode=preflight` by 30 November; see NEEDS_LEAD "Job 480".)
 2. At the planned publish: if Google has approved the listing, one click publishes 1541 and the
    listing together. If not, publish 1541 alone as planned (MP1), and publish the listing change
    once Google approves it.

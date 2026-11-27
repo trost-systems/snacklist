@@ -13,7 +13,7 @@
 #             app's Swift and Kotlin and the plugin registrant from pubspec, and android runs
 #             the Kotlin's JVM unit tests; the Dart in app/lib
 #             is compiled by the flutter, web-prod and e2e gates already.
-#   fastlane  only when app/fastlane/, app/Gemfile* or its gate changes
+#   fastlane  only when app/fastlane/, app/Gemfile*, its gate or play-listing.yml changes
 #   emails    only when the mails' sources or outputs change: emails/, supabase/templates/,
 #             supabase/config.toml, the design tokens, the mail assets in site/public/email/
 #             or its gate
@@ -81,6 +81,6 @@ if [[ -n $code ]]; then
   grep -qE "$app_reads" <<<"$code" && app=true
 fi
 grep -qE '^app/(ios|android)/|^app/pubspec\.(yaml|lock)$|^scripts/gates/(android|ios|ios-storekit)\.sh$|^scripts/ios/build-for-testing\.sh$|^scripts/(siri-vocabulary|app-shortcuts-bundle)\.py$' <<<"$files" && native=true
-grep -qE '^app/(fastlane/|Gemfile)|^scripts/gates/fastlane\.sh$' <<<"$files" && fastlane=true
+grep -qE '^app/(fastlane/|Gemfile)|^scripts/gates/fastlane\.sh$|^\.github/workflows/play-listing\.yml$' <<<"$files" && fastlane=true
 grep -qE '^(emails/|supabase/templates/|supabase/config\.toml$|design/tokens/|site/public/email/|scripts/gates/emails\.sh$)' <<<"$files" && emails=true
 printf 'heavy=%s\nstack=%s\napp=%s\nnative=%s\nfastlane=%s\nemails=%s\n' "$heavy" "$stack" "$app" "$native" "$fastlane" "$emails"

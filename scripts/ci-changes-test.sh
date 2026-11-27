@@ -89,6 +89,7 @@ expect "heavy stack app native" scripts/siri-vocabulary.py
 expect "heavy stack app native" scripts/app-shortcuts-bundle.py
 expect "heavy stack app fastlane" app/fastlane/Fastfile
 expect "heavy stack app fastlane" app/Gemfile.lock
+expect "heavy stack app fastlane" .github/workflows/play-listing.yml
 expect "heavy stack app emails" emails/src/welcome.tsx
 expect "heavy stack emails" supabase/templates/invite.html
 expect "heavy stack emails" supabase/config.toml

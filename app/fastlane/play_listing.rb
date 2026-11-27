@@ -76,41 +76,76 @@ module PlayListing
     [nil, e.message]
   end
 
-  # Peter K1 / MP1: no listing edit before launch day. The held-release path opens at its start.
-  HELD_RELEASE_FROM = Time.new(2026, 12, 1, 0, 0, 0, "+01:00")
+  # A production release as Play's releases endpoint reports it, without opening an edit: its
+  # lifecycle state without the RELEASE_LIFECYCLE_STATE_ prefix (APPROVED_NOT_PUBLISHED while
+  # managed publishing holds it, PUBLISHED once out) and its versionCodes.
+  Release = Struct.new(:state, :version_codes)
+  HELD = "APPROVED_NOT_PUBLISHED"
+  PUBLISHED = "PUBLISHED"
 
-  # Why an upload must not commit now, or []. The production track must carry the build the
-  # operator names, as `completed` (Play reports a release held by managed publishing as
-  # completed too). Then one of two orders (docs/RELEASE.md "Store listing upload"):
-  # - after the publish: Play's public store page answers 200 (404 until the app is published);
-  # - with the held release (with_held_release): from launch day on, while the release still
-  #   waits under managed publishing, so the listing and the release go out in one publish.
-  def blockers(store_page_status:, production_releases:, version_code:, with_held_release: false, now: Time.now)
-    found = []
-    if version_code.to_s !~ /\A\d+\z/
-      found << "PLAY_PUBLISHED_VERSION_CODE is not set to the production build"
-    elsif production_releases.none? { |r| r.status == "completed" && (r.version_codes || []).map(&:to_s).include?(version_code.to_s) }
-      found << "production has no completed release with versionCode #{version_code}"
+  # service is supply's AndroidPublisherService (Supply::Client#client).
+  def production_releases(service, package_name)
+    summaries = service.list_application_track_releases("applications/#{package_name}/tracks/production").releases || []
+    summaries.map do |r|
+      Release.new(r.release_lifecycle_state.to_s.delete_prefix("RELEASE_LIFECYCLE_STATE_"),
+                  (r.active_artifacts || []).map { |a| a.version_code.to_s })
     end
+  end
+
+  def describe(releases)
+    releases.empty? ? "no releases" : releases.map { |r| "#{r.state} #{r.version_codes.join(',')}" }.join("; ")
+  end
+
+  # Why an upload must not commit now, or []. Two orders (docs/RELEASE.md "Store listing upload"):
+  # - with the held release (with_held_release): the named build waits under managed publishing
+  #   (APPROVED_NOT_PUBLISHED), and it is held_from or later (Peter K1: nothing before launch day),
+  #   so one publish puts the release and the listing out together;
+  # - after the publish: the named build is PUBLISHED.
+  def blockers(production_releases:, version_code:, with_held_release:, held_from:, now: Time.now)
+    return ["PLAY_PUBLISHED_VERSION_CODE is not set to the production build"] if version_code.to_s !~ /\A\d+\z/
+
+    release = production_releases.find { |r| r.version_codes.include?(version_code.to_s) }
+    return ["production has no release with versionCode #{version_code}"] if release.nil?
+
+    found = []
     if with_held_release
-      found << "the listing may join the held release only from #{HELD_RELEASE_FROM.iso8601} (Peter K1)" if now < HELD_RELEASE_FROM
-    elsif store_page_status != 200
-      found << "the Play store page answers #{store_page_status || 'nothing'}, so the production release is not published yet"
+      unless release.state == HELD
+        found << "production #{version_code} is #{release.state}, not held by managed publishing (#{HELD}); " \
+                 "the held-release path needs it held, the after-publish path needs it #{PUBLISHED}"
+      end
+      if held_from.nil?
+        found << "PLAY_LISTING_HELD_FROM is not set"
+      elsif now < held_from
+        found << "the listing may join the held release only from #{held_from.iso8601} (Peter K1)"
+      end
+    elsif release.state != PUBLISHED
+      found << "production #{version_code} is #{release.state}, not #{PUBLISHED} yet"
     end
     found
+  end
+
+  # Read only, no edit: which upload path would pass for version_code, and when. Raises Refused
+  # unless the build is held or published, the two states an upload path can use.
+  def preflight(production_releases:, version_code:, held_from:, now:, log:)
+    log.call("Production releases: #{describe(production_releases)}")
+    held = blockers(production_releases: production_releases, version_code: version_code, with_held_release: true,
+                    held_from: held_from, now: now)
+    after = blockers(production_releases: production_releases, version_code: version_code, with_held_release: false,
+                     held_from: held_from, now: now)
+    log.call("Held-release path: #{held.empty? ? 'an upload would commit now' : held.join('; ')}")
+    log.call("After-publish path: #{after.empty? ? 'an upload would commit now' : after.join('; ')}")
+    usable = blockers(production_releases: production_releases, version_code: version_code, with_held_release: true,
+                      held_from: held_from, now: [now, held_from].compact.max).empty? || after.empty?
+    raise Refused, "Neither upload path can use production #{version_code}: #{(held + after).uniq.join('; ')}" unless usable
   end
 
   # In the client's open edit: refuse before anything changes if upload is asked and a blocker
   # stands; set each staged locale's title and descriptions (its video stays); commit on upload,
   # else validate and delete the edit. Any failure deletes the edit, so nothing lands half.
-  def publish(client:, texts:, upload:, store_page_status:, version_code:, log:, with_held_release: false, now: Time.now)
-    production = client.tracks("production").first&.releases || []
-    log.call("Production: #{production.map { |r| "#{r.status} #{(r.version_codes || []).join(',')}" }.join('; ')}")
-    found = blockers(store_page_status: store_page_status, production_releases: production, version_code: version_code,
-                     with_held_release: with_held_release, now: now)
-    raise Refused, "Not uploading the listing: #{found.join('; ')}" if upload && found.any?
+  def publish(client:, texts:, upload:, blockers:, log:)
+    raise Refused, "Not uploading the listing: #{blockers.join('; ')}" if upload && blockers.any?
 
-    found.each { |b| log.call("An upload now would refuse: #{b}") }
+    blockers.each { |b| log.call("An upload now would refuse: #{b}") }
     texts.each do |locale, fields|
       current = client.listing_for_language(locale)
       client.update_listing_for_language(language: locale, title: fields["title"],
@@ -136,13 +171,17 @@ module PlayListing
     raise
   end
 
-  # The `android listing` lane: publish in one edit, then on upload read every field back in a
-  # second edit. new_client opens an edit per call; store_page is [status, body] for de-DE.
-  def run(texts:, upload:, version_code:, new_client:, store_page:, log:, with_held_release: false, now: Time.now)
-    status, = store_page
-    log.call("Play store page (de-DE): HTTP #{status || 'no answer'}")
-    publish(client: new_client.call, texts: texts, upload: upload, store_page_status: status, version_code: version_code,
-            log: log, with_held_release: with_held_release, now: now)
+  # The `android listing` lane. The gate reads production before any edit opens, so a refused
+  # upload opens none. Then publish in one edit and, on upload, read every field back in a
+  # second. new_client opens an edit per call.
+  def run(texts:, upload:, version_code:, production_releases:, new_client:, log:, with_held_release:, held_from:,
+          now: Time.now)
+    log.call("Production releases: #{describe(production_releases)}")
+    found = blockers(production_releases: production_releases, version_code: version_code,
+                     with_held_release: with_held_release, held_from: held_from, now: now)
+    raise Refused, "Not uploading the listing: #{found.join('; ')}" if upload && found.any?
+
+    publish(client: new_client.call, texts: texts, upload: upload, blockers: found, log: log)
     return unless upload
 
     mismatches = read_back(client: new_client.call, texts: texts, log: log)
