@@ -2169,3 +2169,27 @@ If "Add to Snacklist" and "What's on my Snacklist?" work but a brand-new name in
 Snacklist" still fails, record it as the item-suggestion limit, not as this bug again, and say
 whether SiriKit then adds it. Per phrase, note the build number and what Siri wrote (a screenshot of
 the transcript).
+## Job 474: check the VoiceOver / TalkBack pass on your phone
+
+Widget tests cover every item; what they cannot show is VoiceOver's own timing. On the next
+TestFlight build (and Play internal for TalkBack), with VoiceOver on:
+
+1. Tick an item: you hear „<Name> abgehakt“ and the focus lands on the next row, not the household
+   chip. Tick a linked store's last item: „Lidl ist erledigt. Lidl Plus öffnen.“, focus on the card.
+2. Put an item back from „Zuletzt verwendet“: „<Name> wieder auf der Liste“, focus on the section's
+   top row.
+3. Add, then edit an item (name, Menge, Laden): „… hinzugefügt“, then „Name auf …, Menge auf … und
+   Laden auf … geändert“.
+4. Edit an item and swipe to „Menge“: you hear „Menge, 1“ (swipe up or down steps it), then the text
+   field „Menge“ for typing „500 g“. If two stops are one too many, say so: the field could read
+   „Menge eingeben“ instead, or the stepper could take the typing (DECISIONS, Job 474).
+5. Tick an item and wait: you hear „<Name> abgehakt“ once, not also „Abgehakt: <Name>“. Swipe to
+   „Rückgängig“ and double-tap: „<Name> wieder auf der Liste“, focus on the item.
+6. Open Mehr: VoiceOver reads „Mehr, Überschrift“ first. Its focus ring sits on a thin strip at the
+   top (the heading has no visible title); say if that looks odd.
+7. Edit wording beyond your copy: emptied fields („Menge entfernt“ / "Removed quantity"), brand,
+   details, category („Marke auf … geändert“), a new place („Neben Milch gesetzt“, „Nach vorne
+   gesetzt“) and list („Auf die Liste Party verschoben“). Change any you would word differently.
+
+If an announcement is cut off or missing, the one knob is `announceSettle` (300 ms) in
+`app/lib/core/screen_reader.dart`: tell the lead which step and whether it was cut or never heard.

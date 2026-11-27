@@ -1,0 +1,15 @@
+# An announcement sent at once is read over by VoiceOver when the change it tells of moves the
+# focus (a ticked row leaves, a sheet closes): Peter's VoiceOver walk heard no "abgehakt" though the
+# tick sent one (job 474). ScreenReader.of(context).announce sends it after the frame that shows
+# the change, joined with the others of that moment (app/lib/core/screen_reader.dart).
+id: announce-through-screen-reader
+language: dart
+severity: error
+files:
+  - app/lib/**
+ignores:
+  - app/lib/core/screen_reader.dart
+rule:
+  kind: member_expression
+  regex: '^SemanticsService\s*\.\s*(announce|sendAnnouncement)$'
+message: 'SemanticsService announcements are read over when the focus moves: use ScreenReader.of(context).announce(...) (app/lib/core/screen_reader.dart)'

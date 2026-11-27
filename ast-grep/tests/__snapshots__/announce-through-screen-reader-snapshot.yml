@@ -1,0 +1,14 @@
+id: announce-through-screen-reader
+snapshots:
+  "void f() => SemanticsService.announce('x', TextDirection.ltr);\n":
+    labels:
+    - source: SemanticsService.announce
+      style: primary
+      start: 12
+      end: 37
+  "void f(BuildContext context) => unawaited(\n  SemanticsService.sendAnnouncement(View.of(context), 'x', TextDirection.ltr),\n);\n":
+    labels:
+    - source: SemanticsService.sendAnnouncement
+      style: primary
+      start: 45
+      end: 78

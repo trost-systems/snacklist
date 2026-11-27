@@ -40,9 +40,6 @@ class const Household({
   final bool isDefault = false,
   final int memberCount = 1,
 
-  /// Items not ticked yet.
-  final int openCount = 0,
-
   /// Who it shops with (job 168b); null when never answered. Invites say
   /// it in their text.
   final HouseholdKind? kind,
@@ -68,10 +65,6 @@ class const Household({
         final int n => n,
         _ => 1,
       },
-      openCount: switch (json['open_count']) {
-        final int n => n,
-        _ => 0,
-      },
       kind: HouseholdKind.parse(json['kind']),
       role: HouseholdRole.parse(json['role']),
       premium: json['premium'] == true,
@@ -85,7 +78,6 @@ class const Household({
     'name': name,
     'is_default': isDefault,
     'member_count': memberCount,
-    'open_count': openCount,
     'kind': kind?.name,
     'role': role.name,
     'premium': premium,
@@ -97,7 +89,6 @@ class const Household({
     name: name ?? this.name,
     isDefault: isDefault ?? this.isDefault,
     memberCount: memberCount,
-    openCount: openCount,
     kind: kind,
     role: role,
     premium: premium,

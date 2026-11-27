@@ -6,6 +6,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../core/screen_reader_harness.dart';
+
 void main() {
   const catalog = Catalog(
     categories: [
@@ -43,6 +45,7 @@ void main() {
     Size size = const Size(400, 900),
     Future<Store?> Function(String name)? onCreateStore,
     bool hexQuantity = false,
+    Locale locale = const Locale('de'),
   }) async {
     ItemChanges? result;
     var closed = false;
@@ -54,7 +57,7 @@ void main() {
       MaterialApp(
         localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        locale: const Locale('de'),
+        locale: locale,
         home: Builder(
           builder: (context) => Scaffold(
             body: Center(
@@ -371,20 +374,66 @@ void main() {
     );
   });
 
-  testWidgets('the steppers are buttons named for what they do', (
-    tester,
-  ) async {
-    final handle = tester.ensureSemantics();
-    await open(tester, milk);
-    for (final name in ['Eins mehr', 'Eins weniger']) {
+  for (final hex in [false, true]) {
+    testWidgets('Menge is one adjustable node, read before its field, that '
+        'steps without stepper stops (hexQuantity: $hex)', (tester) async {
+      final handle = tester.ensureSemantics();
+      await run(tester, null, hexQuantity: hex);
+      final stepper = bySemanticsId('edit-quantity-stepper');
+      expect(
+        stepper,
+        isSemantics(
+          label: 'Menge',
+          value: '2',
+          increasedValue: '3',
+          decreasedValue: '1',
+          hasIncreaseAction: true,
+          hasDecreaseAction: true,
+        ),
+      );
       expect(
         find.semantics.byPredicate(
-          (node) => node.label == name && node.flagsCollection.isButton,
+          (node) => node.label.contains('Eins') || node.label.contains('mehr'),
         ),
-        findsOne,
-        reason: name,
+        findsNothing,
+        reason: 'no stops for − and +',
       );
-    }
+      final order = tester.semantics
+          .simulatedAccessibilityTraversal()
+          .where((n) => n.label == 'Menge')
+          .toList();
+      expect(order.first.identifier, 'edit-quantity-stepper');
+      expect(order.last.flagsCollection.isTextField, isTrue);
+
+      tester.semantics.increase(stepper);
+      await tester.pump();
+      expect(text(tester, 'edit-quantity'), '3');
+      tester.semantics.decrease(stepper);
+      tester.semantics.decrease(stepper);
+      await tester.pump();
+      expect(text(tester, 'edit-quantity'), '1');
+      expect(
+        stepper,
+        isSemantics(value: '1', hasDecreaseAction: false),
+        reason: 'below 1',
+      );
+      handle.dispose();
+    });
+  }
+
+  testWidgets('English reads Quantity, never Qty', (tester) async {
+    final handle = tester.ensureSemantics();
+    await run(tester, null, locale: const Locale('en'));
+    expect(
+      bySemanticsId('edit-quantity-stepper'),
+      isSemantics(label: 'Quantity', value: '2'),
+    );
+    expect(find.text('Quantity'), findsOne);
+    expect(find.textContaining('Qty'), findsNothing);
+    expect(
+      find.semantics.byPredicate((node) => node.label.contains('Qty')),
+      findsNothing,
+    );
     handle.dispose();
   });
 

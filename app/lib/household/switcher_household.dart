@@ -195,9 +195,6 @@ class const _ListsView({
         .values
         .where((i) => i.status == ItemStatus.active)
         .length;
-    final openAll = state.loaded
-        ? items.values.where((i) => i.status == ItemStatus.active).length
-        : household.openCount;
     final showing = shown ? state.shownList?.id : null;
 
     void pick(HouseholdList list) {
@@ -223,26 +220,17 @@ class const _ListsView({
                 spacing: HlSpace.s3,
                 children: [
                   Expanded(
-                    child: Column(
+                    // No count of open items for the household: it read
+                    // like pending invites (job 474); each list has its own.
+                    child: Semantics(
                       key: const ValueKey('switcher-household-name'),
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Semantics(
-                          header: true,
-                          child: Text(
-                            household.name,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.titleLarge,
-                          ),
-                        ),
-                        Text(
-                          l10n.householdOpenItems(openAll),
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: t.textMuted,
-                          ),
-                        ),
-                      ],
+                      header: true,
+                      child: Text(
+                        household.name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleLarge,
+                      ),
                     ),
                   ),
                   IconButton(

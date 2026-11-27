@@ -182,7 +182,7 @@ for (const spec of config.clients) {
 const byLabel = (/** @type {string} */ l) => clients.find((c) => c.label === l);
 const addField = (/** @type {any} */ page) => page.getByRole('textbox', { name: 'Was brauchst du?' });
 /** The add sheet (design H): it opens on typing and covers the list until it is closed. */
-const addSheet = (/** @type {any} */ page) => page.getByRole('group', { name: 'Hinzufügen', exact: true });
+const addSheet = (/** @type {any} */ page) => page.locator('[flt-semantics-identifier="add-sheet"]');
 /**
  * Design H has no store views: shopping at a store folds every other store section and unfolds
  * that one and "Ohne Laden", whose items can be bought anywhere, as the old store view showed them

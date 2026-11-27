@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:ui' show SemanticsAction;
 
+import 'package:family_groceries/core/screen_reader.dart';
 import 'package:family_groceries/list/list_view/item_row.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/shell/router.dart';
@@ -7,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
+import '../core/screen_reader_harness.dart';
 import '../more/more_harness.dart';
 
 /// A tick shows `Abgehakt: <name>` with Rückgängig, which puts back only
@@ -122,5 +125,70 @@ void main() {
     expect(row('Bohnen'), findsNothing);
     expect(status(more, 'Bohnen'), ItemStatus.bought);
     expect(find.text('Änderung abgelehnt: Bohnen'), findsOneWidget);
+  });
+
+  testWidgets('with VoiceOver a tick is said once: the snackbar stays '
+      'silent but reachable; Rückgängig says the item is back and puts the '
+      'focus on its row (job 474)', (tester) async {
+    final semantics = tester.ensureSemantics();
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(accessibleNavigation: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    await pumpList(tester);
+    final log = screenReaderLog(tester);
+    await tick(tester, 'Bohnen');
+    await tester.pump(announceSettle);
+    expect(log, ['focus: Linsen', 'say: Bohnen abgehakt']);
+    expect(
+      find.semantics.byPredicate(
+        (n) => n.flagsCollection.isLiveRegion && n.label.contains('Bohnen'),
+      ),
+      findsNothing,
+      reason: 'the live region would say it again',
+    );
+    expect(
+      find.semantics.byPredicate((n) => n.label == 'Abgehakt: Bohnen'),
+      findsOne,
+      reason: 'read when the user goes to the snackbar',
+    );
+    expect(
+      find.semantics.byPredicate(
+        (n) =>
+            n.label == 'Rückgängig' &&
+            n.getSemanticsData().hasAction(SemanticsAction.tap),
+      ),
+      findsOne,
+    );
+
+    log.clear();
+    await tester.tap(undo());
+    await tester.pumpAndSettle();
+    await tester.pump(announceSettle);
+    expect(log, ['focus: Bohnen', 'say: Bohnen wieder auf der Liste']);
+    semantics.dispose();
+  });
+
+  testWidgets('English: "Bohnen ticked off", then "Bohnen back on the list"', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    await pumpMore(
+      tester,
+      location: listPath,
+      routes: listTabRoutes(),
+      device: const [Locale('en', 'US')],
+      seed: (repo) => repo..remoteAdd('Bohnen', categoryId: 'produce'),
+    );
+    tester.takeAnnouncements();
+    await tick(tester, 'Bohnen');
+    expect(tester.takeAnnouncements(), [
+      isAccessibilityAnnouncement('Bohnen ticked off'),
+    ]);
+    await tester.tap(find.widgetWithText(SnackBarAction, 'Undo'));
+    await tester.pumpAndSettle();
+    expect(tester.takeAnnouncements(), [
+      isAccessibilityAnnouncement('Bohnen back on the list'),
+    ]);
+    semantics.dispose();
   });
 }

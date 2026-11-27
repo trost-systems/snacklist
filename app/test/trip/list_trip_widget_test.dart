@@ -462,6 +462,7 @@ void main() {
   ) async {
     final shop = await pumpList(tester);
     await tick(tester, 'Milch');
+    tester.takeAnnouncements();
     await answer(tester, 'trip-ask-take-back');
     await tester.pumpAndSettle();
     expect(
@@ -469,6 +470,9 @@ void main() {
       findsNothing,
       reason: 'no undo left for an item that is back',
     );
+    expect(tester.takeAnnouncements(), [
+      isAccessibilityAnnouncement('Milch wieder auf der Liste'),
+    ], reason: 'job 474: the reverse of the tick is said');
     expect(strip, findsNothing);
     expect(shop.trips.state, isA<NoTrip>());
     expect(

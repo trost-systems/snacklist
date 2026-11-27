@@ -46,6 +46,83 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String itemAdded(String name) {
+    return '$name hinzugefügt';
+  }
+
+  @override
+  String itemReadded(String name) {
+    return '$name wieder auf der Liste';
+  }
+
+  @override
+  String editSaidChanged(String changes) {
+    return '$changes geändert';
+  }
+
+  @override
+  String editSaidRemoved(String fields) {
+    return '$fields entfernt';
+  }
+
+  @override
+  String editSaidAnd(String first, String last) {
+    return '$first und $last';
+  }
+
+  @override
+  String editSaidSet(String field, String value) {
+    String _temp0 = intl.Intl.selectLogic(field, {
+      'name': 'Name',
+      'brand': 'Marke',
+      'quantity': 'Menge',
+      'details': 'Eigenschaften',
+      'store': 'Laden',
+      'category': 'Kategorie',
+      'other': '$field',
+    });
+    return '$_temp0 auf $value';
+  }
+
+  @override
+  String editSaidField(String field) {
+    String _temp0 = intl.Intl.selectLogic(field, {
+      'brand': 'Marke',
+      'quantity': 'Menge',
+      'details': 'Eigenschaften',
+      'store': 'Laden',
+      'category': 'Kategorie',
+      'other': '$field',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get editSaidPlaceFirst => 'Nach vorne gesetzt';
+
+  @override
+  String editSaidPlaceNextTo(String name) {
+    return 'Neben $name gesetzt';
+  }
+
+  @override
+  String editSaidList(String list) {
+    return 'Auf die Liste $list verschoben';
+  }
+
+  @override
+  String listTabArrived(int count, String list, String household) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Auf Liste $list im Haushalt $household, $count offen',
+      one: 'Auf Liste $list im Haushalt $household, 1 offen',
+      zero: 'Auf Liste $list im Haushalt $household, nichts offen',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String alreadyOnList(String name) {
     return '$name steht schon auf der Liste';
   }
@@ -128,16 +205,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get itemQuantity => 'Menge';
 
   @override
-  String get fieldProperties => 'Eigenschaften';
-
-  @override
-  String get propertiesExample => 'z. B. Bio, 1 l';
-
-  @override
   String get quantityMinus => 'Eins weniger';
 
   @override
   String get quantityPlus => 'Eins mehr';
+
+  @override
+  String get fieldProperties => 'Eigenschaften';
+
+  @override
+  String get propertiesExample => 'z. B. Bio, 1 l';
 
   @override
   String get noStore => 'Ohne Laden';
@@ -2966,11 +3043,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get priceCountMore => 'Eins mehr';
-
-  @override
-  String priceCount(int count) {
-    return 'Menge $count';
-  }
 
   @override
   String priceTogether(String amount) {

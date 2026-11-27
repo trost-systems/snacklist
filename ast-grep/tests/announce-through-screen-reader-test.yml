@@ -1,0 +1,15 @@
+id: announce-through-screen-reader
+valid:
+  - |
+    void f(BuildContext context) =>
+        ScreenReader.of(context).announce('Milch abgehakt');
+  - |
+    /// SemanticsService.sendAnnouncement would be read over.
+    void f() {}
+invalid:
+  - |
+    void f(BuildContext context) => unawaited(
+      SemanticsService.sendAnnouncement(View.of(context), 'x', TextDirection.ltr),
+    );
+  - |
+    void f() => SemanticsService.announce('x', TextDirection.ltr);

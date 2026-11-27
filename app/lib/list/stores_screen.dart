@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/flags.dart';
+import 'package:family_groceries/core/screen_reader.dart';
 import 'package:family_groceries/design/hex_pill.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
@@ -12,7 +13,6 @@ import 'package:family_groceries/list/name_dialog.dart';
 import 'package:family_groceries/list/retailer.dart';
 import 'package:family_groceries/shell/router.dart';
 import 'package:family_groceries/shell/shell.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
@@ -80,8 +80,7 @@ class const StoresScreen({super.key}) extends StatelessWidget {
   Future<void> _add(BuildContext context, {required bool chains}) async {
     final l10n = AppLocalizations.of(context);
     final cubit = context.read<ListCubit>();
-    final view = View.of(context);
-    final direction = Directionality.of(context);
+    final reader = ScreenReader.of(context);
     final storeChains = StoreChains.of(cubit);
     // The plain name saved and its exact chains, looked up as it saves.
     (Store, Future<List<RetailerMatch>>)? asked;
@@ -89,13 +88,7 @@ class const StoresScreen({super.key}) extends StatelessWidget {
       if (store == null) {
         return false;
       }
-      unawaited(
-        SemanticsService.sendAnnouncement(
-          view,
-          l10n.storeAdded(store.name),
-          direction,
-        ),
-      );
+      reader.announce(l10n.storeAdded(store.name));
       return true;
     }
 

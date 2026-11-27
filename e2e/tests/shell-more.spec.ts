@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { expect, type Locator, test, type Page } from './fixtures';
 import { openStores, storeRow } from './catalog';
 import {
-  addField, addItem, boxOf, itemRow, newEmail, password, screenshot, signUpWithHousehold, typeInto, inviteCodeLabel, wheelTo,
+  addField, addItem, addSheet, boxOf, itemRow, newEmail, password, screenshot, signUpWithHousehold, typeInto, inviteCodeLabel, wheelTo,
   openEmailSignIn,
   onboardingChip,
   openHouseholds,
@@ -297,7 +297,7 @@ test.describe('with an English browser', () => {
     const field = page.getByRole('textbox', { name: 'What do you need?' });
     await expect(field).toBeFocused();
     await typeInto(field, 'Milch');
-    await expect(page.getByRole('group', { name: 'Add', exact: true })).toBeVisible();
+    await expect(addSheet(page)).toBeVisible();
     await expect(page.getByRole('button', { name: /^Milch, As typed/ })).toBeVisible();
     await expectNoGerman(page, 'add sheet', german);
     await screenshot(page, 'en-01-add-sheet');
@@ -355,7 +355,7 @@ test('wide screens: a rail, a sheet as wide as the list column, More in two pane
   expect(rail.x, 'the rail is on the left').toBeLessThan(120);
 
   await typeInto(addField(page), 'Butter');
-  const sheet = page.getByRole('group', { name: 'Hinzufügen', exact: true });
+  const sheet = addSheet(page);
   await expect(sheet).toBeVisible();
   const box = await boxOf(sheet);
   expect(box.width, 'the sheet keeps to the list column').toBeLessThanOrEqual(641);

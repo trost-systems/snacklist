@@ -16,6 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../core/screen_reader_harness.dart';
 import '../design/fonts.dart';
 import 'fake_repository.dart';
 import 'memory_cache.dart';
@@ -700,6 +701,59 @@ void main() {
       await tester.testTextInput.receiveAction(TextInputAction.send);
       await tester.pumpAndSettle();
       expect(sheetCubit(tester).state.open, isTrue, reason: 'Enter keeps it');
+    });
+  });
+
+  group('screen readers (job 474)', () {
+    for (final (locale, said) in [
+      (const Locale('de'), 'Milch hinzugefügt'),
+      (const Locale('en'), 'Milch added'),
+    ]) {
+      testWidgets('an add is said: "$said"', (tester) async {
+        final handle = tester.ensureSemantics();
+        await pumpList(tester, locale: locale);
+        await open(tester);
+        tester.takeAnnouncements();
+        await add(tester, 'Milch');
+        expect(tester.takeAnnouncements(), [isAccessibilityAnnouncement(said)]);
+        handle.dispose();
+      });
+    }
+
+    testWidgets('after an add no group "Hinzufügen" stands before the chips: '
+        'the add field, then Menge and the chips are the stops', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await pumpList(tester);
+      await open(tester);
+      await add(tester, 'Milch');
+      expect(key('added-details-${item(tester, 'Milch').id}'), findsOne);
+      expect(find.bySemanticsLabel('Hinzufügen'), findsNothing);
+      final sheetNode = tester.getSemantics(sheet());
+      expect(sheetNode.label, isEmpty, reason: 'the sheet is no stop');
+      final stops = tester.semantics
+          .simulatedAccessibilityTraversal()
+          .map((n) => n.identifier.isNotEmpty ? n.identifier : n.label)
+          .where((l) => l.isNotEmpty)
+          .toList();
+      final stepper = stops.indexOf('added-quantity-stepper');
+      expect(stepper, isNot(-1), reason: 'Menge is a stop: $stops');
+      expect(
+        stops.sublist(stepper).any((l) => l.startsWith('Laden: ')),
+        isTrue,
+        reason: 'the store chip follows Menge: $stops',
+      );
+      expect(
+        bySemanticsId('added-quantity-stepper'),
+        isSemantics(
+          label: 'Menge',
+          value: '1',
+          hasIncreaseAction: true,
+          hasDecreaseAction: false,
+        ),
+      );
+      handle.dispose();
     });
   });
 }

@@ -756,14 +756,13 @@ void main() {
     });
   });
 
-  testWidgets('the sheet has no title, only its name for screen readers', (
-    tester,
-  ) async {
+  testWidgets('the sheet has no title and is no stop of its own: no '
+      'group "Hinzufügen" before its controls (job 474)', (tester) async {
     final semantics = tester.ensureSemantics();
     await pumpList(tester);
     await open(tester);
     expect(find.text('Hinzufügen'), findsNothing);
-    expect(find.bySemanticsLabel('Hinzufügen'), findsOne);
+    expect(find.bySemanticsLabel('Hinzufügen'), findsNothing);
     expect(find.bySemanticsLabel('Schließen'), findsOne);
     semantics.dispose();
   });

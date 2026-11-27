@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/flags.dart';
+import 'package:family_groceries/core/screen_reader.dart';
 import 'package:family_groceries/design/sticker.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
@@ -11,7 +12,6 @@ import 'package:family_groceries/list/list_repository.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/retailer.dart';
 import 'package:flutter/foundation.dart' show listEquals;
-import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -70,13 +70,8 @@ class _ChainCardState() extends State<ChainCard> {
       return;
     }
     if (saved && chain != null) {
-      unawaited(
-        SemanticsService.sendAnnouncement(
-          View.of(context),
-          AppLocalizations.of(context).migrateDone,
-          Directionality.of(context),
-        ),
-      );
+      ScreenReader.of(context)
+          .announce(AppLocalizations.of(context).migrateDone);
     }
     setState(() {
       if (saved) {

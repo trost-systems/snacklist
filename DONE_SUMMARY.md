@@ -3400,3 +3400,4 @@ Review 1 fixes: Addendum 3 applied. Peter's approval (t1388u) is recorded as the
 German draft lost its 199 English rows (its German terms stay; five English words are noted to point
 at them once it ships), and `accept_drafts_test.ts` checks that it fits the English words. The add
 sheet falls back to the last language read (English before any read) instead of German.
+- Job 474, VoiceOver / TalkBack pass (announcements, focus, adjustable Menge, no household count, More without title): [docs/done/474.md](docs/done/474.md)

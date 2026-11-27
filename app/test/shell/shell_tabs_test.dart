@@ -358,6 +358,64 @@ void main() {
     semantics.dispose();
   });
 
+  for (final (locale, rows, said) in [
+    (
+      const Locale('de'),
+      3,
+      'Auf Liste Einkaufsliste im Haushalt Zuhause, 3 offen',
+    ),
+    (
+      const Locale('de'),
+      0,
+      'Auf Liste Einkaufsliste im Haushalt Zuhause, nichts offen',
+    ),
+    (
+      const Locale('en'),
+      1,
+      'On list Shopping list in household Zuhause, 1 open item',
+    ),
+    (
+      const Locale('en'),
+      2,
+      'On list Shopping list in household Zuhause, 2 open items',
+    ),
+  ]) {
+    testWidgets(
+      'back on the List tab a screen reader hears "$said" (job 474)',
+      (tester) async {
+        final semantics = tester.ensureSemantics();
+        await pumpShell(tester, locale: locale, rows: rows);
+        await tester.tap(more);
+        await tester.pumpAndSettle();
+        tester.takeAnnouncements();
+        await tester.tap(tabs);
+        await tester.pumpAndSettle();
+        expect(tester.takeAnnouncements(), [isAccessibilityAnnouncement(said)]);
+        expect(
+          tester
+              .getSemantics(tabs)
+              .getSemanticsData()
+              .flagsCollection
+              .isSelected,
+          Tristate.isTrue,
+        );
+        semantics.dispose();
+      },
+    );
+  }
+
+  testWidgets('a tap on the List tab while it is shown says nothing', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    await pumpShell(tester, rows: 1);
+    tester.takeAnnouncements();
+    await tester.tap(tabs);
+    await tester.pumpAndSettle();
+    expect(tester.takeAnnouncements(), isEmpty);
+    semantics.dispose();
+  });
+
   testWidgets('a tab takes the keyboard: focus ring, Enter and Space', (
     tester,
   ) async {

@@ -22,9 +22,8 @@ import 'package:material_ui/material_ui.dart';
 /// requests waiting; then "Neuer Haushalt", "Mit Code
 /// beitreten", and the default for Siri, Alexa & KI, which opens
 /// [showDefaultPicker], with the list they add to there
-/// ([DefaultListPicker]). [openNow] counts the shown list's open items better
-/// than the server's last answer.
-Future<void> showHouseholdSheet(BuildContext context, {int? openNow}) {
+/// ([DefaultListPicker]).
+Future<void> showHouseholdSheet(BuildContext context) {
   // Fresh counts while the sheet opens; offline it shows the last ones.
   unawaited(context.read<SessionCubit>().refresh().catchError((Object _) {}));
   return showModalBottomSheet<void>(
@@ -33,12 +32,11 @@ Future<void> showHouseholdSheet(BuildContext context, {int? openNow}) {
     useSafeArea: true,
     useRootNavigator: true,
     showDragHandle: true,
-    builder: (_) => HouseholdSheet(openNow: openNow),
+    builder: (_) => const HouseholdSheet(),
   );
 }
 
-class const HouseholdSheet({final int? openNow, super.key})
-    extends StatelessWidget {
+class const HouseholdSheet({super.key}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -61,9 +59,6 @@ class const HouseholdSheet({final int? openNow, super.key})
               context,
               household: household,
               shown: household.id == shown.id,
-              open: household.id == shown.id
-                  ? openNow ?? household.openCount
-                  : household.openCount,
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -124,13 +119,13 @@ Widget sheetHex(BuildContext context, IconData icon, Color face) => PointyHex(
   ),
 );
 
-/// [household]'s row in the household sheets: its name, members and [open]
-/// items, honey and selected when it is the [shown] one.
+/// [household]'s row in the household sheets: its name and members, honey
+/// and selected when it is the [shown] one. No count of open items (job
+/// 474): it read like pending invites.
 Widget householdTile(
   BuildContext context, {
   required Household household,
   required bool shown,
-  required int open,
   required Widget trailing,
   required VoidCallback onTap,
 }) {
@@ -145,12 +140,7 @@ Widget householdTile(
       shown ? t.honeySoft : t.surfaceSunken,
     ),
     title: Text(household.name, maxLines: 1, overflow: TextOverflow.ellipsis),
-    subtitle: Text(
-      [
-        l10n.householdMembers(household.memberCount),
-        l10n.householdOpenItems(open),
-      ].join(' · '),
-    ),
+    subtitle: Text(l10n.householdMembers(household.memberCount)),
     trailing: trailing,
     selected: shown,
     onTap: onTap,

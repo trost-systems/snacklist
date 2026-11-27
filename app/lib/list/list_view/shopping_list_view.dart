@@ -6,6 +6,7 @@ import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/core/open_app.dart';
+import 'package:family_groceries/core/screen_reader.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/section_label.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -444,11 +445,20 @@ class _ShoppingListViewState()
   ScaffoldFeatureController<SnackBar, SnackBarClosedReason> _snack(
     String text, {
     VoidCallback? undo,
+
+    /// The screen reader already heard it (the tick, job 474): the text is
+    /// a node of its own, so the snackbar's live region has no label to say
+    /// again on iOS and Android, which announce a live region's label. Still
+    /// read when the user goes to it, before Rückgängig. The web's live
+    /// region reads its whole content anyway, so there it stays as it was.
+    bool said = false,
   }) {
     final l10n = AppLocalizations.of(context);
     return (Notices.of(context)..hideCurrentSnackBar()).showSnackBar(
       SnackBar(
-        content: Text(text),
+        content: said && !kIsWeb
+            ? Semantics(container: true, child: Text(text))
+            : Text(text),
         persist: false,
         action: undo == null
             ? null
@@ -508,11 +518,21 @@ class _ShoppingListViewState()
     }
     cubit.tick(item.id);
     if (mounted) {
+      final l10n = AppLocalizations.of(context);
+      final reader = ScreenReader.of(context);
+      late final StreamSubscription<ListState> open;
       final snack = _snack(
-        AppLocalizations.of(context).itemTickedUndo(item.name),
-        undo: () => cubit.untick(item.id),
+        l10n.itemTickedUndo(item.name),
+        said: true,
+        undo: () {
+          // Its own snackbar is going already; with VoiceOver or TalkBack it
+          // is gone at once, and a second close would find none.
+          unawaited(open.cancel());
+          cubit.untick(item.id);
+          sayBackOnList(reader, l10n, item);
+        },
       );
-      final open = cubit.stream
+      open = cubit.stream
           .where((s) => s.allItems[item.id]?.status == ItemStatus.active)
           .listen((_) => snack.close());
       unawaited(snack.closed.whenComplete(open.cancel));
@@ -554,9 +574,23 @@ class _ShoppingListViewState()
     );
   }
 
+  /// Puts [item] back on the list. A screen reader's focus, on its row in
+  /// „Zuletzt verwendet“, stays in that section on its top row instead of
+  /// going back to the top of the screen; with the section gone, on the
+  /// item's row on the list, else the list's last row (job 474).
   void _readd(Item item) {
     widget.onInteract?.call();
+    final reader = ScreenReader.of(context);
+    final rows = reader.identifiers(itemSemanticsId(''));
     _cubit.readd(item.id);
+    final used = recentlyUsed(_cubit.state.items.values);
+    reader
+      ..moveFocus([
+        if (used.firstOrNull case final top?) usedSemanticsId(top.id),
+        itemSemanticsId(item.id),
+        ?rows.lastOrNull,
+      ])
+      ..announce(AppLocalizations.of(context).itemReadded(item.name));
   }
 
   Future<void> _edit(Item item) async {
@@ -566,6 +600,15 @@ class _ShoppingListViewState()
     final claims = state.claims[item.id] ?? const <Claim>[];
     final flags = context.read<Flags?>();
     final learned = _learned(state);
+    final l10n = AppLocalizations.of(context);
+    final reader = ScreenReader.of(context);
+    final placeRun = learned && item.status == ItemStatus.active
+        ? [
+            for (final section in _sectionsOf(state))
+              for (final block in section.blocks)
+                if (block.items.any((i) => i.id == item.id)) ...block.items,
+          ]
+        : null;
     final edit = await showEditItemSheet(
       context,
       item: item,
@@ -574,13 +617,7 @@ class _ShoppingListViewState()
           (flags?.isOn(addFeedbackListFlag) ?? false) &&
           (flags?.isOn(addSheetCompactFlag) ?? false),
       categories: !learned && !(flags?.isOn(hideCategoriesFlag) ?? false),
-      placeRun: learned && item.status == ItemStatus.active
-          ? [
-              for (final section in _sectionsOf(state))
-                for (final block in section.blocks)
-                  if (block.items.any((i) => i.id == item.id)) ...block.items,
-            ]
-          : null,
+      placeRun: placeRun,
       catalog: state.catalog,
       onCreateStore: cubit.addStore,
       chains: flags?.isOn(openStoreAppFlag) ?? false
@@ -589,7 +626,7 @@ class _ShoppingListViewState()
       listId: item.listOn(state.catalog.lists.firstOrNull?.id),
       myClaim: claims.where((c) => c.userId == cubit.userId).firstOrNull,
       othersBring: claimLine(
-        AppLocalizations.of(context),
+        l10n,
         [...claims.where((c) => c.userId != cubit.userId)],
         state.catalog,
         cubit.userId,
@@ -598,7 +635,9 @@ class _ShoppingListViewState()
     if (edit == null) {
       return;
     }
-    cubit.edit(item.id, edit.changes);
+    // A rename onto an open item merges it there, or is refused; the
+    // snackbar says which, and no field was set as the sheet showed.
+    final edited = cubit.edit(item.id, edit.changes);
     switch (edit.claim) {
       case Claimed(:final quantity):
         cubit.claim(item.id, quantity: quantity);
@@ -612,6 +651,15 @@ class _ShoppingListViewState()
     if (edit.listId case final listId?) {
       cubit.moveToList(item.id, listId);
     }
+    if (!edited) {
+      return;
+    }
+    editSaid(
+      l10n,
+      edit,
+      catalog: cubit.state.catalog,
+      placeRun: placeRun,
+    ).forEach(reader.announce);
   }
 
   @override
@@ -952,6 +1000,7 @@ class _ShoppingListViewState()
     final details = [?item.brand, ?item.properties].join(' · ');
     return Semantics(
       key: ValueKey('used-${item.id}'),
+      identifier: usedSemanticsId(item.id),
       container: true,
       button: true,
       // The name leads, as on the list's rows; the action is part of the
@@ -1381,3 +1430,14 @@ class _PinnedHeader(
       oldDelegate.shown != shown ||
       oldDelegate.away != away;
 }
+
+/// A „Zuletzt verwendet“ row's `Semantics.identifier`.
+String usedSemanticsId(String id) => 'used-$id';
+
+/// After [item] went back on the list by an undo (the tick snackbar's
+/// Rückgängig, the trip question's Zurücknehmen): „Milch wieder auf der
+/// Liste“, and the focus on its row, which is back in its place (job 474).
+void sayBackOnList(ScreenReader reader, AppLocalizations l10n, Item item) =>
+    reader
+      ..moveFocus([itemSemanticsId(item.id)])
+      ..announce(l10n.itemReadded(item.name));

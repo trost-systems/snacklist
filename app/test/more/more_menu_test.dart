@@ -127,7 +127,7 @@ void main() {
 
   testWidgets('German labels in menu order', (tester) async {
     await pumpMore(tester, size: tall);
-    expect(find.text('Mehr'), findsOneWidget);
+    expect(find.text('Mehr'), findsNothing, reason: 'no title (job 474)');
     const labels = [
       'Konto',
       'Snacklist Premium',
@@ -164,7 +164,7 @@ void main() {
 
   testWidgets('English labels in menu order', (tester) async {
     await pumpMore(tester, size: tall, device: const [Locale('en', 'US')]);
-    expect(find.text('More'), findsOneWidget);
+    expect(find.text('More'), findsNothing, reason: 'no title (job 474)');
     const labels = [
       'Account',
       'Snacklist Premium',

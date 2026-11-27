@@ -158,6 +158,72 @@ abstract class AppLocalizations {
   /// **'Abgehakt: {name}'**
   String itemTickedUndo(String name);
 
+  /// Job 474: screen reader announcement after an add
+  ///
+  /// In de, this message translates to:
+  /// **'{name} hinzugefügt'**
+  String itemAdded(String name);
+
+  /// Job 474: screen reader announcement after an item was put back from recently used
+  ///
+  /// In de, this message translates to:
+  /// **'{name} wieder auf der Liste'**
+  String itemReadded(String name);
+
+  /// Job 474: screen reader after an edit; changes are editSaidSet parts joined
+  ///
+  /// In de, this message translates to:
+  /// **'{changes} geändert'**
+  String editSaidChanged(String changes);
+
+  /// Job 474: screen reader after an edit emptied fields
+  ///
+  /// In de, this message translates to:
+  /// **'{fields} entfernt'**
+  String editSaidRemoved(String fields);
+
+  /// Job 474: joins the last of several changes
+  ///
+  /// In de, this message translates to:
+  /// **'{first} und {last}'**
+  String editSaidAnd(String first, String last);
+
+  /// Job 474: one change after an edit, e.g. Menge auf 2
+  ///
+  /// In de, this message translates to:
+  /// **'{field, select, name{Name} brand{Marke} quantity{Menge} details{Eigenschaften} store{Laden} category{Kategorie} other{{field}}} auf {value}'**
+  String editSaidSet(String field, String value);
+
+  /// Job 474: a field an edit emptied
+  ///
+  /// In de, this message translates to:
+  /// **'{field, select, brand{Marke} quantity{Menge} details{Eigenschaften} store{Laden} category{Kategorie} other{{field}}}'**
+  String editSaidField(String field);
+
+  /// Job 474: screen reader after an edit moved the item to the top of its section
+  ///
+  /// In de, this message translates to:
+  /// **'Nach vorne gesetzt'**
+  String get editSaidPlaceFirst;
+
+  /// Job 474: screen reader after an edit placed the item next to another
+  ///
+  /// In de, this message translates to:
+  /// **'Neben {name} gesetzt'**
+  String editSaidPlaceNextTo(String name);
+
+  /// Job 474: screen reader after an edit moved the item to another list
+  ///
+  /// In de, this message translates to:
+  /// **'Auf die Liste {list} verschoben'**
+  String editSaidList(String list);
+
+  /// Job 474: screen reader when the List tab becomes the shown tab
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =0{Auf Liste {list} im Haushalt {household}, nichts offen} =1{Auf Liste {list} im Haushalt {household}, 1 offen} other{Auf Liste {list} im Haushalt {household}, {count} offen}}'**
+  String listTabArrived(int count, String list, String household);
+
   /// No description provided for @alreadyOnList.
   ///
   /// In de, this message translates to:
@@ -290,18 +356,6 @@ abstract class AppLocalizations {
   /// **'Menge'**
   String get itemQuantity;
 
-  /// No description provided for @fieldProperties.
-  ///
-  /// In de, this message translates to:
-  /// **'Eigenschaften'**
-  String get fieldProperties;
-
-  /// No description provided for @propertiesExample.
-  ///
-  /// In de, this message translates to:
-  /// **'z. B. Bio, 1 l'**
-  String get propertiesExample;
-
   /// No description provided for @quantityMinus.
   ///
   /// In de, this message translates to:
@@ -313,6 +367,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Eins mehr'**
   String get quantityPlus;
+
+  /// No description provided for @fieldProperties.
+  ///
+  /// In de, this message translates to:
+  /// **'Eigenschaften'**
+  String get fieldProperties;
+
+  /// No description provided for @propertiesExample.
+  ///
+  /// In de, this message translates to:
+  /// **'z. B. Bio, 1 l'**
+  String get propertiesExample;
 
   /// No description provided for @noStore.
   ///
@@ -4801,12 +4867,6 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Eins mehr'**
   String get priceCountMore;
-
-  /// Job 190: quantity stepper value for screen readers
-  ///
-  /// In de, this message translates to:
-  /// **'Menge {count}'**
-  String priceCount(int count);
 
   /// Job 190: hint under the price field when a unit price is typed
   ///

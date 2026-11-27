@@ -128,13 +128,11 @@ void main() {
       name: 'Sommerfest',
       isDefault: true,
       memberCount: 12,
-      openCount: 4,
     );
     await cache.remember('peter', households: [home, club], shown: 'home');
     final back = (await cache.householdsOf('peter'))!.households.last;
     expect(back.isDefault, isTrue);
     expect(back.memberCount, 12);
-    expect(back.openCount, 4);
   });
 
   test("a cache from before job 169b is the user's one household", () async {

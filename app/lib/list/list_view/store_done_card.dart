@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/flags.dart';
+import 'package:family_groceries/core/screen_reader.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/sticker.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -27,6 +28,35 @@ class const StoreDoneCard({super.key}) extends StatefulWidget {
 class _StoreDoneCardState() extends State<StoreDoneCard> {
   Timer? _expiry;
   StoreDone? _timed;
+
+  /// The store whose card shows, so a screen reader hears of one once as it
+  /// comes: not on a rebuild, nor when the server's answer to the tick moves
+  /// the card's time (job 474, review 1). Null before the first build, which
+  /// shows a card from before (a restart) without a word.
+  String? _shown;
+  var _built = false;
+
+  /// Says a card that just came, „Lidl ist erledigt. Lidl Plus öffnen“, and
+  /// sends the focus to it: after the tick it would otherwise go back to
+  /// the top of the screen (job 474). Behind the add sheet it is said once it
+  /// shows.
+  void _tell(StoreDone? done, {required bool hidden}) {
+    final app = done?.store.app;
+    if (done == null || app == null) {
+      _shown = null;
+    } else if (!hidden) {
+      if (_built && done.store.id != _shown) {
+        final l10n = AppLocalizations.of(context);
+        ScreenReader.of(context)
+          ..announce(l10n.storeDoneTitle(done.store.name))
+          ..announce(l10n.storeAppOpen(app.name))
+          ..moveFocus(const [storeDoneSemanticsId]);
+      }
+      _shown = done.store.id;
+    }
+    _built = true;
+  }
+
   late final AppLifecycleListener _lifecycle;
 
   @override
@@ -81,6 +111,7 @@ class _StoreDoneCardState() extends State<StoreDoneCard> {
     final done = on ? cubit.storeDone() : null;
     _expireAt(done, cubit.now);
     final shown = behindSheet ? null : done;
+    _tell(done, hidden: behindSheet);
     final switcher = AnimatedSwitcher(
       duration: hlMotion(context, HlDuration.short),
       switchInCurve: HlEasing.standard,
@@ -127,6 +158,9 @@ class _StoreDoneCardState() extends State<StoreDoneCard> {
   }
 }
 
+/// The card's `Semantics.identifier`, where the focus goes as it comes.
+const storeDoneSemanticsId = 'store-done';
+
 /// The card itself: „Lidl ist erledigt“, „App öffnen“ below it, an X.
 /// Flat like a tip card: only the button and the X are tappable.
 class const StoreDoneView({
@@ -142,6 +176,7 @@ class const StoreDoneView({
     final t = SnacklistColors.of(Theme.of(context).brightness);
     return Semantics(
       container: true,
+      identifier: storeDoneSemanticsId,
       child: HlSticker(
         depth: StickerDepth.flat,
         child: Padding(

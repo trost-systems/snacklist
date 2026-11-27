@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/environment.dart';
+import 'package:family_groceries/core/screen_reader.dart';
 import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/design/look.dart';
 import 'package:family_groceries/design/motion.dart';
@@ -225,6 +226,18 @@ class _AddSheetState() extends State<AddSheet> {
         BlocListener<AddSheetCubit, AddSheetState>(
           listenWhen: (a, b) => a.open != b.open,
           listener: (_, s) => _openChanged(s.open, still),
+        ),
+        // Every add, compact or not: the compact sheet shows none of its
+        // own, and the list behind it is out of the screen reader's reach.
+        BlocListener<AddSheetCubit, AddSheetState>(
+          listenWhen: (a, b) =>
+              b.added is Added && !identical(a.added, b.added),
+          listener: (context, s) {
+            if (s.added case Added(:final item)) {
+              ScreenReader.of(context)
+                  .announce(AppLocalizations.of(context).itemAdded(item.name));
+            }
+          },
         ),
         if (Environment.addSheetTiming)
           BlocListener<AddSheetCubit, AddSheetState>(
@@ -766,11 +779,13 @@ class _ContentState() extends State<_Content> {
       curve: sheet.open ? HlEasing.standard : HlEasing.exit,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxHeight: maxHeight),
+        // No name of its own: a named group was a stop "Hinzufügen" in
+        // front of the buttons after an add (job 474).
         child: Semantics(
           key: const ValueKey('add-sheet'),
+          identifier: 'add-sheet',
           container: true,
           explicitChildNodes: true,
-          label: l10n.addButton,
           child: body,
         ),
       ),
@@ -1296,9 +1311,10 @@ class const _AddedNote(
       key: const ValueKey('added-note'),
       padding: const EdgeInsets.fromLTRB(24, 6, 12, 6),
       child: _TextAndAction(
+        // An add is announced as it happens (AddSheet), not read twice.
         text: Semantics(
           container: true,
-          liveRegion: true,
+          liveRegion: !added,
           child: Text(
             added ? '✓ $text' : text,
             style: TextStyle(fontSize: 16, color: scheme.onSurface),

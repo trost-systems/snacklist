@@ -42,14 +42,8 @@ const _home = Household(
   name: 'Zuhause',
   isDefault: true,
   memberCount: 2,
-  openCount: 9,
 );
-const _club = Household(
-  id: 'club',
-  name: 'Sommerfest',
-  memberCount: 12,
-  openCount: 1,
-);
+const _club = Household(id: 'club', name: 'Sommerfest', memberCount: 12);
 
 typedef _Shell = ({
   TestSession session,
@@ -215,9 +209,11 @@ void main() {
     expect(_key('household-sheet'), findsOneWidget);
     expect(s.popups.open, isTrue, reason: 'Notices see it');
     expect(find.text('Deine Haushalte'), findsOneWidget);
-    // The shown list's live count, not the server's last one.
-    expect(find.text('2 Mitglieder · 2 offen'), findsOneWidget);
-    expect(find.text('12 Mitglieder · 1 offen'), findsOneWidget);
+    // No count of open items per household: it read like pending invites
+    // (job 474).
+    expect(find.text('2 Mitglieder'), findsOneWidget);
+    expect(find.text('12 Mitglieder'), findsOneWidget);
+    expect(find.textContaining('offen'), findsNothing);
     expect(
       find.descendant(
         of: _key('household-row-home'),
@@ -585,7 +581,7 @@ void main() {
     await _pumpShell(tester, locale: const Locale('en'));
     await _openSheet(tester);
     expect(find.text('Your households'), findsOneWidget);
-    expect(find.text('2 members · 2 open'), findsOneWidget);
+    expect(find.text('2 members'), findsOneWidget);
     expect(find.text('New household'), findsOneWidget);
     expect(find.text('Join with a code'), findsOneWidget);
     expect(find.text('Siri, Alexa & AI use: Zuhause'), findsOneWidget);

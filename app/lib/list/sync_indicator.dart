@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:ui' show SemanticsHitTestBehavior, lerpDouble;
 
+import 'package:family_groceries/core/screen_reader.dart';
 import 'package:family_groceries/design/hex_border.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/tactile.dart';
@@ -262,13 +263,8 @@ class _SyncIndicatorState()
     }
     if (ok || settled) {
       final l10n = AppLocalizations.of(context);
-      unawaited(
-        SemanticsService.sendAnnouncement(
-          View.of(context),
-          ok ? l10n.syncSynced : l10n.syncStillFailing,
-          Directionality.of(context),
-        ),
-      );
+      ScreenReader.of(context)
+          .announce(ok ? l10n.syncSynced : l10n.syncStillFailing);
     }
   }
 

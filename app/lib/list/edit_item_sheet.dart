@@ -5,13 +5,14 @@ import 'package:family_groceries/design/hex_checkbox.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/add_sheet/compact_details.dart'
-    show QuantityGroup;
+    show QuantityGroup, QuantitySemantics;
 import 'package:family_groceries/list/chain_suggestions.dart';
 import 'package:family_groceries/list/entry.dart';
 import 'package:family_groceries/list/foldout_chips.dart';
 import 'package:family_groceries/list/list_names.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/place_options.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -33,6 +34,92 @@ class const ItemEdit({
 }) {
   bool get isEmpty =>
       changes.isEmpty && listId == null && claim == null && place == null;
+}
+
+/// The fields [editSaid] names.
+enum _Said() {
+  name,
+  brand,
+  quantity,
+  details,
+  store,
+  category,
+}
+
+/// What a screen reader hears once the sheet saved [edit] (job 474): what
+/// was set, „Name auf Kosmetiktücher, Menge auf 2 und Laden auf Edeka
+/// geändert“, then what was emptied, „Marke entfernt“, in the sheet's order;
+/// then a new place, „Neben Milch gesetzt“, and a new list, „Auf die Liste
+/// Party verschoben“.
+/// Nothing when only the claim changed, whose checkbox said it already.
+/// [catalog] is the one after the save, with a store made in the sheet.
+List<String> editSaid(
+  AppLocalizations l10n,
+  ItemEdit edit, {
+  required Catalog catalog,
+  List<Item>? placeRun,
+}) {
+  final ItemEdit(:changes, :listId, :place) = edit;
+  final set = <String>[];
+  final removed = <String>[];
+  void said(_Said field, SetTo<String?>? change) {
+    switch (change) {
+      case SetTo(value: final value?):
+        set.add(l10n.editSaidSet(field.name, value));
+      case SetTo(value: null):
+        removed.add(l10n.editSaidField(field.name));
+      case null:
+    }
+  }
+
+  said(_Said.name, switch (changes.name) {
+    final name? => SetTo(name),
+    null => null,
+  });
+  said(_Said.brand, changes.brand);
+  said(_Said.quantity, changes.quantity);
+  said(_Said.details, changes.properties);
+  said(_Said.store, switch (changes.storeId) {
+    SetTo(value: final id?) => switch (catalog.store(id)) {
+      final store? => SetTo(store.name),
+      null => null,
+    },
+    final cleared => cleared,
+  });
+  said(_Said.category, switch (catalog.categories
+      .where((c) => c.id == changes.categoryId)
+      .firstOrNull) {
+    final category? => SetTo(category.name),
+    null => null,
+  });
+  // Where it went has its own words: „Neben Milch gesetzt“, not „Platz
+  // auf neben Milch“ (review 1).
+  final placed = switch (place) {
+    PlaceFirst() => l10n.editSaidPlaceFirst,
+    PlaceAfter(:final anchorId) => switch (placeRun
+        ?.where((i) => i.id == anchorId)
+        .firstOrNull) {
+      final anchor? => l10n.editSaidPlaceNextTo(anchor.name),
+      null => null,
+    },
+    null => null,
+  };
+  final moved = switch (catalog.list(listId)) {
+    final list? when listId != null => l10n.editSaidList(listName(list, l10n)),
+    _ => null,
+  };
+  String and(List<String> parts) => parts.length == 1
+      ? parts.single
+      : l10n.editSaidAnd(
+          parts.sublist(0, parts.length - 1).join(', '),
+          parts.last,
+        );
+  return [
+    if (set.isNotEmpty) l10n.editSaidChanged(and(set)),
+    if (removed.isNotEmpty) l10n.editSaidRemoved(and(removed)),
+    ?placed,
+    ?moved,
+  ];
 }
 
 /// The user's claim, said or taken back in the edit sheet.
@@ -489,6 +576,12 @@ class _ItemDetailFieldsState() extends State<ItemDetailFields> {
     if (inLine != null) {
       return _line(context, l10n, inLine);
     }
+    Widget adjustable(Widget child) => QuantitySemantics(
+      controller: quantity,
+      onStep: _step,
+      identifier: '$keyPrefix-quantity-stepper',
+      child: child,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: 10,
@@ -578,8 +671,14 @@ class _ItemDetailFieldsState() extends State<ItemDetailFields> {
                   spacing: _rowGap,
                   children: [
                     Expanded(child: brandField),
-                    menge,
-                    steppers,
+                    adjustable(
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        spacing: _rowGap,
+                        children: [menge, steppers],
+                      ),
+                    ),
                   ],
                 );
               }
@@ -588,13 +687,15 @@ class _ItemDetailFieldsState() extends State<ItemDetailFields> {
                 spacing: _rowGap,
                 children: [
                   brandField,
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    spacing: _rowGap,
-                    children: [
-                      Expanded(child: quantityField),
-                      steppers,
-                    ],
+                  adjustable(
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      spacing: _rowGap,
+                      children: [
+                        Expanded(child: quantityField),
+                        steppers,
+                      ],
+                    ),
                   ),
                 ],
               );
@@ -640,34 +741,39 @@ class _ItemDetailFieldsState() extends State<ItemDetailFields> {
       [
         // One control with its steppers, so none leaves a gap while they
         // are away.
-        ValueListenableBuilder(
-          valueListenable: quantity,
-          builder: (context, value, menge) => Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              menge!,
-              if (stepQuantity(value.text, up: true) != null) ...[
-                const SizedBox(width: _rowGap),
-                _Stepper(
-                  key: ValueKey('$keyPrefix-quantity-minus'),
-                  icon: Icons.remove,
-                  label: l10n.quantityMinus,
-                  onPressed: stepQuantity(value.text, up: false) != null
-                      ? () => _step(up: false)
-                      : null,
-                ),
-                const SizedBox(width: _stepperGap),
-                _Stepper(
-                  key: ValueKey('$keyPrefix-quantity-plus'),
-                  icon: Icons.add,
-                  label: l10n.quantityPlus,
-                  onPressed: () => _step(up: true),
-                ),
+        QuantitySemantics(
+          controller: quantity,
+          onStep: _step,
+          identifier: '$keyPrefix-quantity-stepper',
+          child: ValueListenableBuilder(
+            valueListenable: quantity,
+            builder: (context, value, menge) => Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                menge!,
+                if (stepQuantity(value.text, up: true) != null) ...[
+                  const SizedBox(width: _rowGap),
+                  _Stepper(
+                    key: ValueKey('$keyPrefix-quantity-minus'),
+                    icon: Icons.remove,
+                    label: l10n.quantityMinus,
+                    onPressed: stepQuantity(value.text, up: false) != null
+                        ? () => _step(up: false)
+                        : null,
+                  ),
+                  const SizedBox(width: _stepperGap),
+                  _Stepper(
+                    key: ValueKey('$keyPrefix-quantity-plus'),
+                    icon: Icons.add,
+                    label: l10n.quantityPlus,
+                    onPressed: () => _step(up: true),
+                  ),
+                ],
               ],
-            ],
+            ),
+            child: menge,
           ),
-          child: menge,
         ),
       ],
       [
@@ -845,6 +951,8 @@ class const _Field({
   }
 }
 
+/// − or + beside Menge, stepped by screen readers through
+/// [QuantitySemantics] instead; on the web a button named [label].
 class const _Stepper({
   required final IconData icon,
   required final String label,
@@ -857,15 +965,18 @@ class const _Stepper({
   /// a click into Menge right after hovering a stepper lost its focus
   /// (job 122).
   @override
-  Widget build(BuildContext context) => OutlinedButton(
-    onPressed: onPressed,
-    style: OutlinedButton.styleFrom(
-      visualDensity: VisualDensity.standard,
-      fixedSize: const Size(_stepperWidth, HlSize.target),
-      minimumSize: const Size(_stepperWidth, HlSize.target),
-      padding: EdgeInsets.zero,
-      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+  Widget build(BuildContext context) => ExcludeSemantics(
+    excluding: !kIsWeb,
+    child: OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        visualDensity: VisualDensity.standard,
+        fixedSize: const Size(_stepperWidth, HlSize.target),
+        minimumSize: const Size(_stepperWidth, HlSize.target),
+        padding: EdgeInsets.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      child: Icon(icon, size: 22, semanticLabel: label),
     ),
-    child: Icon(icon, size: 22, semanticLabel: label),
   );
 }

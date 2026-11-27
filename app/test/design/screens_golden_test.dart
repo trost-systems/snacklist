@@ -458,14 +458,8 @@ void main() {
 
     // Job 169b: the switcher sheet over the list, and the household page.
     const households = [
-      Household(
-        id: 'home',
-        name: 'Zuhause',
-        isDefault: true,
-        memberCount: 2,
-        openCount: 4,
-      ),
-      Household(id: 'club', name: 'Sommerfest', memberCount: 12, openCount: 7),
+      Household(id: 'home', name: 'Zuhause', isDefault: true, memberCount: 2),
+      Household(id: 'club', name: 'Sommerfest', memberCount: 12),
       Household(id: 'parents', name: 'Eltern'),
     ];
     testWidgets('household sheet, $mode', (tester) async {
@@ -475,6 +469,22 @@ void main() {
       await expectLater(
         find.byType(MaterialApp),
         matchesGoldenFile('goldens/household-sheet-$mode.png'),
+      );
+    });
+
+    // Job 474: the households without a count of open items, in English.
+    testWidgets('household sheet in English, $mode', (tester) async {
+      await pumpShell(
+        tester,
+        brightness,
+        households: households,
+        locale: const Locale('en'),
+      );
+      await tester.tap(find.byKey(const ValueKey('household-chip')));
+      await tester.pumpAndSettle();
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/household-sheet-en-$mode.png'),
       );
     });
 
@@ -499,7 +509,6 @@ void main() {
         name: 'Zuhause',
         isDefault: true,
         memberCount: 4,
-        openCount: 4,
         role: HouseholdRole.owner,
         premium: true,
         kind: HouseholdKind.family,

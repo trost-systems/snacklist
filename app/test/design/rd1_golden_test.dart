@@ -66,14 +66,8 @@ void _groceries(FakeRepository repo) {
 }
 
 const _households = [
-  Household(
-    id: 'home',
-    name: 'Zuhause',
-    isDefault: true,
-    memberCount: 2,
-    openCount: 4,
-  ),
-  Household(id: 'club', name: 'Sommerfest', memberCount: 12, openCount: 7),
+  Household(id: 'home', name: 'Zuhause', isDefault: true, memberCount: 2),
+  Household(id: 'club', name: 'Sommerfest', memberCount: 12),
 ];
 
 /// RD1's components below the grid: radios, count badges, the pointy

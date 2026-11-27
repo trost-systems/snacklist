@@ -18864,3 +18864,68 @@ CP4, ML1, Addendum 2 (26 Nov 2026); details in `docs/done/470-english-catalog.md
 1. **`held_release_from` has a floor in code, 1 Dec 2026 00:00 Europe/Berlin (`PlayListing::HELD_FROM_FLOOR`).** The check sits in `PlayListing.blockers`, the one gate `run` and `preflight` share, so an earlier value (a typo such as 2026-11-01) refuses an upload before any edit opens and preflight shows the same reason. The input can only move the date later.
 2. **A commit Play will not send for review fails the run.** The listing lane builds supply's client without its `changesNotSentForReview` rescue. On Play's "Please set the query parameter changesNotSentForReview to true" the lane commits with that flag itself, reads the listing back, then fails with `!!! NOT SENT FOR REVIEW !!!` and the Play Console step. A green run would have said the listing is in Google's review when it is not, and the sale waits for it (Legal LK1). Not committing at all was the other option; it leaves Ops with nothing in Console to send, so the commit stays and the run goes red.
 3. **The integration-lock hold flip needs a second listing upload.** `check.mjs` requires the AI assistants in the Premium paragraph once the hold is released, so the flip PR changes the listing. PAYWALL_RELEASE 6.5 and the RELEASE.md checklist now name the after-publish `mode=upload`, Google's approval and `mode=check`.
+## Job 474: VoiceOver / TalkBack pass (Peter's device walk, 26 Nov 2026)
+
+- **One way to speak: `ScreenReader` (`app/lib/core/screen_reader.dart`), lint
+  `announce-through-screen-reader`.** The tick already sent „abgehakt“ at the tap, yet Peter heard
+  none. On iOS the engine posts an announcement as is, and the row leaving the tree then makes
+  VoiceOver move its focus (to the screen's first element, `FindFirstFocusable` from the root, when
+  the row held it) and read that over it. `ScreenReader` sends after the frame that shows the change,
+  300 ms later while VoiceOver or TalkBack runs (`accessibleNavigation`), so it cuts in instead.
+  Announcements of one moment go out as one (the last tick and the store card). The 300 ms is a
+  judgement, not measured on a device from this box; NEEDS_PETER asks for the check.
+- **Focus moves by `Semantics.identifier`.** A row that held the focus leaves the tree, so focus is
+  sent (`FocusSemanticEvent`) to a node found by identifier after the frame: the next row after a
+  tick, the store card, the top row of „Zuletzt verwendet“ after a put-back. When that section is gone
+  (the last one put back) the focus goes to the item's row on the list, else the list's last row: the
+  brief's „section header“ no longer exists then. Identifiers also give the web e2e a locator
+  (`flt-semantics-identifier`) where a node has no name, as the add sheet now.
+- **Tick announced as the row leaves, not at the tap.** „announce on the optimistic update“: the
+  item leaves the list at the commit, which is when the focus moves too.
+- **Menge is one adjustable node; its field stays a node of its own.** The brief asks for one node
+  with increase and decrease; typing „500 g“ still needs the text field, so it follows the adjustable
+  node (the value first), beside it rather than around it, ordered by sort keys. Steppers are
+  `ExcludeSemantics`. The price editor's count, the same −/+ shape, got the same node; `priceCount`
+  was deleted.
+- **Adjustable on iOS and Android only; the web keeps „Eins weniger“ / „Eins mehr“.** Flutter web
+  renders an adjustable node as a hidden range input. CI's e2e showed what that does: a field
+  inside one took no typing, and with the node beside the field a click on + stepped up through the
+  button and back down through the range input (local run on 593xx: "1" for "2"). The brief is
+  about VoiceOver and TalkBack; web screen-reader users keep the buttons main had, and the e2e
+  specs keep clicking them.
+- **Edit announcement covers every field the sheet saves,** not only name, quantity, store and place:
+  brand, details, category and list say the same „X auf Y“. An emptied field says „X entfernt“ /
+  "Removed X" as a second sentence. The claim („Ich bringe das“) is left out: its checkbox already
+  said its state when toggled. A new place and a new list are sentences of their own (review 1): „Neben Milch gesetzt“ / „Nach vorne gesetzt“ and „Auf die Liste Party verschoben“; „Platz auf neben Milch“ was not German.
+- **Household count removed at the source too:** `Household.openCount` and the `openNow` plumbing
+  (chip, list parts, both household sheets) are gone; the server still sends `open_count`, which old
+  apps read. The web join page's „· 2 offene Einträge“ is an invite preview, not the selector, and
+  stays.
+- **More: no app bar on the phone or the wide layout,** a 12 px heading node „Mehr“ above the rows.
+  It names the route as AppBar did (Android, web; iOS reads the first element, which it is). The
+  wide layout's right pane keeps its page title.
+- **List tab:** the tab already exposed its selected state (`shell_tabs_test`); what the list lacked
+  was a word on arrival, as More's title gave. `_ListArrival` says it when the branch changes to the
+  list, not on a tap of the shown tab.
+- **8 goldens differ on this box on main as well** (`list-wide`, `add-sheet-wide`, `prices-list`,
+  `prices-editor-priced-compact`, 2 to 13 px): left as committed; CI's ubuntu-24.04 renders them.
+- **Review 0 (27 Nov), after rebasing onto #765 (the tick's undo snackbar is back).** The tick is
+  said once, by this PR's announcement: it is Peter's wording, joins the store card's, and comes
+  after the focus moves. The snackbar „Abgehakt: <Name>“ keeps its text as a node of its own on iOS
+  and Android, whose bridges announce a live region's own label, which is then empty; the text and
+  „Rückgängig“ stay reachable. The web's live region reads its whole content, so the web says both,
+  as its stepper keeps its buttons. „Rückgängig“ and trip mode's „Zurücknehmen“ say „<Name> wieder
+  auf der Liste“ and send the focus to the row. With VoiceOver on, #765's „item open again“
+  listener closed the snackbar a second time after its own Rückgängig had removed it at once (a
+  `StateError` in the widget test); Rückgängig now cancels that listener first.
+- **No edit announcement for a merge.** `ListCubit.edit` returns false when a rename folds into an
+  open item or is refused for a quantity that would not fit; `_edit` then says nothing more, and
+  the merge's snackbar speaks. A copy the list did not show yet is refused by the server later:
+  the edit was said on the optimistic update, and the snackbar says the merge, as the brief's
+  optimistic rule has it.
+- **Review 1 (27 Nov): the store card is said once per appearance.** Its „already said“ key was the
+  store and the card's time (the tick's `boughtAt`); the server's answer to the tick moves that
+  time, and the card was said again in the same announcement. The key is now the store, cleared
+  when the card goes; a card behind the add sheet is said once it shows. Test: an echo with a later
+  `boughtAt`, inside and after the settle time, says it once (fails on the old key).
+
