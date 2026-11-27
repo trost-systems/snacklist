@@ -22,8 +22,8 @@
 #   bundle exec fastlane android promote_draft an uploaded versionCode as the
 #                                              alpha track's draft release
 #   bundle exec fastlane android listing       upload the staged Play listing text
-#                                              after the production release is
-#                                              published, or only validate it
+#                                              with or after the production
+#                                              release, or only validate it
 #   bundle exec fastlane android listing_check compare Play's listing and store
 #                                              page with the repo text
 
@@ -493,24 +493,18 @@ platform :android do
 
   # The staged listing text (title, short and full description of every locale under
   # metadata/android) in one edit, nothing else: no bundle, track, changelog, image or screenshot.
-  # RELEASE_UPLOAD=true commits only once the production release is published (PlayListing.blockers;
+  # RELEASE_UPLOAD=true commits only once the production release is published, or from launch day
+  # on to join the held release with PLAY_LISTING_WITH_HELD_RELEASE=true (PlayListing.blockers;
   # Peter K1, Legal LK1), then reads every field back and fails on any difference. Otherwise it
   # validates and deletes the edit, at any time. docs/RELEASE.md "Store listing upload".
-  desc "Upload the staged Play listing text after the production release is published (RELEASE_UPLOAD=true) or validate it"
+  desc "Upload the staged Play listing text with or after the production release (RELEASE_UPLOAD=true) or validate it"
   lane :listing do
     texts = PlayListing.load(PLAY_METADATA)
-    status, = PlayListing.fetch_store_page(APP_ID)
-    log = ->(line) { UI.message(line) }
-    PlayListing.publish(client: play_client, texts: texts, upload: upload?, store_page_status: status,
-                        version_code: ENV.fetch("PLAY_PUBLISHED_VERSION_CODE", ""), log: log)
-    next unless upload?
-
-    mismatches = PlayListing.read_back(client: play_client, texts: texts, log: log)
-    unless mismatches.empty?
-      UI.user_error!("The listing was committed, but Play's read-back differs from the repo: #{mismatches.join('; ')}. " \
-                     "Running the upload again sends the same text (docs/RELEASE.md, Store listing upload).")
-    end
-    UI.success("Play's listing equals the repo text in #{texts.keys.join(', ')}")
+    PlayListing.run(texts: texts, upload: upload?, version_code: ENV.fetch("PLAY_PUBLISHED_VERSION_CODE", ""),
+                    with_held_release: ENV.fetch("PLAY_LISTING_WITH_HELD_RELEASE", "false") == "true",
+                    new_client: -> { play_client }, store_page: PlayListing.fetch_store_page(APP_ID),
+                    log: ->(line) { UI.message(line) })
+    UI.success(upload? ? "Play's listing equals the repo text in #{texts.keys.join(', ')}" : "Validated only")
   rescue PlayListing::Refused => e
     UI.user_error!(e.message)
   end
@@ -526,7 +520,7 @@ platform :android do
     texts.each do |locale, fields|
       status, html = PlayListing.fetch_store_page(APP_ID, locale)
       mismatches += PlayListing.public_mismatches(locale: locale, status: status, html: html,
-                                                  text: fields["full_description"])
+                                                  text: fields["full_description"], log: log)
     end
     UI.user_error!("Listing not live as staged: #{mismatches.join('; ')}") unless mismatches.empty?
     UI.success("Play's listing and store pages equal the repo text in #{texts.keys.join(', ')}")

@@ -2,6 +2,7 @@
 
 require "digest"
 require "net/http"
+require "time"
 require "uri"
 
 # The Play store listing text (app/fastlane/metadata/android/<locale>/) and the edit that uploads
@@ -75,20 +76,26 @@ module PlayListing
     [nil, e.message]
   end
 
-  # Why an upload must not commit now, or []. The listing goes live only after the production
-  # release (build 1541 on 1 Dec 2026, held by managed publishing until then) is published: a
-  # listing edit committed earlier would put the held release live with it. Play's public store
-  # page answers 404 until the app is published, and the production track must carry the build
-  # the operator says was just published.
-  def blockers(store_page_status:, production_releases:, version_code:)
+  # Peter K1 / MP1: no listing edit before launch day. The held-release path opens at its start.
+  HELD_RELEASE_FROM = Time.new(2026, 12, 1, 0, 0, 0, "+01:00")
+
+  # Why an upload must not commit now, or []. The production track must carry the build the
+  # operator names, as `completed` (Play reports a release held by managed publishing as
+  # completed too). Then one of two orders (docs/RELEASE.md "Store listing upload"):
+  # - after the publish: Play's public store page answers 200 (404 until the app is published);
+  # - with the held release (with_held_release): from launch day on, while the release still
+  #   waits under managed publishing, so the listing and the release go out in one publish.
+  def blockers(store_page_status:, production_releases:, version_code:, with_held_release: false, now: Time.now)
     found = []
-    unless store_page_status == 200
-      found << "the Play store page answers #{store_page_status || 'nothing'}, so the production release is not published yet"
-    end
     if version_code.to_s !~ /\A\d+\z/
-      found << "PLAY_PUBLISHED_VERSION_CODE is not set to the production build just published"
+      found << "PLAY_PUBLISHED_VERSION_CODE is not set to the production build"
     elsif production_releases.none? { |r| r.status == "completed" && (r.version_codes || []).map(&:to_s).include?(version_code.to_s) }
       found << "production has no completed release with versionCode #{version_code}"
+    end
+    if with_held_release
+      found << "the listing may join the held release only from #{HELD_RELEASE_FROM.iso8601} (Peter K1)" if now < HELD_RELEASE_FROM
+    elsif store_page_status != 200
+      found << "the Play store page answers #{store_page_status || 'nothing'}, so the production release is not published yet"
     end
     found
   end
@@ -96,10 +103,11 @@ module PlayListing
   # In the client's open edit: refuse before anything changes if upload is asked and a blocker
   # stands; set each staged locale's title and descriptions (its video stays); commit on upload,
   # else validate and delete the edit. Any failure deletes the edit, so nothing lands half.
-  def publish(client:, texts:, upload:, store_page_status:, version_code:, log:)
+  def publish(client:, texts:, upload:, store_page_status:, version_code:, log:, with_held_release: false, now: Time.now)
     production = client.tracks("production").first&.releases || []
     log.call("Production: #{production.map { |r| "#{r.status} #{(r.version_codes || []).join(',')}" }.join('; ')}")
-    found = blockers(store_page_status: store_page_status, production_releases: production, version_code: version_code)
+    found = blockers(store_page_status: store_page_status, production_releases: production, version_code: version_code,
+                     with_held_release: with_held_release, now: now)
     raise Refused, "Not uploading the listing: #{found.join('; ')}" if upload && found.any?
 
     found.each { |b| log.call("An upload now would refuse: #{b}") }
@@ -126,6 +134,22 @@ module PlayListing
       log.call("Could not delete the edit (Play expires it): #{e.message}")
     end
     raise
+  end
+
+  # The `android listing` lane: publish in one edit, then on upload read every field back in a
+  # second edit. new_client opens an edit per call; store_page is [status, body] for de-DE.
+  def run(texts:, upload:, version_code:, new_client:, store_page:, log:, with_held_release: false, now: Time.now)
+    status, = store_page
+    log.call("Play store page (de-DE): HTTP #{status || 'no answer'}")
+    publish(client: new_client.call, texts: texts, upload: upload, store_page_status: status, version_code: version_code,
+            log: log, with_held_release: with_held_release, now: now)
+    return unless upload
+
+    mismatches = read_back(client: new_client.call, texts: texts, log: log)
+    return if mismatches.empty?
+
+    raise Refused, "The listing was committed, but Play's read-back differs from the repo: #{mismatches.join('; ')}. " \
+                   "Running the upload again sends the same text (docs/RELEASE.md, Store listing upload)."
   end
 
   # Reads Play's listing in the client's open edit, then deletes the edit. Returns one line per
@@ -159,18 +183,22 @@ module PlayListing
             end
   end
 
-  # Mismatch lines for the public page of one locale; whitespace is compared collapsed, because
-  # the page renders line breaks as markup.
-  def public_mismatches(locale:, status:, html:, text:)
+  # Mismatch lines for the public page of one locale. The page renders each line break as <br>,
+  # so the text maps back exactly and is compared by sha256.
+  def public_mismatches(locale:, status:, html:, text:, log:)
     return ["#{locale}: the Play store page answers #{status || 'nothing'}"] unless status == 200
 
     live = public_description(html)
     return ["#{locale}: no description on the Play store page"] if live.nil?
 
+    log.call("Store page #{locale}/full_description: sha256 #{sha256(live)}, repo #{sha256(text)}")
     found = []
     found << "#{locale}: the store page still has „#{LK1_SENTENCE}“ (Legal LK1)" if live.include?(LK1_SENTENCE)
-    squash = ->(s) { s.gsub(/\s+/, " ").strip }
-    found << "#{locale}: the store page's description differs from the repo" unless squash.call(live) == squash.call(text)
+    return found if live == text
+
+    squash = ->(t) { t.gsub(/\s+/, " ").strip }
+    how = squash.call(live) == squash.call(text) ? "only in whitespace" : "in its words"
+    found << "#{locale}: the store page's description (sha256 #{sha256(live)}) differs from the repo (#{sha256(text)}) #{how}"
     found
   end
 end
