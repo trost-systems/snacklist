@@ -5,6 +5,7 @@ import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/new_stores_picker.dart';
 import 'package:family_groceries/onboarding/draft.dart';
+import 'package:family_groceries/session/login_screen.dart';
 import 'package:family_groceries/session/new_store.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -481,6 +482,23 @@ void main() {
       );
     });
 
+    // Job 486: „Neu bei Snacklist?“ on a link's sign-in; a web sign-in
+    // reloads the page, so the link comes back in the return address.
+    testWidgets('a link the guided start carries comes back after a web '
+        'sign-in', (tester) async {
+      final o = await pumpOnboarding(
+        tester,
+        location: '/start?next=%2Fadd',
+        session: const SignedOut(),
+        draft: answered(OnboardingStep.account),
+      );
+      expect(location(o), '/start/account?next=%2Fadd');
+      expect(
+        tester.widget<SignInPanel>(find.byType(SignInPanel)).returnPath,
+        '/?next=%2Fadd',
+      );
+    });
+
     testWidgets("Android's back on the account step goes back to „Was fehlt "
         'gerade?“, as Zurück does', (tester) async {
       final o = await pumpOnboarding(
@@ -726,6 +744,61 @@ void main() {
       expect(key('onboarding-exit-sign-out'), findsOneWidget);
       await tapKey(tester, 'onboarding-exit-discard');
       expect(location(o), '/welcome');
+    });
+  });
+
+  // Job 486: a sign-out shows the start screen; the answers wait for
+  // „Los geht's“ (or the next sign-in) instead of opening at once.
+  group('a sign-out mid-way', () {
+    testWidgets("the start screen; „Los geht's“ goes on where it was", (
+      tester,
+    ) async {
+      final o = await pumpOnboarding(
+        tester,
+        location: '/',
+        draft: answered(OnboardingStep.who),
+      );
+      expect(location(o), '/start/who');
+      await tapKey(tester, 'onboarding-exit');
+      await tapKey(tester, 'onboarding-exit-sign-out');
+      expect(location(o), '/start');
+      expect(key('start-go'), findsOneWidget);
+      expect(key('start-log-in'), findsOneWidget);
+      expect(key('legal-imprint'), findsOneWidget);
+      expect(key('legal-privacy'), findsOneWidget);
+      expect(o.onboarding.state?.parked, isTrue);
+      expect(o.onboarding.state?.kinds, answered(OnboardingStep.who).kinds);
+      await tapKey(tester, 'start-go');
+      expect(location(o), '/start/who');
+      expect(o.onboarding.state?.parked, isFalse);
+    });
+
+    testWidgets('signed in again, the questions go on', (tester) async {
+      final o = await pumpOnboarding(
+        tester,
+        location: '/',
+        draft: answered(OnboardingStep.who),
+      );
+      await o.session.signOut();
+      await tester.pumpAndSettle();
+      expect(location(o), '/start');
+      o.session.emit(const NeedsHousehold('peter'));
+      await tester.pumpAndSettle();
+      expect(location(o), '/start/who');
+      expect(o.onboarding.state?.parked, isFalse);
+    });
+
+    testWidgets('a start signed out with a draft still resumes it', (
+      tester,
+    ) async {
+      final o = await pumpOnboarding(
+        tester,
+        location: '/',
+        session: const SignedOut(),
+        draft: answered(OnboardingStep.stores),
+      );
+      expect(location(o), '/start/stores');
+      expect(o.onboarding.state?.parked, isFalse);
     });
   });
 

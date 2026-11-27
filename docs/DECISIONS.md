@@ -18929,3 +18929,46 @@ CP4, ML1, Addendum 2 (26 Nov 2026); details in `docs/done/470-english-catalog.md
   when the card goes; a card behind the add sheet is said once it shows. Test: an echo with a later
   `boughtAt`, inside and after the settle time, says it once (fails on the old key).
 
+
+## Job 486: a sign-out opens the start screen; one sign-in page (27 Nov 2026)
+
+- **There was one sign-in screen, in two variants.** `app/lib` has one sign-in route (`/login`,
+  `LoginScreen`); the guided start's account step (`/start/account`) is the new-user sign-up inside
+  the guided start, not a login page, and stays. The variant Peter saw after a sign-out was
+  `LoginScreen` with a `next` link, which hid „Neu bei Snacklist? Los geht's“. That variant is gone:
+  the button shows on every sign-in except an invite's, where JH2's sheet already asks „Konto
+  erstellen“ or „Anmelden“. No route or screen was left to delete.
+- **A sign-out goes to `/start`.** `authRedirect` sends `justSignedOut` (a More sign-out, the
+  first-run screens' logout icon, the guided start's „Abmelden“, a server-forced sign-out: all reach
+  it through the session turning `SignedOut`) to the start screen with `go`, so nothing is left to
+  go back to. An invite still waiting (`/login?invite=`) and an account deletion's card keep the
+  sign-in, as before.
+- **Root cause candidate for the missing button (inferred, not reproduced on iOS).** `RedirectMemory`
+  read the location again after the sign-out (a second refresh before the first redirect landed)
+  as a link to sign in for, which made `/login?next=/more/...`. The location a sign-out happened at
+  now stays a sign-out location until the redirect moved away (`_signedOutAt`). The web build on main
+  showed the button after a sign-out; the native Linux build could not be made on hz (no CMake), so
+  the iOS path is not driven.
+- **A link rides along „Neu bei Snacklist?“.** With the button on `/login?next=...`, tapping it went
+  to `/start`, which the redirect turned back into the sign-in. `goToStart` and `goToSignIn` now keep
+  the location's `next`, and a signed-out `/start?next=...` (or a guided-start step) stays, so a new
+  user who opened a link or an AI assistant's authorization goes through the guided start and then
+  to the link. Opening `/` with a remembered link still asks for the sign-in. A web sign-in on the
+  account step (Google, Apple, a magic link) reloads the page and loses the router's memory, so the
+  account step's return address carries the `next` too (`/?next=...`), as the sign-in's does.
+- **After an account deletion „Neu bei Snacklist?“ works.** It used to bounce back to the sign-in
+  (the deletion case came first); a deletion now keeps the sign-in only outside the guided start.
+- **A sign-out parks an unfinished guided start.** A signed-in user without a household can be in
+  the guided start („Eigenen Haushalt erstellen“, a waiting join request); its draft has no household
+  yet and stays on the device for the next sign-in. Signed out, the router used to resume it at once,
+  so the start screen never showed. The draft now carries `parked` (saved with it): set by a sign-out
+  (signed in, then signed out; not a start signed out), it keeps the start screen up; „Los geht's“
+  and the next sign-in take the draft up again. Dropping the draft instead would have deleted local
+  data a sign-out keeps today.
+- **`fg logout` keeps its contract.** It now waits for the start screen and taps „Ich habe schon ein
+  Konto“, so it still ends on the login screen and the recipes that type into `login-email` after
+  it stay valid.
+- **Sign-out is unchanged otherwise.** `SessionCubit.signOut` and the More row (job 137's look) are
+  untouched; the same five localStorage keys go on main and on this branch (driven, web).
+- **Goldens unchanged.** The golden tests render `LoginScreen()` without `next` and `StartScreen()`;
+  neither changed, so no golden was regenerated.

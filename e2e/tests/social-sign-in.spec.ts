@@ -2,6 +2,8 @@ import { expect, test, type Locator, type Page } from './fixtures';
 import {
   addField, addItem, answerConsent, apiAs, itemRow, newEmail, openMore, screenshot, signUpWithHousehold, supabaseUrl,
   viaFakeProvider, createHousehold, skipInvite,
+  expectSignedOutStart,
+  haveAccount,
 } from './helpers';
 
 const google = (page: Page) => page.getByRole('button', { name: 'Mit Google anmelden' });
@@ -18,7 +20,8 @@ async function authorizeUrl(page: Page, button: Locator): Promise<URL> {
 
 async function signOut(page: Page): Promise<void> {
   await openMore(page, 'Abmelden');
-  await expect(page).toHaveURL(/\/login$/);
+  await expectSignedOutStart(page);
+  await haveAccount(page);
 }
 
 test('the login screen offers Google and Apple first and email behind one button, nothing focused', async ({ page }) => {

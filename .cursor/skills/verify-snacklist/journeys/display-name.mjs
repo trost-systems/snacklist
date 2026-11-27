@@ -97,7 +97,7 @@ try {
     await signUpOrIn(page, L, email, { signUp: true });
     await at(page, '/your-name');
     await button(page, L('signOut')).click();
-    await page.waitForURL(/\/login$/, { timeout: 30_000 });
+    await page.waitForURL(/\/start$/, { timeout: 30_000 });
     check(nameOf(email) === `name-wrong-${stamp}|false`, 'signing out from the step saves no name');
     await capture(page, dir, '03b-signed-out-from-step');
   }

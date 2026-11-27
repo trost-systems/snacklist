@@ -128,7 +128,7 @@ void main() {
   });
 
   for (final nameFirst in [true, false]) {
-    testWidgets('signing out on More goes to the sign-in without a link '
+    testWidgets('signing out on More goes to the start screen without a link '
         '(the name ${nameFirst ? 'before' : 'after'} the session)', (
       tester,
     ) async {
@@ -153,20 +153,25 @@ void main() {
         auth.add(out);
       }
       await tester.pumpAndSettle();
-      tester.takeException();
-      expect(location(), loginPath);
+      // Job 486: „Los geht's“, „Ich habe schon ein Konto“ and the legal
+      // links, as on a cold start.
+      expect(location(), startPath);
+      expect(find.byKey(const ValueKey('start-go')), findsOneWidget);
+      expect(find.byKey(const ValueKey('start-log-in')), findsOneWidget);
+      expect(find.byKey(const ValueKey('legal-imprint')), findsOneWidget);
+      expect(find.byKey(const ValueKey('legal-privacy')), findsOneWidget);
+      // Back has nothing to return to: the stack starts over.
+      expect(router.canPop(), isFalse);
     });
   }
 
-  testWidgets('sign-out on the name step goes to the sign-in, not back to '
-      'the step', (tester) async {
+  testWidgets('sign-out on the name step goes to the start screen, not back '
+      'to the step', (tester) async {
     await pumpRouter(tester, flag: true);
     expect(location(), yourNamePath);
     await tester.tap(find.byKey(const ValueKey('your-name-sign-out')));
     await tester.pumpAndSettle();
-    // The sign-in needs providers this harness leaves out.
-    tester.takeException();
-    expect(location(), loginPath);
+    expect(location(), startPath);
     expect(server.saved, isEmpty);
   });
 

@@ -314,8 +314,10 @@ const _beforeHousehold = {welcomePath, joinCodePath, joinWaitingPath};
 ///
 /// Signed out (job 168b): the guided start ([startPath]), and with a [draft]
 /// its step (the screens move on by changing the draft, never by going to a
-/// step), or the sign-in for an invite, a link, after a sign-out and when
-/// the user picks it ([goToSignIn]). [askConsent]:
+/// step), the start screen after a sign-out (job 486), or the sign-in for
+/// an invite, a link, after an account deletion and when the user picks it
+/// ([goToSignIn]); a link rides along into the guided start ([goToStart]).
+/// [askConsent]:
 /// this install has not decided on analytics yet. The guided start asks it
 /// as its first step; signed in, it comes first, before onboarding and
 /// before the list, except in a browser tab authorizing an MCP client
@@ -375,6 +377,8 @@ String? authRedirect(
   // A draft whose household exists is the invite step of that household
   // only; the cubit drops it for any other session.
   final pending = switch ((draft, session)) {
+    // Parked by a sign-out (job 486): the start screen until „Los geht's“.
+    (OnboardingDraft(parked: true), SignedOut()) => null,
     (final d?, _) when !d.created => d,
     (final d?, InHousehold(:final household))
         when d.householdId == household.id =>
@@ -389,19 +393,23 @@ String? authRedirect(
         final s when !signedIn && !s.beforeAccount => OnboardingStep.account,
         final s => s,
       };
+  // The guided start the user went to; a link rides along it.
+  final guided = uri.path == startPath || onboardingStepOf(uri) != null;
   final target = switch (session) {
     SessionLoading() => null,
+    // After an account deletion the sign-in shows its card; „Neu bei
+    // Snacklist?“ there still opens the guided start.
     SignedOut(:final deleted)
-        when invite != null ||
-            next != null ||
-            justSignedOut ||
-            deleted != null ||
-            uri.path == loginPath =>
+        when invite != null || (deleted != null && !guided) =>
       carry(loginPath),
-    SignedOut() when pending != null => onboardingPath(
-      resumeAt(pending, signedIn: false),
+    // Job 486: a sign-out (also a forced one) opens the start screen.
+    SignedOut() when justSignedOut => startPath,
+    SignedOut() when uri.path == loginPath || (next != null && !guided) =>
+      carry(loginPath),
+    SignedOut() when pending != null => carry(
+      onboardingPath(resumeAt(pending, signedIn: false)),
     ),
-    SignedOut() => startPath,
+    SignedOut() => carry(startPath),
     NeedsHousehold() || InHousehold() when askConsent && consent == null =>
       carry(analyticsConsentPath),
     NeedsHousehold() ||
@@ -465,11 +473,24 @@ String? authRedirect(
 
 /// The sign-in, when the user picks it (the guided start's „Anmelden“):
 /// [authRedirect] keeps a signed-out user there.
-void goToSignIn(BuildContext context) => context.go(loginPath);
+void goToSignIn(BuildContext context) =>
+    context.go(_keepingNext(context, loginPath));
 
 /// The guided start's first screen, from the sign-in's „Neu bei
 /// Snacklist?“: with a draft, [authRedirect] resumes it.
-void goToStart(BuildContext context) => context.go(startPath);
+void goToStart(BuildContext context) =>
+    context.go(_keepingNext(context, startPath));
+
+/// [path] with the link or MCP authorization (`next`, vetted by the router)
+/// the sign-in or the guided start is on the way to.
+String _keepingNext(BuildContext context, String path) =>
+    switch (GoRouterState.of(context).uri.queryParameters['next']) {
+      final next? => Uri(
+        path: path,
+        queryParameters: {'next': next},
+      ).toString(),
+      null => path,
+    };
 
 /// Where an old `/settings` link goes now: Konto for `?section=account`,
 /// Zugänge otherwise.
@@ -511,6 +532,7 @@ String? _linkHere(Uri uri) {
 /// comes back to the same process at `/`.
 class RedirectMemory() {
   Session? _last;
+  Uri? _signedOutAt;
   String? _next;
 
   /// [authRedirect] with what this remembers.
@@ -522,10 +544,16 @@ class RedirectMemory() {
     OnboardingDraft? draft,
     bool askName = false,
   }) {
+    // Job 486: the location the sign-out happened at stays one until the
+    // redirect moved away; read again, it is no link to sign in for.
     final justSignedOut =
         session is SignedOut &&
-        (_last is NeedsHousehold || _last is InHousehold);
+        (_last is NeedsHousehold ||
+            _last is InHousehold ||
+            uri == _signedOutAt);
     _last = session;
+    // At the start screen itself the sign-out has arrived.
+    _signedOutAt = justSignedOut && uri.path != startPath ? uri : null;
     if (justSignedOut) {
       _next = null;
     } else if (session is SignedOut) {
