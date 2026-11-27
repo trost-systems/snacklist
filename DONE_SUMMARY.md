@@ -3462,3 +3462,30 @@ one-ring and unbroken-ring tests. Also the add sheet's Tab walk, `reveal_focus_t
 updated goldens. Full suite: 5202 passed, 0 failed. Lint passes. Web journey `theme-focus.mjs`, light and dark: PASS,
 with no `knownFill` exception and no off-screen stop. Not driven: iOS and Android. Ships with the next
 green main build after the merge, with no flag targeting needed.
+
+## Job 489: adding with the list in view, prototype round AE (draft, not for merge)
+
+Peter (27 Nov 2026, 20:06) relayed a user's feedback: the list looks empty while adding. The real web build
+(main 151458422) shows why. While the add sheet is open, the list is replaced by the last two adds under a 40 %
+scrim, so before the first add the area above the sheet is empty. It also showed that Enter on an item already on
+the list („Bananas“, 6×) adds a second row. The round has Today plus five options, in the sandbox
+`docs/design/rounds/` at `/add/ae/`:
+
+- AE1 `ae1-explain`: communication only.
+- AE2 `ae2-list-peeks`: the list stays in view.
+- AE3 `ae3-inline-row`: add inside the list.
+- AE4 `ae4-landing-preview`: show where it lands.
+- AE5 `ae5-fly-to-row`: the add flies into the list.
+
+Recommendation: AE2. Measured at 390×844 with 15 items: 5 rows stay visible with the keyboard up (Today 0), 3 of 3
+adds are seen in place while adding, 4 taps until all 3 are seen (Today 5), it is 60 px lower while typing, and a duplicate
+becomes 7× instead of a second row (the Merge default, AE-Q2, which Today could take too). Runner-up: AE3, which keeps 7 rows at 200 % but is the largest rebuild and its field shows about one letter at 310 %. Open
+questions AE-Q1 to AE-Q9 have defaults. Draft PR (never merged, labelled do-not-merge): https://github.com/trost-systems/snacklist/pull/787. Details: [docs/done/489.md](docs/done/489.md).
+
+COPY-CHANGES: none. No ARB, legal or site text changed. No production UI, mock data only.
+
+Verify: `npm run verify:ae` in `docs/design/rounds` passes. It takes 360 screenshots (every option, both themes,
+both languages, 100/200/310 %, and the closed list), checks AE5's reduced-motion fallback, and exits 1 when the page table differs from
+what it measures. Preview (protected, SSO):
+https://family-groceries-design-m1mzs6dri-peter-trost.vercel.app/add/ae/ (`dpl_GEJE7Fjw1jJokhmfiL9TuzdRJ8BD`).
+The share link is a NEEDS_LEAD item: this runner has no Vercel connector.

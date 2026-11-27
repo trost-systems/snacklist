@@ -19078,3 +19078,37 @@ CP4, ML1, Addendum 2 (26 Nov 2026); details in `docs/done/470-english-catalog.md
 - **The journey fails a stop that is not drawn.** `knownFill` is gone, and it walks Mehr as well. A stop
   counts as the add field's caret only when focus is in a text input and nothing but a ≤ 3 px area gained
   focus colour. The caret is drawn in the focus colour, and the row before loses its ring on the same Tab.
+
+## Job 489: prototype round AE, adding with the list in view (27 Nov 2026)
+
+- **Today was measured on the real build, not taken from the code alone.** The web build of main 151458422 was
+  driven through the opened sheet, typing, two adds and a duplicate. It showed that the list is replaced
+  (`BehindSheet(lastTwo)`), not covered. It also showed that Enter on „Bananas“ (6× on the list) added a second row:
+  the honey default is „As typed“, under Merge and Tick off. Two active rows were found in the database.
+- **The landing spot is modelled from production's sort.** A new item goes to the end of its category inside the
+  store, and `hide-categories` hides only the headings. So the sandbox sorts by category too, and „where it lands“
+  is mid-store (Milk after Butter), as users see it. Placing it at the store's end would have made AE3's inline
+  field look right when it is not.
+- **AE3's field follows the last add, or a typed duplicate.** At the store's end it left the first of three adds out
+  of view (measured 2 of 3). Under the last add, all 3 are in view. When the typed text is already on the list, the
+  field moves under that row, so its Merge suggestion sits beside the row it changes.
+- **AE2 to AE5 make Merge the Enter default for a duplicate. Today and AE1 keep production's.** AE1 is communication
+  only, so it labels the rows instead (AE-Q2 asks to change the default whichever option is built).
+- **A drawn keyboard, on by default.** The confusion happens on phones with the keyboard up, where Today's sheet
+  leaves even less room. The sandbox draws iOS's 291 pt keyboard and sets `inputmode="none"`, so Peter's phone does
+  not open a second keyboard over it. Rows are measured with the keyboard hidden, shown, and shown at 200 %.
+- **The verify's clip test checks every chrome text, both axes.** The first version checked only marked text,
+  sideways. It passed AE2's and AE3's header at 310 % with „Edit“ off the screen, and AE4's card with its last store
+  cut. Now text cut by any box that does not scroll counts. The replica's switcher ellipsizes as production does
+  (`list_switcher_button.dart:42-44`), and the scrim-area cards scroll when they outgrow the room.
+- **A row counts as visible by vertical extent only.** AE5's lift animation scales its row to 1.02, which put its
+  box 4 px past the screen edge. That made the probe report a plainly visible row as hidden (2 of 3).
+
+## Job 489, review 0: the PR link, the field width at 310 %, fairer wording (27 Nov 2026)
+
+- **The add field's text width is measured, not only its height.** Review 0 saw AE3's inline field show one letter
+  at 310 % DE, beside „Fertig“. The verify now reports the narrowest text area at 310 % per option (AE3 52 px, the
+  others 241 px), and the page's recommendation names it as an AE3 cost.
+- **"4 taps" is the count until the adds are seen.** Taps to add three are 4 in every option. The comparison
+  that separates them is whether one more tap (closing) is needed to see them (Today, AE1, AE4: 5).
+- **The 7× duplicate result is credited to the Enter default, not to AE2's layout** (AE-Q2). Today could take it too.
