@@ -18972,3 +18972,67 @@ CP4, ML1, Addendum 2 (26 Nov 2026); details in `docs/done/470-english-catalog.md
   untouched; the same five localStorage keys go on main and on this branch (driven, web).
 - **Goldens unchanged.** The golden tests render `LoginScreen()` without `next` and `StartScreen()`;
   neither changed, so no golden was regenerated.
+
+## Job 487: FH1, the focus ring inside the control (27 Nov 2026)
+
+- **One stroke geometry, one file.** `paintFocusRing` puts the 3 px ring at `outline(-(contour + 1.5))`;
+  callers that draw their own contour draw it in the focus colour while focused, so contour and ring read
+  as one band from the outline inward, as round FH's prototype draws it (`options.ts`, `RING = 3`).
+- **`focus.ring.gap` stays in the tokens, for CSS only.** The site, the join page, nexus and the MCP page use
+  `--hl-focus-ring-gap` as an outline offset. Peter's pick was for the app, so the web pages and the CSS
+  output are unchanged; the Dart class emits only `ringWidth`, and `HlFocus.ringGap` is gone from the app.
+- **Unfocused metrics keep their numbers.** `fieldSubtextGap` (13) and the tactile clip room (7) were sums
+  with the old ring; they keep their values (brief, step 5), written without `ringGap`.
+- **The chip fill goes per chip, not app-wide.** `RawChip`'s InkWell reads `ThemeData.focusColor` and has no
+  parameter. A transparent theme colour would take the only focus mark from every `ListTile` (the settings,
+  More and household rows, the switch/check box/radio tiles) and plain InkWells. `FocusRingChip` sets it on
+  the six interactive chips; `RingHexBorder` keeps a chip's layout room at its 1 px contour, because its
+  `Ink` pads by the shape's dimensions and a plain 4 px side grew the chip.
+- **When the ring shows did not change.** InkWell-based controls (chips, text buttons, options, pills, list
+  rows) use InkWell's own rule (`showsFocusRing`: focused and the keyboard highlight mode); tactile buttons,
+  tabs, segments and the hex controls keep theirs; a text field keeps the ring after a tap (FH-Q3).
+- **`withFocusRing` returns the style's own side when unfocused, not `BorderSide.none`.** A button's
+  resolved side replaces its shape's side; the first pass returned none, which took the navy contour off
+  every picked store or category option in the add and edit sheets. A test pins it.
+- **A lint, not a note, for text buttons.** `TextButton.styleFrom(foregroundColor: …)` brings its own focus
+  fill, under the theme's ring. Seven buttons had it, and the new rule `text-button-focus-ring` found the
+  eighth (`OptionChip`) the first pass had missed.
+- **`ListTile` rows are left for a follow-up.** They keep Material's grey fill (fails 3:1). FH-Q2 named
+  chips, the text button, list rows and Läden's rows; 73 tile uses in 29 files need their own wrapper and
+  goldens. NEEDS_LEAD „Job 487“ proposes the job.
+- **Measured on the real web build.** `theme-focus.mjs` compares each Tab's changed pixels with the control
+  under them: main reaches 5.0 to 5.4 px past six controls, this branch at most 0.4 px (sub-pixel).
+
+## Job 487, review 0: every InkWell control, icon buttons, a journey that needs the indicator (27 Nov 2026)
+
+- **Icon buttons through the theme.** `iconButtonTheme` gets `withFocusRing`; an `IconButton` with its own
+  `color:` or a `styleFrom(foregroundColor:)` brings its own focus fill, so the dictation button sets
+  `focusColor: Colors.transparent` and the trip strip's pause button goes through `withFocusRing`. The lint
+  `text-button-focus-ring` now covers both forms.
+- **The trip strip's pause ring is the strip's light ink, not cobalt.** The strip is the inverse surface;
+  cobalt on it would not reach 3:1.
+- **The add sheet's „Wie getippt“ row gets cobalt.** Its face is honey-soft, not honey; navy on dark mode's
+  honey-soft would vanish, cobalt is 7.8:1 (light) and 6.4:1 (dark).
+- **Every plain InkWell the reviewer listed moved to `FocusRingInkWell`.** Sticker cards (Premium plans,
+  feedback notes) take `HlSticker.innerOutline`, the child's box inside the contour; the sticker's contour
+  stays its own colour (the InkWell sits inside its clip). The chain suggestion card recolours its 1 px
+  contour too.
+- **The list's add field stays without a ring, as a question.** It is focused whenever the list opens; a
+  ring would be permanent on the main screen for everyone, which the FH round never showed Peter.
+- **Hover and press keep their ink while focused.** `withFocusRing` drops only the focus-only overlay.
+- **`outerRingReach` (5) names the kept room.** `fieldSubtextGap` and the tactile clip use it.
+- **The journey now fails without an indicator.** Each Tab stop must bring the focus colour in a band at
+  least 1.5 px wide along the changed area's box (a box overstates a circle's or hex's perimeter, so a 3 px
+  ring reads 1.9 in a 40 px circle). A pixel counts when it turns into a focus colour it was not, because
+  dark's page is on-honey's navy. Stops where focus leaves the screen are logged, not failed.
+
+## Job 487, review 1: one ring at a time (27 Nov 2026)
+
+- **`FocusRingInkWell` shows its ring only while its own node has the primary focus.** `InkWell`'s
+  `onFocusChange` reports `hasFocus`, which stays true while a control inside it is focused, so a Läden row
+  and its delete button both showed a ring. Main had the same rule, but there it only left a faint fill;
+  a 5 px cobalt band made Enter's target ambiguous. The widget now listens to its node (its own when none
+  is passed) and reads `hasPrimaryFocus`. A test pins it, and fails on the review-0 code.
+- **`knownFill` lists fills only.** The add sheet's hidden „Schließen“ stop is a focus-order issue; the
+  journey already logs it as "focus left the screen", and NEEDS_LEAD holds it.
+

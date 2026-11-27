@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/core/screen_reader.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/hex_border.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/sticker.dart';
@@ -256,6 +257,9 @@ class const _Tab({
 }) extends StatefulWidget {
   static const _indicatorHeight = 32.0;
 
+  /// The selected hex's contour.
+  static const _contour = 1.5;
+
   @override
   State<_Tab> createState() => _TabState();
 }
@@ -283,7 +287,7 @@ class _TabState() extends State<_Tab> {
             : null,
         shape: HexBorder(
           side: selected
-              ? BorderSide(color: t.border, width: 1.5)
+              ? BorderSide(color: t.border, width: _Tab._contour)
               : BorderSide.none,
         ),
       ),
@@ -318,7 +322,12 @@ class _TabState() extends State<_Tab> {
             height: ListTabs.height,
             child: Center(
               child: CustomPaint(
-                foregroundPainter: _focused ? _Ring(t.accent) : null,
+                foregroundPainter: _focused
+                    ? HexFocusRingPainter(
+                        focusRingColor(t, honey: selected ? 1 : 0),
+                        contour: selected ? _Tab._contour : 0,
+                      )
+                    : null,
                 child: indicator,
               ),
             ),
@@ -327,24 +336,4 @@ class _TabState() extends State<_Tab> {
       ),
     );
   }
-}
-
-/// The focus ring round a tab's hex, [HlFocus.ringGap] off it.
-class const _Ring(final Color color) extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.drawPath(
-      const HexBorder().pathFor(
-        Offset.zero & size,
-        outset: HlFocus.ringGap + HlFocus.ringWidth / 2,
-      ),
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = HlFocus.ringWidth
-        ..color = color,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_Ring oldDelegate) => oldDelegate.color != color;
 }

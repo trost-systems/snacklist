@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:family_groceries/core/environment.dart';
 import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/core/pop_if_current.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/section_label.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -470,9 +471,12 @@ class _MembersViewState() extends State<_MembersView> {
               ),
               trailing: TextButton(
                 key: ValueKey('switcher-invite-revoke-${invite.id}'),
-                style: TextButton.styleFrom(
-                  foregroundColor: theme.colorScheme.error,
-                  visualDensity: VisualDensity.standard,
+                style: withFocusRing(
+                  TextButton.styleFrom(
+                    foregroundColor: theme.colorScheme.error,
+                    visualDensity: VisualDensity.standard,
+                  ),
+                  focusRingColor(SnacklistColors.of(theme.brightness)),
                 ),
                 onPressed: invites.state.busy
                     ? null

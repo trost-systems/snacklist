@@ -1,3 +1,4 @@
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/hex_border.dart';
 import 'package:family_groceries/design/look.dart';
 import 'package:family_groceries/design/motion.dart';
@@ -70,7 +71,7 @@ class _HexCheckboxState()
           checkedFace: enabled ? t.honey : t.honeySoft,
           checkedContour: enabled ? t.edge : t.divider,
           check: enabled ? t.onHoney : t.textMuted,
-          focus: states.contains(WidgetState.focused) ? t.accent : null,
+          focus: states.contains(WidgetState.focused) ? t : null,
         ),
       ),
     );
@@ -84,7 +85,9 @@ class _HexCheckboxPainter({
   required final Color checkedFace,
   required final Color checkedContour,
   required final Color check,
-  required final Color? focus,
+
+  /// The colours to draw the focus ring from; null when not focused.
+  required final SnacklistColors? focus,
 }) extends CustomPainter {
   this : super(repaint: checked);
 
@@ -100,6 +103,10 @@ class _HexCheckboxPainter({
       Offset.zero & size,
     );
     final p = checked.value;
+    final focus = switch (this.focus) {
+      final t? => focusRingColor(t, honey: p),
+      null => null,
+    };
     canvas
       ..drawPath(_shape.pathFor(hex), Paint()..color = face)
       ..drawPath(
@@ -111,8 +118,16 @@ class _HexCheckboxPainter({
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = HlBorder.width
-          ..color = Color.lerp(contour, checkedContour, p)!,
+          ..color = focus ?? Color.lerp(contour, checkedContour, p)!,
       );
+    if (focus != null) {
+      paintFocusRing(
+        canvas,
+        (outset) => _shape.pathFor(hex, outset: outset),
+        focus,
+        contour: HlBorder.width,
+      );
+    }
     if (p > 0) {
       final tick = Path()
         ..moveTo(hex.left + hex.width * 0.28, hex.top + hex.height * 0.52)
@@ -127,15 +142,6 @@ class _HexCheckboxPainter({
           ..strokeCap = StrokeCap.round
           ..strokeJoin = StrokeJoin.round
           ..color = check,
-      );
-    }
-    if (focus case final focus?) {
-      canvas.drawPath(
-        _shape.pathFor(hex, outset: HlFocus.ringGap + HlFocus.ringWidth / 2),
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = HlFocus.ringWidth
-          ..color = focus,
       );
     }
   }

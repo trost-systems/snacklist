@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/onboarding/draft.dart';
@@ -393,8 +394,11 @@ class const OnboardingExitButton({super.key}) extends StatelessWidget {
         actions: [
           TextButton(
             key: const ValueKey('onboarding-exit-discard'),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(dialog).colorScheme.error,
+            style: withFocusRing(
+              TextButton.styleFrom(
+                foregroundColor: Theme.of(dialog).colorScheme.error,
+              ),
+              focusRingColor(SnacklistColors.of(Theme.of(dialog).brightness)),
             ),
             onPressed: () => Navigator.pop(dialog, _Leave.discard),
             child: Text(l10n.onboardingExitDiscard),

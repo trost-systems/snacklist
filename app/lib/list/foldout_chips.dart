@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:family_groceries/core/screen_reader.dart';
 import 'package:family_groceries/design/field_border.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/hex_border.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/tactile.dart';
@@ -842,20 +843,24 @@ class const OptionChip({
       child: TextButton(
         focusNode: focusNode,
         onPressed: onTap,
-        style: TextButton.styleFrom(
-          visualDensity: VisualDensity.standard,
-          minimumSize: const Size(0, _height),
-          padding: _hexPadding(context, _optionText, _height),
-          // Lemon on the page needs the navy contour.
-          shape: HexBorder(
-            side: selected
-                ? BorderSide(color: t.edge, width: HlBorder.width)
-                : BorderSide.none,
+        style: withFocusRing(
+          TextButton.styleFrom(
+            visualDensity: VisualDensity.standard,
+            minimumSize: const Size(0, _height),
+            padding: _hexPadding(context, _optionText, _height),
+            // Lemon on the page needs the navy contour.
+            shape: HexBorder(
+              side: selected
+                  ? BorderSide(color: t.edge, width: HlBorder.width)
+                  : BorderSide.none,
+            ),
+            backgroundColor: selected ? t.honey : t.surfaceSunken,
+            foregroundColor: selected ? t.onHoney : t.text,
+            iconColor: selected ? t.onHoney : t.text,
+            textStyle: _optionText,
           ),
-          backgroundColor: selected ? t.honey : t.surfaceSunken,
-          foregroundColor: selected ? t.onHoney : t.text,
-          iconColor: selected ? t.onHoney : t.text,
-          textStyle: _optionText,
+          focusRingColor(t, honey: selected ? 1 : 0),
+          contour: selected ? HlBorder.width : 0,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

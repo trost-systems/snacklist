@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/hex_border.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:material_ui/material_ui.dart';
@@ -12,8 +13,9 @@ enum FieldShape() {
 }
 
 /// A text field's 2 px contour in [shape], with an optional focus [ring]
-/// [HlFocus.ringGap] outside it. Every state uses the same shape and width,
-/// so focus changes only colours and never the field's padding.
+/// inside it, from the contour inward (FH1, job 487): nothing is drawn past
+/// the field. Every state uses the same shape and width, so focus changes
+/// only colours and never the field's padding.
 ///
 /// A hex is an outline ([isOutline]): Flutter then centres a single line of
 /// text in it exactly, where a non-outline border centres it twice over and
@@ -83,7 +85,7 @@ class const ContourInputBorder({
     }
     if (ring.style != BorderStyle.none && ring.width > 0) {
       canvas.drawPath(
-        _path(rect, HlFocus.ringGap + ring.width / 2),
+        _path(rect, -(borderSide.width + ring.width / 2)),
         ring.toPaint()..isAntiAlias = true,
       );
     }
@@ -127,14 +129,15 @@ class const ContourInputBorder({
 /// text. A [LabeledField]'s label starts here too.
 const hexFieldInset = HlHex.tip * HlSize.target + HlSpace.s1;
 
-/// From a field's contour down to its helper, error and counter row: past
-/// the focus ring's outer edge, then [HlSpace.s2] of air. Material's 4 dp
-/// left the row on the ring (job 208).
-const fieldSubtextGap = HlFocus.ringGap + HlFocus.ringWidth + HlSpace.s2;
+/// From a field's contour down to its helper, error and counter row:
+/// [outerRingReach], then [HlSpace.s2] of air. Material's 4 dp left the row
+/// on the old outer ring (job 208).
+const fieldSubtextGap = outerRingReach + HlSpace.s2;
 
 /// Text field decoration in [shape], from the tokens: a raised face, the
-/// 2 px contour (cobalt plus the focus ring when focused, the error colour
-/// on an error, faded when disabled).
+/// 2 px contour (cobalt with the cobalt focus ring inside when focused, the
+/// error colour on an error, with the cobalt ring inside when focused,
+/// faded when disabled).
 ///
 /// The app theme gives every field the hex. A theme cannot tell a
 /// multi-line field from a single-line one, so multi-line fields sit in a
@@ -145,7 +148,7 @@ InputDecorationThemeData fieldTheme(SnacklistColors t, FieldShape shape) {
         shape: shape,
         borderSide: BorderSide(color: color, width: HlBorder.width),
         ring: focused
-            ? BorderSide(color: t.accent, width: HlFocus.ringWidth)
+            ? BorderSide(color: focusRingColor(t), width: HlFocus.ringWidth)
             : BorderSide.none,
       );
   final idle = contour(t.border);
@@ -172,7 +175,7 @@ InputDecorationThemeData fieldTheme(SnacklistColors t, FieldShape shape) {
     supportingTextPadding: padding.copyWith(top: fieldSubtextGap, bottom: 0),
     border: idle,
     enabledBorder: idle,
-    focusedBorder: contour(t.brand, focused: true),
+    focusedBorder: contour(focusRingColor(t), focused: true),
     errorBorder: contour(t.error),
     focusedErrorBorder: contour(t.error, focused: true),
     disabledBorder: contour(t.border.withValues(alpha: 0.38)),

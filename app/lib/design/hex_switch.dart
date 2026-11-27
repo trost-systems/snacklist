@@ -1,3 +1,4 @@
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/hex_border.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -19,10 +20,10 @@ class const HexSwitch({
   final bool autofocus = false,
   super.key,
 }) extends StatefulWidget {
-  /// The track; the box around it leaves room for the focus ring.
+  /// The track, in a box of [size].
   static const track = Size(56, 30);
 
-  /// The box the switch takes: the 48 dp target, the track and its ring.
+  /// The box the switch takes: the 48 dp target around the track.
   static const size = Size(68, HlSize.target);
 
   @override
@@ -80,7 +81,7 @@ class _HexSwitchState()
           press: reaction,
           off: _HexSwitchColors.off(t, enabled: isInteractive),
           on: _HexSwitchColors.on(t, enabled: isInteractive),
-          focus: states.contains(WidgetState.focused) ? t.accent : null,
+          focus: states.contains(WidgetState.focused) ? t : null,
         ),
       ),
     );
@@ -137,7 +138,9 @@ class _HexSwitchPainter({
   required final Animation<double> press,
   required final _HexSwitchColors off,
   required final _HexSwitchColors on,
-  required final Color? focus,
+
+  /// The colours to draw the focus ring from; null when not focused.
+  required final SnacklistColors? focus,
 }) extends CustomPainter {
   this : super(repaint: Listenable.merge([travel, press]));
 
@@ -164,9 +167,24 @@ class _HexSwitchPainter({
     // Strokes sit inside the shape so the contour never grows the control.
     const inset = -HlBorder.width / 2;
 
+    final focus = switch (this.focus) {
+      final t? => focusRingColor(t, honey: p),
+      null => null,
+    };
     canvas
       ..drawPath(_shape.pathFor(track), Paint()..color = colors.track)
-      ..drawPath(_shape.pathFor(track, outset: inset), stroke(colors.contour));
+      ..drawPath(
+        _shape.pathFor(track, outset: inset),
+        stroke(focus ?? colors.contour),
+      );
+    if (focus != null) {
+      paintFocusRing(
+        canvas,
+        (outset) => _shape.pathFor(track, outset: outset),
+        focus,
+        contour: HlBorder.width,
+      );
+    }
 
     // A thumb whose ends sit this far in from the track's has its sides
     // [_gap] from the track's (see [HexBorder.alongFor]).
@@ -187,16 +205,6 @@ class _HexSwitchPainter({
         _shape.pathFor(thumb, outset: inset),
         stroke(colors.thumbContour),
       );
-
-    if (focus case final focus?) {
-      canvas.drawPath(
-        _shape.pathFor(track, outset: HlFocus.ringGap + HlFocus.ringWidth / 2),
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = HlFocus.ringWidth
-          ..color = focus,
-      );
-    }
   }
 
   @override

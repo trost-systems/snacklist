@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/device_cache.dart';
 import 'package:family_groceries/design/field_border.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/fonts.dart';
 import 'package:family_groceries/design/hex_border.dart';
 import 'package:family_groceries/design/look.dart';
@@ -149,7 +150,7 @@ ThemeData appTheme(Brightness brightness) {
             face: t.honey,
             contour: t.edge,
             edge: t.honeyEdge,
-            focus: t.accent,
+            focus: focusRingColor(t, honey: 1),
           ),
     foreground: WidgetStateProperty.resolveWith(
       (states) =>
@@ -173,6 +174,17 @@ ThemeData appTheme(Brightness brightness) {
     textStyle: label,
   );
 
+  final textButton = withFocusRing(
+    TextButton.styleFrom(
+      foregroundColor: t.brand,
+      textStyle: label,
+      shape: const HexBorder(),
+      minimumSize: const Size(48, HlSize.target),
+      padding: EdgeInsets.symmetric(horizontal: hexTextInset(HlSize.target)),
+    ),
+    focusRingColor(t),
+  );
+
   RoundedRectangleBorder rounded(double radius, [BorderSide? side]) =>
       RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(radius),
@@ -193,18 +205,25 @@ ThemeData appTheme(Brightness brightness) {
     filledButtonTheme: FilledButtonThemeData(style: primary),
     elevatedButtonTheme: ElevatedButtonThemeData(style: primary),
     outlinedButtonTheme: OutlinedButtonThemeData(style: secondary),
-    textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(
-        foregroundColor: t.brand,
-        textStyle: label,
-        shape: const HexBorder(),
-        minimumSize: const Size(48, HlSize.target),
-        padding: EdgeInsets.symmetric(horizontal: hexTextInset(HlSize.target)),
-      ),
+    textButtonTheme: TextButtonThemeData(style: textButton),
+    iconButtonTheme: IconButtonThemeData(
+      style: withFocusRing(const ButtonStyle(), focusRingColor(t)),
     ),
     chipTheme: ChipThemeData(
-      shape: HexBorder(side: BorderSide(color: t.border)),
-      side: BorderSide(color: t.border),
+      shape: RingHexBorder(side: BorderSide(color: t.border)),
+      // Focused, the 1 px contour turns the focus colour and the ring grows
+      // inward from it, within the chip ([RingHexBorder]).
+      side: WidgetStateBorderSide.resolveWith(
+        (states) => showsFocusRing(states)
+            ? BorderSide(
+                color: focusRingColor(
+                  t,
+                  honey: states.contains(WidgetState.selected) ? 1 : 0,
+                ),
+                width: 1 + HlFocus.ringWidth,
+              )
+            : BorderSide(color: t.border),
+      ),
       backgroundColor: t.surfaceRaised,
       selectedColor: t.honey,
       checkmarkColor: t.onHoney,

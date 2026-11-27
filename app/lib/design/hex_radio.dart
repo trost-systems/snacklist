@@ -1,3 +1,4 @@
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/hex_border.dart';
 import 'package:family_groceries/design/look.dart';
 import 'package:family_groceries/design/motion.dart';
@@ -55,7 +56,7 @@ class _HexRadioState<T>() extends State<HexRadio<T>> {
             pickedFill: enabled ? t.honey : t.honeySoft,
             pickedContour: enabled ? t.edge : t.divider,
             dot: enabled ? t.onHoney : t.textMuted,
-            focus: state.states.contains(WidgetState.focused) ? t.accent : null,
+            focus: state.states.contains(WidgetState.focused) ? t : null,
           ),
         );
       },
@@ -69,7 +70,9 @@ class _HexRadioPainter({
   required final Color pickedFill,
   required final Color pickedContour,
   required final Color dot,
-  required final Color? focus,
+
+  /// The colours to draw the focus ring from; null when not focused.
+  required final SnacklistColors? focus,
 }) extends CustomPainter {
   this : super(repaint: picked);
 
@@ -93,6 +96,10 @@ class _HexRadioPainter({
   void paint(Canvas canvas, Size size) {
     final hex = Alignment.center.inscribe(HexRadio.hex, Offset.zero & size);
     final p = picked.value;
+    final focus = switch (this.focus) {
+      final t? => focusRingColor(t, honey: p),
+      null => null,
+    };
     canvas
       ..drawPath(
         _outline(hex),
@@ -103,8 +110,16 @@ class _HexRadioPainter({
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = HlBorder.width
-          ..color = Color.lerp(contour, pickedContour, p)!,
+          ..color = focus ?? Color.lerp(contour, pickedContour, p)!,
       );
+    if (focus != null) {
+      paintFocusRing(
+        canvas,
+        (outset) => _outline(hex, outset: outset),
+        focus,
+        contour: HlBorder.width,
+      );
+    }
     if (p > 0) {
       final center = hex.center;
       canvas
@@ -114,15 +129,6 @@ class _HexRadioPainter({
         ..translate(-center.dx, -center.dy)
         ..drawPath(_outline(hex, outset: -_gap), Paint()..color = dot)
         ..restore();
-    }
-    if (focus case final focus?) {
-      canvas.drawPath(
-        _outline(hex, outset: HlFocus.ringGap + HlFocus.ringWidth / 2),
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = HlFocus.ringWidth
-          ..color = focus,
-      );
     }
   }
 

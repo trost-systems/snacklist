@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/core/screen_reader.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_view/hold.dart';
@@ -234,6 +235,10 @@ const _iconGap = 10.0;
 const _detailSize = 13.0;
 const _rowPadding = 6.0;
 
+/// A row has no contour: its focus ring runs along its own edges.
+Path _rowOutline(Rect rect, double outset) =>
+    Path()..addRect(rect.inflate(outset));
+
 /// The rule between two rows.
 const _hairline = 1.0;
 
@@ -299,7 +304,8 @@ class const _Tile({
     final chip = row.priceChip;
     return Material(
       color: Color.lerp(base, hl.mintSoft, drawn),
-      child: InkWell(
+      child: FocusRingInkWell(
+        outline: _rowOutline,
         excludeFromSemantics: chip != null,
         onTap: onTap,
         onSecondaryTap: () => row.onEdit(item),

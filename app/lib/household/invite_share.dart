@@ -4,6 +4,7 @@ import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/environment.dart';
 import 'package:family_groceries/core/notices.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/invite_sheet.dart';
@@ -270,8 +271,11 @@ class const InviteCard({
                   if (onRevoke != null)
                     TextButton.icon(
                       key: const ValueKey('invite-revoke'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: theme.colorScheme.error,
+                      style: withFocusRing(
+                        TextButton.styleFrom(
+                          foregroundColor: theme.colorScheme.error,
+                        ),
+                        focusRingColor(SnacklistColors.of(theme.brightness)),
                       ),
                       icon: const Icon(Icons.block),
                       label: Semantics(

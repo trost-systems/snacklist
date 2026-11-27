@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:family_groceries/design/look.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:material_ui/material_ui.dart';
@@ -53,6 +55,17 @@ class const HlSticker({
   /// A Material [elevation] for something lifted that is not a button: none
   /// under [Look.soft].
   static double elevation(double elevation) => softLook ? 0 : elevation;
+
+  /// The outline of what a sticker with the default corners holds: its
+  /// child's box inside the contour, rounded as the clip is: where the
+  /// focus ring of an ink well in it runs, along the inside of the contour.
+  static Path innerOutline(Rect rect, double outset) => Path()
+    ..addRRect(
+      RRect.fromRectAndRadius(
+        rect.inflate(outset),
+        Radius.circular(math.max(0, cardRadius - HlBorder.width + outset)),
+      ),
+    );
 
   @override
   Widget build(BuildContext context) {

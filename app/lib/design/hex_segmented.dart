@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/hex_border.dart';
 import 'package:family_groceries/design/hex_radio.dart';
 import 'package:family_groceries/design/motion.dart';
@@ -255,7 +256,14 @@ class _SegmentState<T>() extends State<_Segment<T>> {
           );
           final focused = state.states.contains(WidgetState.focused);
           return CustomPaint(
-            foregroundPainter: focused ? _Ring(t.accent) : null,
+            // On the honey indicator the ring takes its contour along.
+            foregroundPainter: focused
+                ? HexFocusRingPainter(
+                    focusRingColor(t, honey: picked ? 1 : 0),
+                    contour: picked ? HlBorder.width : 0,
+                    inset: HexSegmented._gap,
+                  )
+                : null,
             child: Center(
               child: TweenAnimationBuilder<Color?>(
                 tween: ColorTween(end: color),
@@ -304,30 +312,4 @@ class _SegmentState<T>() extends State<_Segment<T>> {
       ),
     );
   }
-}
-
-/// The focus ring: round the indicator's hex, [HlFocus.ringGap] off it, in
-/// [color].
-class const _Ring(final Color color) extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.drawPath(
-      const HexBorder().pathFor(
-        Rect.fromLTRB(
-          0,
-          HexSegmented._gap,
-          size.width,
-          size.height - HexSegmented._gap,
-        ),
-        outset: HlFocus.ringGap + HlFocus.ringWidth / 2,
-      ),
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = HlFocus.ringWidth
-        ..color = color,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_Ring oldDelegate) => oldDelegate.color != color;
 }

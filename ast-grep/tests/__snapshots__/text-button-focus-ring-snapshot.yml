@@ -1,0 +1,54 @@
+id: text-button-focus-ring
+snapshots:
+  "Widget build(BuildContext context) => TextButton(\n  style: TextButton.styleFrom(\n    backgroundColor: t.honey,\n    foregroundColor: t.onHoney,\n  ),\n  onPressed: f,\n  child: label,\n);\n":
+    labels:
+    - source: |-
+        TextButton.styleFrom(
+            backgroundColor: t.honey,
+            foregroundColor: t.onHoney,
+          )
+      style: primary
+      start: 59
+      end: 146
+    - source: |-
+        (
+            backgroundColor: t.honey,
+            foregroundColor: t.onHoney,
+          )
+      style: secondary
+      start: 79
+      end: 146
+  "final b = IconButton(icon: const Icon(Icons.mic), color: c, onPressed: f);\n":
+    labels:
+    - source: "IconButton(icon: const Icon(Icons.mic), color: c, onPressed: f)"
+      style: primary
+      start: 10
+      end: 73
+    - source: "color: c"
+      style: secondary
+      start: 50
+      end: 58
+    - source: "(icon: const Icon(Icons.mic), color: c, onPressed: f)"
+      style: secondary
+      start: 20
+      end: 73
+  "final style = IconButton.styleFrom(foregroundColor: c);\n":
+    labels:
+    - source: "IconButton.styleFrom(foregroundColor: c)"
+      style: primary
+      start: 14
+      end: 54
+    - source: "(foregroundColor: c)"
+      style: secondary
+      start: 34
+      end: 54
+  "final style = TextButton.styleFrom(foregroundColor: c);\n":
+    labels:
+    - source: "TextButton.styleFrom(foregroundColor: c)"
+      style: primary
+      start: 14
+      end: 54
+    - source: "(foregroundColor: c)"
+      style: secondary
+      start: 34
+      end: 54

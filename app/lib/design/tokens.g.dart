@@ -386,11 +386,8 @@ abstract final class HlDepth {
 }
 
 abstract final class HlFocus {
-  /// Focus ring around a hex control, drawn on the unmasked control so the hex mask never clips it
+  /// Focus ring of a control: the app draws it inside the control, from its contour inward, nothing past the control (FH1)
   static const double ringWidth = 3;
-
-  /// Surface-coloured gap between the control and its focus ring
-  static const double ringGap = 2;
 }
 
 abstract final class HlSize {

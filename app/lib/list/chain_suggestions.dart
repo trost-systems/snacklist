@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:math' as math;
 
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
@@ -166,12 +168,29 @@ class const _Suggestion({
   required final Retailer retailer,
   required final VoidCallback onTap,
   super.key,
-}) extends StatelessWidget {
+}) extends StatefulWidget {
+  @override
+  State<_Suggestion> createState() => _SuggestionState();
+}
+
+class _SuggestionState() extends State<_Suggestion> {
+  /// The focus ring shows; the card's contour turns its colour with it.
+  var _ring = false;
+
+  static Path _outline(Rect rect, double outset) => Path()
+    ..addRRect(
+      RRect.fromRectAndRadius(
+        rect.inflate(outset),
+        Radius.circular(math.max(0, HlRadius.s + outset)),
+      ),
+    );
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final t = SnacklistColors.of(Theme.of(context).brightness);
     final text = Theme.of(context).textTheme;
+    final _Suggestion(:retailer, :onTap) = widget;
     final country = l10n.countryName(retailer.country);
     final app = retailer.apps.firstOrNull;
     // Its own node: otherwise the button's label and tap go up to the node
@@ -187,10 +206,13 @@ class const _Suggestion({
         color: t.surfaceRaised,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(HlRadius.s),
-          side: BorderSide(color: t.border),
+          side: BorderSide(color: _ring ? focusRingColor(t) : t.border),
         ),
         clipBehavior: Clip.antiAlias,
-        child: InkWell(
+        child: FocusRingInkWell(
+          outline: _outline,
+          contour: 1,
+          onRingChanged: (ring) => setState(() => _ring = ring),
           onTap: onTap,
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: HlSize.target),

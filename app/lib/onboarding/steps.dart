@@ -4,6 +4,7 @@ import 'package:family_groceries/analytics/consent_screen.dart';
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/legal_links.dart';
 import 'package:family_groceries/design/field_border.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/household/household_kind.dart';
 import 'package:family_groceries/household/invite_repository.dart';
@@ -186,14 +187,16 @@ class _WhoStepState() extends State<_WhoStep> {
           runSpacing: HlSpace.s2,
           children: [
             for (final kind in HouseholdKind.values)
-              FilterChip(
-                key: ValueKey('onboarding-kind-${kind.name}'),
-                label: Text(kindLabel(l10n, kind)),
-                labelStyle: theme.chipTheme.labelStyle?.copyWith(
-                  color: draft.kinds.contains(kind) ? t.onHoney : t.text,
+              FocusRingChip(
+                chip: FilterChip(
+                  key: ValueKey('onboarding-kind-${kind.name}'),
+                  label: Text(kindLabel(l10n, kind)),
+                  labelStyle: theme.chipTheme.labelStyle?.copyWith(
+                    color: draft.kinds.contains(kind) ? t.onHoney : t.text,
+                  ),
+                  selected: draft.kinds.contains(kind),
+                  onSelected: (_) => _toggle(kind),
                 ),
-                selected: draft.kinds.contains(kind),
-                onSelected: (_) => _toggle(kind),
               ),
           ],
         ),
@@ -487,16 +490,18 @@ class _NeedStepState() extends State<_NeedStep> {
           runSpacing: HlSpace.s2,
           children: [
             for (final staple in staples)
-              FilterChip(
-                key: ValueKey('onboarding-staple-$staple'),
-                label: Text(staple),
-                labelStyle: theme.chipTheme.labelStyle?.copyWith(
-                  color: onboarding.hasItem(staple) ? t.onHoney : t.text,
+              FocusRingChip(
+                chip: FilterChip(
+                  key: ValueKey('onboarding-staple-$staple'),
+                  label: Text(staple),
+                  labelStyle: theme.chipTheme.labelStyle?.copyWith(
+                    color: onboarding.hasItem(staple) ? t.onHoney : t.text,
+                  ),
+                  selected: onboarding.hasItem(staple),
+                  onSelected: (on) => on
+                      ? onboarding.addItem(staple)
+                      : onboarding.removeItem(staple),
                 ),
-                selected: onboarding.hasItem(staple),
-                onSelected: (on) => on
-                    ? onboarding.addItem(staple)
-                    : onboarding.removeItem(staple),
               ),
           ],
         ),

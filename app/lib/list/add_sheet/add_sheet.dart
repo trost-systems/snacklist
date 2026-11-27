@@ -5,6 +5,7 @@ import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/environment.dart';
 import 'package:family_groceries/core/screen_reader.dart';
 import 'package:family_groceries/core/theme.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/look.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/tactile.dart';
@@ -1000,7 +1001,8 @@ class const _SuggestionRow({
             key: const ValueKey('suggestion-stale'),
             opacity: stale ? _staleOpacity : 1,
             duration: hlMotion(context, HlDuration.short),
-            child: InkWell(
+            child: FocusRingInkWell(
+              outline: _rowOutline,
               onTap: onTap,
               child: Container(
                 constraints: const BoxConstraints(minHeight: _rowHeight),
@@ -1191,7 +1193,8 @@ class const _MatchTile({
       onTap: onTap,
       child: Material(
         color: face,
-        child: InkWell(
+        child: FocusRingInkWell(
+          outline: _rowOutline,
           onTap: onTap,
           child: Container(
             constraints: const BoxConstraints(minHeight: _rowHeight),
@@ -1658,3 +1661,7 @@ class _AddedDetailsState() extends State<_AddedDetails> {
     );
   }
 }
+
+/// A suggestion row's outline: its box, which the focus ring runs inside.
+Path _rowOutline(Rect rect, double outset) =>
+    Path()..addRect(rect.inflate(outset));

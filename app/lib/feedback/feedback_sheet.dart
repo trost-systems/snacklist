@@ -8,6 +8,7 @@ import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/core/pop_if_current.dart';
 import 'package:family_groceries/design/field_border.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/hex_checkbox.dart';
 import 'package:family_groceries/design/hex_switch.dart';
 import 'package:family_groceries/design/motion.dart';
@@ -303,14 +304,17 @@ class _FeedbackFormState() extends State<FeedbackForm> {
                       (FeedbackCategory.idea, l10n.feedbackCategoryIdea),
                       (FeedbackCategory.other, l10n.feedbackCategoryOther),
                     ])
-                      ChoiceChip(
-                        key: ValueKey('feedback-category-${category.name}'),
-                        label: Text(label),
-                        selected: state.category == category,
-                        onSelected: sending
-                            ? null
-                            : (_) =>
-                                  context.read<FeedbackCubit>().pick(category),
+                      FocusRingChip(
+                        chip: ChoiceChip(
+                          key: ValueKey('feedback-category-${category.name}'),
+                          label: Text(label),
+                          selected: state.category == category,
+                          onSelected: sending
+                              ? null
+                              : (_) => context.read<FeedbackCubit>().pick(
+                                  category,
+                                ),
+                        ),
                       ),
                   ],
                 ),

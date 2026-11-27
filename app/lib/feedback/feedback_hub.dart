@@ -4,6 +4,7 @@ import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/guides.dart';
 import 'package:family_groceries/core/legal_links.dart';
 import 'package:family_groceries/core/notices.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/group_card.dart';
 import 'package:family_groceries/design/hex_border.dart';
 import 'package:family_groceries/design/section_label.dart';
@@ -174,7 +175,8 @@ class const _NoteCard(final FeedbackNote note) extends StatelessWidget {
       depth: StickerDepth.s,
       child: Material(
         type: MaterialType.transparency,
-        child: InkWell(
+        child: FocusRingInkWell(
+          outline: HlSticker.innerOutline,
           onTap: () => context.go(feedbackNotePath(note.id)),
           child: Padding(
             padding: const EdgeInsets.all(HlSpace.s3),

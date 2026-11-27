@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/design/brand_block.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/sticker.dart';
+import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/household/onboarding_page.dart';
 import 'package:family_groceries/household/paste_invite.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
@@ -64,8 +66,9 @@ class const WelcomeScreen({super.key}) extends StatelessWidget {
         Align(
           child: TextButton(
             key: const ValueKey('account-delete'),
-            style: TextButton.styleFrom(
-              foregroundColor: theme.colorScheme.error,
+            style: withFocusRing(
+              TextButton.styleFrom(foregroundColor: theme.colorScheme.error),
+              focusRingColor(SnacklistColors.of(theme.brightness)),
             ),
             onPressed: () => unawaited(deleteAccount(context)),
             child: Text(l10n.accountDelete),
