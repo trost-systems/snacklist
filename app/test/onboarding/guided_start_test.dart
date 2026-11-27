@@ -214,6 +214,62 @@ void main() {
       expect(chipSelected(tester, 'onboarding-kind-family'), isTrue);
     });
 
+    testWidgets('another kind picked on the way back suggests its own name; '
+        'a typed name stays', (tester) async {
+      final o = await pumpOnboarding(
+        tester,
+        location: '/start/who',
+        session: const SignedOut(),
+        draft: const OnboardingDraft(step: OnboardingStep.who),
+      );
+      Future<void> backToWho() async {
+        for (final _ in [1, 2]) {
+          await tester.tap(find.byType(BackButton));
+          await tester.pumpAndSettle();
+        }
+        expect(location(o), '/start/who');
+      }
+
+      Future<void> switchKind(String from, String to) async {
+        await tapKey(tester, 'onboarding-kind-$from');
+        await tapKey(tester, 'onboarding-kind-$to');
+        await tapKey(tester, 'onboarding-next');
+      }
+
+      await tapKey(tester, 'onboarding-kind-family');
+      await tapKey(tester, 'onboarding-next');
+      expect(find.widgetWithText(TextField, 'Unsere Familie'), findsOneWidget);
+      await tapKey(tester, 'onboarding-next');
+      await backToWho();
+      await switchKind('family', 'flat');
+      expect(find.widgetWithText(TextField, 'Unsere WG'), findsOneWidget);
+      await tester.enterText(key('household-name'), 'WG Kastanienallee');
+      await tapKey(tester, 'onboarding-next');
+      await backToWho();
+      await switchKind('flat', 'club');
+      expect(
+        find.widgetWithText(TextField, 'WG Kastanienallee'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('a name the field takes is one the server takes: an emoji '
+        'past 80 code points is cut whole', (tester) async {
+      final o = await pumpOnboarding(
+        tester,
+        location: '/start/name',
+        session: const SignedOut(),
+        draft: const OnboardingDraft(
+          step: OnboardingStep.name,
+          kinds: [HouseholdKind.family],
+        ),
+      );
+      await tester.enterText(key('household-name'), '${'A' * 74}👨‍👩‍👧‍👦');
+      await tapKey(tester, 'onboarding-next');
+      expect(location(o), '/start/stores');
+      expect(o.onboarding.state?.name, 'A' * 74);
+    });
+
     testWidgets("Android's back goes a step back, as Zurück does", (
       tester,
     ) async {
@@ -304,6 +360,31 @@ void main() {
     });
   });
 
+  group('own stores typed without the check', () {
+    testWidgets('Weiter keeps the store; Überspringen leaves it out', (
+      tester,
+    ) async {
+      final o = await pumpOnboarding(
+        tester,
+        location: '/start/stores',
+        session: const SignedOut(),
+        draft: const OnboardingDraft(step: OnboardingStep.stores),
+      );
+      await tapKey(tester, 'onboarding-store-REWE');
+      await tapKey(tester, 'onboarding-store-own');
+      await tester.enterText(key('store-new-field'), ' Bäcker  Kühn ');
+      await tapKey(tester, 'onboarding-next');
+      expect(location(o), '/start/need');
+      expect(storeNames(o), ['REWE', 'Bäcker Kühn']);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+      await tapKey(tester, 'onboarding-store-own');
+      await tester.enterText(key('store-new-field'), 'Hofladen');
+      await tapKey(tester, 'onboarding-skip');
+      expect(o.onboarding.state?.stores, isEmpty);
+    });
+  });
+
   group('„Was fehlt gerade?“', () {
     testWidgets('chips and typed items, once each; a chip or X removes', (
       tester,
@@ -346,6 +427,26 @@ void main() {
       await tapKey(tester, 'onboarding-next');
       expect(o.session.creates, [('Familie Trost', 'REWE, Bäcker Kühn')]);
       expect(location(o), '/start/invite');
+    });
+
+    testWidgets('Weiter keeps what is typed but not added yet', (tester) async {
+      final o = await pumpOnboarding(
+        tester,
+        location: '/start/need',
+        session: const SignedOut(),
+        draft: const OnboardingDraft(
+          step: OnboardingStep.need,
+          items: [DraftItem(id: 'i1', text: 'Milch')],
+        ),
+      );
+      await scrollTo(tester, key('onboarding-need-field'));
+      await tester.enterText(key('onboarding-need-field'), ' Hafermilch ');
+      await tapKey(tester, 'onboarding-next');
+      expect(location(o), '/start/account');
+      expect(o.onboarding.state?.items.map((i) => i.text), [
+        'Milch',
+        'Hafermilch',
+      ]);
     });
   });
 

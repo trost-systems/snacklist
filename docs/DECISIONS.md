@@ -18628,3 +18628,21 @@ with Siri"; "What's on my Snacklist?" got a question whether to turn on Snacklis
    became-active notification to the test host and checks the ask per status.
 6. **Changelog.** `fixed`, `hold: native-siri`: users of the store build don't see native Siri
    announced, and the hold stays unreleased.
+
+## Job 461: onboarding dead-ends
+
+1. **The metric counts dead-ends as frozen probes.** Five widget-test probes
+   (`tool/hillclimb/hc-onboarding-enabled-flow/probes_test.dart`) were written before the
+   baseline, so a fix could not pick its own measure. The happy-path time was left out: nothing
+   here changes the path, and the brief allows it only when stable.
+2. **Weiter commits what is typed.** On „Was fehlt gerade?“ and the stores step a field left with
+   text is what the user meant to add; the button that goes on adds it, as + or the check would.
+   Überspringen does not: it means "none". Zurück does not either (prototype candidate P3).
+3. **The draft keeps no name while it is the suggestion.** A typed name equal to the suggestion
+   becomes the suggestion: it follows the kind, as the user could not tell the two apart.
+4. **Household names are limited in code points in the field.** The server counts code points
+   (`char_length`), Flutter's maxLength characters. The field now cuts at 80 code points instead
+   of refusing at Weiter. The counter keeps counting characters (no visible change; candidate P2).
+   The two copies of `maxHouseholdName`/`validHouseholdName` became one in
+   `app/lib/session/household_name.dart`, below both features, as the import-direction rule wants.
+5. **Port block 571xx.** The brief's 661xx is above 65535.

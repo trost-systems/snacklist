@@ -7,23 +7,13 @@ import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/onboarding_page.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/new_stores_picker.dart';
+import 'package:family_groceries/session/household_name.dart';
 import 'package:family_groceries/session/new_store.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/shell/router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
-
-/// The longest household name, in characters (code points, as Postgres'
-/// char_length counts them).
-const maxHouseholdName = 80;
-
-/// Whether [name] is a household name the server takes: 1 to 80
-/// characters once trimmed.
-bool validHouseholdName(String name) {
-  final length = name.trim().runes.length;
-  return length >= 1 && length <= maxHouseholdName;
-}
 
 /// Onboarding Step 2a: the household's name (prefilled, editable) and its
 /// stores ([NewStoresPicker], the guided start's chips); "Überspringen"
@@ -54,6 +44,7 @@ class _CreateHouseholdScreenState() extends State<CreateHouseholdScreen> {
 
   /// The stores to create, in the order picked.
   var _stores = <NewStore>[];
+  final _picker = GlobalKey<NewStoresPickerState>();
   final _nameFocus = FocusNode();
   final _scroll = ScrollController();
   var _busy = false;
@@ -87,6 +78,9 @@ class _CreateHouseholdScreenState() extends State<CreateHouseholdScreen> {
         _nameFocus.requestFocus();
       }
       return;
+    }
+    if (!skip) {
+      _picker.currentState?.addTyped();
     }
     final session = context.read<SessionCubit>();
     setState(() {
@@ -144,6 +138,7 @@ class _CreateHouseholdScreenState() extends State<CreateHouseholdScreen> {
               autofocus: widget.from == HouseholdOrigin.switcher,
               enabled: !_busy,
               maxLength: maxHouseholdName,
+              inputFormatters: const [HouseholdNameLimit()],
               textCapitalization: TextCapitalization.sentences,
               decoration: InputDecoration(
                 error: nameError == null ? null : FieldError(nameError),
@@ -169,6 +164,7 @@ class _CreateHouseholdScreenState() extends State<CreateHouseholdScreen> {
         ] else
           const SizedBox(height: 8),
         NewStoresPicker(
+          key: _picker,
           stores: _stores,
           onChanged: (stores) => setState(() => _stores = stores),
           linked: linked,
