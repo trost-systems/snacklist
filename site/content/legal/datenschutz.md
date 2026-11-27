@@ -4,7 +4,7 @@ description: "Datenschutzerklärung von Snacklist: welche Daten die App und die 
 locale: de
 path: /datenschutz
 translation_key: privacy
-updated: 2026-11-26
+updated: 2026-11-27
 ---
 
 # Datenschutzerklärung
