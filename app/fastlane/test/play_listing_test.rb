@@ -53,6 +53,8 @@ class PlayListingTest < Minitest::Test
 
   STAGED = File.expand_path("../metadata/android", __dir__)
   PUBLISHED = [Release.new("completed", ["1541"])].freeze
+  DEC1 = Time.new(2026, 12, 1, 0, 0, 0, "+01:00")
+  NOV30_LATE = Time.new(2026, 11, 30, 23, 59, 0, "+01:00")
 
   def setup
     @log = []
@@ -65,9 +67,9 @@ class PlayListingTest < Minitest::Test
     end
   end
 
-  def publish(play, upload:, status: 200, version_code: "1541", texts: { "de-DE" => fields })
+  def publish(play, upload:, status: 200, version_code: "1541", texts: { "de-DE" => fields }, held: false, now: DEC1)
     PlayListing.publish(client: play, texts: texts, upload: upload, store_page_status: status,
-                        version_code: version_code, log: @log.method(:push))
+                        version_code: version_code, log: @log.method(:push), with_held_release: held, now: now)
   end
 
   def fields(full = "Neu")
@@ -192,6 +194,59 @@ class PlayListingTest < Minitest::Test
     assert(@log.any? { |l| l.include?("Could not delete the edit (Play expires it): no active edit") })
   end
 
+  def test_joining_the_held_release_refuses_before_launch_day
+    play = FakePlay.new(production: PUBLISHED)
+    error = assert_raises(PlayListing::Refused) { publish(play, upload: true, status: 404, held: true, now: NOV30_LATE) }
+    assert_match "only from 2026-12-01T00:00:00+01:00", error.message
+    refute_includes play.calls, [:commit]
+    refute(play.calls.any? { |c| c.first == :update_listing_for_language })
+  end
+
+  def test_from_launch_day_the_listing_joins_the_held_release
+    play = FakePlay.new(production: PUBLISHED)
+    publish(play, upload: true, status: 404, held: true, now: DEC1)
+    assert_equal [:commit], play.calls.last
+    assert_equal "Neu", play.committed["de-DE"].full_description
+
+    unknown = FakePlay.new(production: PUBLISHED)
+    error = assert_raises(PlayListing::Refused) { publish(unknown, upload: true, status: 404, held: true, version_code: "1557") }
+    assert_match "no completed release with versionCode 1557", error.message
+    refute_includes unknown.calls, [:commit]
+  end
+
+  def run_lane(upload:, plays:, status: 200)
+    queue = plays.dup
+    PlayListing.run(texts: { "de-DE" => fields }, upload: upload, version_code: "1541",
+                    new_client: -> { queue.shift or flunk("no edit left") }, store_page: [status, ""],
+                    log: @log.method(:push), now: DEC1)
+    queue
+  end
+
+  def test_the_lane_uploads_then_reads_back_in_a_second_edit
+    play = FakePlay.new(production: PUBLISHED)
+    check = FakePlay.new(listings: { "de-DE" => Listing.new("Snacklist", "Kurz", "Neu", nil) })
+    assert_empty run_lane(upload: true, plays: [play, check])
+    assert_includes play.calls, [:commit]
+    assert_equal [[:listing_for_language, "de-DE"], [:abort]], check.calls
+    assert_includes @log, "Play store page (de-DE): HTTP 200"
+  end
+
+  def test_the_lane_fails_when_the_read_back_differs_and_says_it_committed
+    play = FakePlay.new(production: PUBLISHED)
+    stale = FakePlay.new(listings: { "de-DE" => Listing.new("Snacklist", "Kurz", "Alt", nil) })
+    error = assert_raises(PlayListing::Refused) { run_lane(upload: true, plays: [play, stale]) }
+    assert_match "The listing was committed, but Play's read-back differs", error.message
+    assert_match "de-DE/full_description", error.message
+  end
+
+  def test_the_lane_validates_without_a_read_back
+    play = FakePlay.new(production: PUBLISHED)
+    spare = FakePlay.new
+    assert_equal [spare], run_lane(upload: false, plays: [play, spare])
+    refute_includes play.calls, [:commit]
+    assert_empty spare.calls
+  end
+
   def test_read_back_names_each_field_that_differs
     texts = { "de-DE" => fields("Neu") }
     same = FakePlay.new(listings: { "de-DE" => Listing.new("Snacklist", "Kurz", "Neu", nil) })
@@ -204,17 +259,25 @@ class PlayListingTest < Minitest::Test
     assert_match "de-DE/full_description: Play has sha256 #{Digest::SHA256.hexdigest("Neu\n")}", mismatches.first
   end
 
-  def test_the_public_page_check_reads_the_rendered_description
+  def test_the_public_page_check_compares_the_rendered_description_exactly
     text = "Snacklist ist die Einkaufsliste.\n\n• Eine Liste & mehr"
     html = '<div data-g-id="description" inert>Snacklist ist die Einkaufsliste.<br><br>• Eine Liste &amp; mehr</div>'
     assert_equal text, PlayListing.public_description(html)
-    assert_empty PlayListing.public_mismatches(locale: "de-DE", status: 200, html: html, text: text)
+    assert_empty public_mismatches(200, html, text)
+    assert_includes @log, "Store page de-DE/full_description: sha256 #{PlayListing.sha256(text)}, repo #{PlayListing.sha256(text)}"
+
+    one_break = '<div data-g-id="description">Snacklist ist die Einkaufsliste.<br>• Eine Liste &amp; mehr</div>'
+    assert_match "differs from the repo (#{PlayListing.sha256(text)}) only in whitespace", public_mismatches(200, one_break, text).first
 
     old = "<div data-g-id=\"description\">Snacklist.<br><br>#{PlayListing::LK1_SENTENCE}</div>"
-    found = PlayListing.public_mismatches(locale: "de-DE", status: 200, html: old, text: text)
+    found = public_mismatches(200, old, text)
     assert(found.any? { |l| l.include?("Legal LK1") })
-    assert_equal ["de-DE: the Play store page answers 404"],
-                 PlayListing.public_mismatches(locale: "de-DE", status: 404, html: "", text: text)
+    assert(found.any? { |l| l.include?("in its words") })
+    assert_equal ["de-DE: the Play store page answers 404"], public_mismatches(404, "", text)
+  end
+
+  def public_mismatches(status, html, text)
+    PlayListing.public_mismatches(locale: "de-DE", status: status, html: html, text: text, log: @log.method(:push))
   end
 
   def test_the_store_page_is_the_locales_language

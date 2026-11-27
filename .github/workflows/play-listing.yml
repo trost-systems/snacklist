@@ -1,6 +1,6 @@
 # Uploads the staged Play listing text (app/fastlane/metadata/android/*: title, short and full
-# description per locale; no bundle, track, image or screenshot) right after the production release
-# is published, and reads it back. Lanes `android listing` and `android listing_check`
+# description per locale; no bundle, track, image or screenshot) with the held production release
+# (from launch day, under managed publishing) or right after it is published, and reads it back. Lanes `android listing` and `android listing_check`
 # (app/fastlane/Fastfile), docs/RELEASE.md section "Store listing upload".
 name: Play listing
 
@@ -13,9 +13,13 @@ on:
         options: [validate, upload, check]
         default: validate
       published_version_code:
-        description: versionCode of the production release just published (upload refuses unless production carries it, completed, and the store page is live)
+        description: versionCode of the production release (upload refuses unless production carries it as completed)
         type: string
         default: ""
+      with_held_release:
+        description: upload joins the release still held by managed publishing (from 1 Dec 2026 00:00 Berlin; check in Play Console that managed publishing is on first)
+        type: boolean
+        default: false
 
 concurrency:
   group: play-listing
@@ -56,3 +60,4 @@ jobs:
           LANE: ${{ inputs.mode == 'check' && 'listing_check' || 'listing' }}
           RELEASE_UPLOAD: ${{ inputs.mode == 'upload' }}
           PLAY_PUBLISHED_VERSION_CODE: ${{ inputs.published_version_code }}
+          PLAY_LISTING_WITH_HELD_RELEASE: ${{ inputs.with_held_release }}

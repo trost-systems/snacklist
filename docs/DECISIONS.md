@@ -18817,3 +18817,11 @@ last tick only). The job 29b and job 455 entries above stay as they were.
   error code, so the wording goes to the copy job (456) and not into this climb.
 - **The measure runs CI's Flutter (3.50.0).** The box's default 3.47.8 failed 12 unrelated
   `default_list_test` cases (`!timersPending`).
+## Job 480, review 0: the listing can join the held release, and the sale waits for it
+
+1. **A second upload path, joining the held release.** Review 0 found that the after-publish order puts the listing live a Google review after 1541, which can push the sale past T. `with_held_release=true` lets the upload commit while 1541 still waits under managed publishing. One publish click then releases both. This is the Dec 1 release, not an edit before it. The lane refuses it before 2026-12-01 00:00 Europe/Berlin (Peter K1), and it still needs production to carry the named build as `completed`. The lane cannot read the managed-publishing switch (no public API), so the runbook has Ops check it in Play Console first. The after-publish path stays, and it also covers a store page the US runner cannot see.
+2. **The default order is with the held release. If the listing review is late, 1541 is still published on time and the sale waits.** MP1 fixes the publish for Dec 1 and Legal LK1 fixes the sale's precondition. Only the sale may slip. Peter's alternatives and the T question are in NEEDS_PETER "Job 480".
+3. **The hard LK1 gate sits in PAYWALL_RELEASE.md 5.4.** That is the go-live checklist the Lead follows, so the gate lives there, not only in RELEASE.md.
+4. **The public page check is exact now.** Play renders each `\n` as `<br>`, which maps back, so the check compares exactly and logs both sha256s. A failure says whether only whitespace differs.
+5. **No shared concurrency group with release.yml.** GitHub cancels a pending run when a third run queues in the same group, which would drop a Release upload. The runbook says to start the listing run when no Release run is in progress, and a refused commit is safe to rerun.
+6. **The lane body is `PlayListing.run`**, tested with a fake client factory: an upload reads back in a second edit, a validate never reads back, and a differing read-back fails with "committed".

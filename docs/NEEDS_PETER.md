@@ -2091,14 +2091,38 @@ To undo: `enabled = false`. Keys stay; API keys stop working on MCP and MCP toke
 
 **Update, job 434 (2026-11-24).** Steps 4 and 5 are done: the reason lines are confirmed and `auth_mail.ts` put the six templates and `smtp_sender_name` = `Snacklist` on the hosted project; a second dry-run reports nothing left to change. The seven security notices stay off. Sending yourself a sign-in link in each language is still the one check left.
 
-## Job 480: Play listing on 1 December (Ops runs it; Peter's K1 covers it)
+## Job 480: Play listing on 1 December, and the sale time it can move
 
-Nothing new for Peter to decide. On launch day, in this order ([RELEASE.md](RELEASE.md), "Store listing upload"):
+**A decision for Peter, with a default already applied.** Legal LK1 lets the sale open only once
+the staged Play listing is live. A listing change needs Google's review first: hours, sometimes
+longer. Your K1 rules out any listing edit before 1 December. So on launch day the review can
+still be running at the planned publish (~09:00) and at the sale time T.
 
-1. Publish production 1541 in Play Console's Publishing overview (MP1).
-2. Run `gh workflow run play-listing.yml -f mode=upload -f published_version_code=1541` from `main`. It refuses while the store page is still 404, so retry a few minutes after the publish if it does. It must end with "Play's listing equals the repo text".
-3. When Google approves the listing change, publish it in the Publishing overview. Then run `gh workflow run play-listing.yml -f mode=check` until it passes.
-4. Only then switch on the Premium purchase screen (Legal LK1).
+Default (applied unless you say otherwise): Ops runs this order on 1 December
+([RELEASE.md](RELEASE.md), "Store listing upload"):
+
+1. As early as possible from 00:00 Berlin, check in Play Console's Publishing overview that managed
+   publishing is on. Then run `gh workflow run play-listing.yml -f mode=upload -f published_version_code=1541 -f with_held_release=true`
+   from `main`. It must end with "Play's listing equals the repo text". The listing waits with
+   1541 under managed publishing.
+2. At the planned publish: if Google has approved the listing, one click publishes 1541 and the
+   listing together. If not, publish 1541 alone as planned (MP1), and publish the listing change
+   once Google approves it.
+3. Run `gh workflow run play-listing.yml -f mode=check` until it passes.
+4. Only then does the sale open ([PAYWALL_RELEASE.md](PAYWALL_RELEASE.md) 5.4). If that is after T,
+   the sale waits past T.
+
+What you could tell us instead:
+
+- Hold the 1541 publish itself until Google approves the listing, so the app, the listing and the
+  sale go live together, later than 09:00 if the review is slow.
+- Allow the listing upload before 1 December, so its review is done by launch day. Under managed
+  publishing nothing goes live before the publish click, but this goes against K1 as worded.
+- Use Legal's interim sentence on the live page instead („Kostenlos nutzbar, ohne Werbung. Premium
+  ist optional.“), which Ops would paste by hand and which needs its own Google review as well.
+
+If the sale moves past T, whether T moves with it (and so the beta grant cut-off,
+PAYWALL_RELEASE.md 5.3a) is your call with Legal.
 
 ## Job 468: retest iOS push on TestFlight
 

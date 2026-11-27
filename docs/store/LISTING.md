@@ -136,7 +136,8 @@ Reason: `docs/PURCHASES.md` "Per-user Premium" (job 185) has the buyer hold Prem
 3. The Snacklist API. The Premium page also lists "Eigene Automationen mit der Snacklist API", which the lock covers. The listings leave
    the API out (the earlier caption rules, N-187 to N-195, keep it out of the screenshots). Legal decides whether the description names it.
 4. Premium on sale. The texts name Premium as an optional in-app purchase and say nothing about a price, so they hold on any day. FEATURES-FOR-WRITERS
-   says nothing is on sale yet; the listing must go live only with the purchase screen (`premium_offer`, `REVENUECAT_PURCHASES`).
+   says nothing is on sale yet. The Play listing goes live at or before the sale, never after it (Legal LK1, 26 Nov 2026): the purchase screen
+   (`premium_offer`) opens only once `play-listing.yml` `mode=check` passes (`docs/RELEASE.md`, "Store listing upload"; `docs/PAYWALL_RELEASE.md` 5.4).
 5. Subscription disclosure block. The auto-renewal paragraph is the app's `premiumYearlyTerms` text, adapted per store (Apple account or
    Google account, the store's subscription settings). It is marked pending in the ARB; Legal approves it. The App Store needs a working privacy
    policy link and a terms link. Per Legal L24-6 (option A) the en-US and de-DE App Store descriptions carry these two lines

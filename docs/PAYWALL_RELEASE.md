@@ -308,6 +308,11 @@ flip time of the integration lock (6.4), fixed with T: use of MCP or the API aft
 the grant, and the script refuses `--apply` once the lock is on. T may still be in the future when a run starts: accounts
 created later are picked up by the next run with the same T.
 
+T comes after the staged Play listing is live (Legal LK1, job 480): 5.4 has a hard precondition
+on it. If the listing is not live by the planned T, the sale waits past T. Whether T then moves,
+and so which `--created-before` the grant runs pass, is Peter's call with Legal (N-344, N-347);
+[`NEEDS_PETER.md`](NEEDS_PETER.md) "Job 480".
+
 1. Before the launch day, and again right before T, the dry run. It changes nothing and prints
    how many accounts there are, how many already have the grant, how many need only the
    reconcile, and how many need a grant:
@@ -315,7 +320,7 @@ created later are picked up by the next run with the same T.
 2. Shortly before T, the first grant run:
    `... beta-lifetime.ts --created-before <T> --used-before <U> --apply`. A run that reports failures exits 1; run
    it again, same command. It skips every account that is done, so a rerun only finishes the rest.
-3. At T, not earlier: 5.4.
+3. At T, not earlier, and only once 5.4's Play listing precondition holds: 5.4.
 4. Right after 5.4, the same command again, `... beta-lifetime.ts --created-before <T> --used-before <U> --apply`:
    it grants the accounts created between step 2 and T and skips the rest. Every later run (a
    rerun, 6.2's check) passes the same T, never another value.
@@ -325,7 +330,19 @@ Never revoke a beta household's existing promotional grant, not at the launch an
 grants end by themselves on the date they were given with. The account's own grant from this
 step keeps Premium after that.
 
-5.4 **Lead, Peter's yes**: the sale opens, together with 4.1:
+5.4 **Lead, Peter's yes**: the sale opens, together with 4.1.
+
+Hard precondition (Legal LK1): the live Play de-DE description still opens with „Kostenlos, ohne
+Werbung, für den ganzen Haushalt.“ until the staged repo listing replaces it. Do not run the
+`update` below until both hold:
+
+- `gh workflow run play-listing.yml -f mode=upload …` ended with "Play's listing equals the repo
+  text", and the listing change is published in Play Console's Publishing overview;
+- `gh workflow run play-listing.yml -f mode=check` passed after that publish.
+
+The order and the two upload paths: [`RELEASE.md`](RELEASE.md), "Store listing upload". If the
+check does not pass by T, the sale waits (5.3a).
+
 
 ```sql
 update public.app_switches set enabled = true, changed_at = now() where key = 'premium_offer';
