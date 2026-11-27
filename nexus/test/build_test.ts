@@ -1,5 +1,6 @@
 import { assert, assertEquals } from '@std/assert';
 import { buildSnapshot } from '../pipeline/build.ts';
+import { hillClimbDocs } from '../pipeline/hillclimbs.ts';
 import type { Job, Snapshot } from '../src/snapshot.ts';
 import { fakeGh, livePid, now, personEmail, personName, writeFixtureOps } from './fixtures/ops.ts';
 
@@ -138,7 +139,8 @@ Deno.test('merged 7d counts the rolling 7 x 24 h, the bars keep calendar days', 
 Deno.test('a registered hill-climb doc that is missing is reported, not invented', async () => {
   const { snap, warnings } = await snapshot();
   assertEquals(snap.hillclimbs.map((h) => h.id), ['hc-strictness']);
-  assertEquals(warnings.length, 12);
+  // The fixture has only hc-strictness's doc: every other registered one warns.
+  assertEquals(warnings.length, hillClimbDocs.length - 1);
 });
 
 const jobKeys = [

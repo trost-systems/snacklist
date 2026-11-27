@@ -460,6 +460,13 @@ class ListCubit(
   /// the tap on ([willTick]), enqueued when the row has closed ([tick]).
   final _promised = <String, SetStatus>{};
 
+  /// The ticks whose tap saved them ([willTick]): the device holds them.
+  final _savedPromises = <String>{};
+
+  /// The op being emitted is on the device already, at its place in the
+  /// queue: its emit saves nothing ([_enqueue]).
+  var _savedAhead = false;
+
   /// The stores the user ticked in during this foreground session: only
   /// theirs may show the „… ist erledigt“ card (never restored from items).
   /// Any tick adds its store; [storeDoneCard] still wants a last item and
@@ -938,6 +945,7 @@ class ListCubit(
     if (state.loaded || _cacheRead) {
       _save?.cancel();
       _saveNow(state);
+      _savedPromises.add(id);
     }
   }
 
@@ -953,8 +961,17 @@ class ListCubit(
     if (before?.storeId case final store?) {
       _tickedStores.add(store);
     }
+    // The last save holds the queue, then the promised ticks in order:
+    // with the first of them enqueued and no save due since, it already
+    // holds what this save would.
+    final tapSaved = _savedPromises.remove(id);
+    final saved =
+        tapSaved &&
+        _promised.keys.firstOrNull == id &&
+        !(_save?.isActive ?? false);
     _enqueue(
       _promised.remove(id) ?? SetStatus(id, ItemStatus.bought, _clock()),
+      saved: saved,
     );
     if (before != null && active) {
       _track('item_ticked', _actor());
@@ -2138,8 +2155,14 @@ class ListCubit(
     }
   }
 
-  void _enqueue(ItemOp op) {
-    emit(state.copyWith(pending: [...state.pending, op]));
+  /// [saved]: the device holds the queue with [op] already ([tick]).
+  void _enqueue(ItemOp op, {bool saved = false}) {
+    _savedAhead = saved;
+    try {
+      emit(state.copyWith(pending: [...state.pending, op]));
+    } finally {
+      _savedAhead = false;
+    }
     unawaited(_flush());
   }
 
@@ -2477,8 +2500,10 @@ class ListCubit(
       return;
     }
     if (queued) {
-      _save?.cancel();
-      _saveNow(next);
+      if (!_savedAhead) {
+        _save?.cancel();
+        _saveNow(next);
+      }
     } else if (!_closing &&
         (!identical(next.catalog, before.catalog) ||
             !identical(next.server, before.server) ||
@@ -2496,7 +2521,7 @@ class ListCubit(
     _cache.save(
       ListSnapshot(
         catalog: state.catalog,
-        server: [...state.server.values],
+        server: _rowsOf(state.server),
         pending: [...state.pending, ..._promised.values],
         usuals: state.usuals,
         claims: [...state.claimRows.values],
@@ -2504,6 +2529,19 @@ class ListCubit(
       ),
     ),
   );
+
+  /// One list per server state: a save while only the queue changed (a
+  /// tick, its undo) reuses the rows' text ([ListSnapshot.encode]).
+  List<Item> _rowsOf(Map<String, Item> server) {
+    if (!identical(server, _rowsServer)) {
+      _rowsServer = server;
+      _rows = List.unmodifiable(server.values);
+    }
+    return _rows;
+  }
+
+  Map<String, Item>? _rowsServer;
+  var _rows = const <Item>[];
 
   static bool _touchesIndex(Map<String, Item> before, Map<String, Item> next) {
     for (final MapEntry(:key, value: was) in before.entries) {

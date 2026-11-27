@@ -18709,3 +18709,17 @@ tests use.
    still skips the hook. COMMON.md (26 Nov, FL7) says it now starts it, detached, after each
    merge. docs/CI.md said otherwise and is corrected. The job 476 NEEDS_LEAD entry stays as
    history; it is an append log.
+
+## Job 458: hill-climb ticking, unticking and the undo, 2026-11-26
+
+1. **The metric is the cubit's work for a tap and its undo, with the save's text.** On main that text was 92 % of a
+   tick, so a probe without it would have measured the wrong thing. Both weigh the same: a mistaken tick and its
+   repair. 3000 items for the score, 300 as a part; correctness failures add 1,000,000 each.
+2. **Paired A/B launches decide a step when the host is busy.** Load on hz went from 10 to 40 during the climb, and
+   one launch's score moved ±20 %. Step 2's unpaired −12 % sat inside the 15 % band; alternating bundles gave −22 %,
+   better in 5 of 5 pairs.
+3. **The tick skips its save only when the device already holds that exact queue.** The condition is narrow on
+   purpose: its op was the first promised tick, the tap's save happened, and no debounced save is due. Any other case
+   saves as before, so the copy on the device never differs from main's.
+4. **Stopped after 3 steps of 4.** What is left is under the noise band (the catalog's text, the queue folds) or the
+   cache format (#270), which job 451 left to the lead.

@@ -1868,6 +1868,73 @@ void main() {
       expect(cache.saved!.pending, isEmpty, reason: 'no tick left over');
     });
 
+    test('the closed row saves nothing new: the tap saved that queue '
+        '(job 458)', () async {
+      cubit.willTick(bread);
+      final tapped = cache.saved;
+      repo.gate = Completer();
+      cubit.tick(bread);
+      expect(cache.saved, same(tapped));
+      expect(cache.saved!.pending, [theTick()]);
+      repo.gate!.complete();
+      await settle();
+      expect(cache.saved!.pending, isEmpty);
+    });
+
+    test('rows closing out of order save the queue in its new order '
+        '(job 458)', () async {
+      final milk = (cubit.addEntry(parseEntry('Milch')) as Added).item.id;
+      await settle();
+      repo.gate = Completer();
+      cubit
+        ..willTick(bread)
+        ..willTick(milk)
+        ..tick(milk);
+      expect([for (final op in cache.saved!.pending) op.itemId], [milk, bread]);
+      final saved = cache.saved;
+      cubit.tick(bread);
+      expect(cache.saved, same(saved), reason: 'the order is the same');
+      expect(cubit.state.pending.map((op) => op.itemId), [milk, bread]);
+      repo.gate!.complete();
+      await settle();
+      expect(cache.saved!.pending, isEmpty);
+    });
+
+    test('a tap before the device copy was read saved nothing: the closed '
+        'row saves its tick (job 458)', () async {
+      final fresh = MemoryListCache();
+      repo.itemsGate = Completer();
+      final starting = ListCubit(
+        repo,
+        fresh,
+        userId: 'peter',
+        grace: Duration.zero,
+      )..start();
+      addTearDown(starting.close);
+      starting.willTick(bread);
+      expect(fresh.saved, isNull);
+      await settle();
+      expect(starting.state.loaded, isFalse);
+      repo.gate = Completer();
+      starting.tick(bread);
+      expect(fresh.saved?.pending, [theTick()]);
+      repo.itemsGate!.complete();
+      repo.gate!.complete();
+      await settle();
+    });
+
+    test("a partner's add while the row closes is saved with the tick "
+        '(job 458)', () async {
+      cubit.willTick(bread);
+      repo.emitItem!(repo.remoteAdd('Tee'));
+      repo.gate = Completer();
+      cubit.tick(bread);
+      expect([for (final i in cache.saved!.server) i.name], contains('Tee'));
+      expect(cache.saved!.pending, [theTick()]);
+      repo.gate!.complete();
+      await settle();
+    });
+
     test('the app is gone before the row has closed: the next start shows '
         'the tick and sends it, once', () async {
       cubit.willTick(bread);

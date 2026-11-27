@@ -136,13 +136,18 @@ class const ListSnapshot({
   String encode() =>
       '{"version":$version'
       ',"catalog":${jsonEncode(catalog.toJson())}'
-      ',"server":[${server.map(_itemText).join(',')}]'
+      ',"server":[${_serverTexts[server] ??= server.map(_itemText).join(',')}]'
       ',"pending":${jsonEncode([for (final op in pending) op.toJson()])}'
       ',"usuals":${jsonEncode([for (final u in usuals) u.toJson()])}'
       ',"claims":${jsonEncode([for (final c in claims) c.toJson()])}'
       ',"household_index":${_indexText(householdIndex)}}';
 
   static final _itemTexts = Expando<String>();
+
+  /// The rows' text per [server] list: the list saves pass one list while
+  /// the server's rows stay the same, so a save after a tick or its undo
+  /// joins no row again.
+  static final _serverTexts = Expando<String>();
 
   /// Encoded once per index: it changes only with a resync, and its history
   /// can be a few hundred KB.
