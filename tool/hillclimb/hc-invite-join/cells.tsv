@@ -1,0 +1,28 @@
+# cell	steps	test file (app/)	test name (substring of the full name)
+# A cell is covered when it has a row and every row's test ran and passed. steps: user actions of a
+# path's happy-path test from "I have the code or link" to "on the household's list", signed in.
+link/joins	1	test/onboarding/join_household_jh2_test.dart	joins at once with JH2: one join, no confirm tap
+link/invalid	0	test/onboarding/join_household_jh2_test.dart	an invalid link says so once and keeps the code to edit
+link/ratelimited	0	test/onboarding/join_household_jh2_test.dart	the rate limit at the preview says so; Weiter tries again
+link/offline-preview	0	test/onboarding/join_household_jh2_test.dart	offline at the preview says so; Weiter joins once back
+link/offline-join	0	test/onboarding/join_household_jh2_test.dart	offline at the join keeps the household; its Join joins
+link/cap	0	test/onboarding/join_household_jh2_test.dart	in 20 households the join says so and adds nothing
+link/declined	0	test/onboarding/join_household_jh2_test.dart	declined in the last day is said plainly
+link/after-refusal	0	test/onboarding/join_household_jh2_test.dart	in 20 households: the link is answered, the next start opens the list
+link/after-refusal	0	test/onboarding/join_household_jh2_test.dart	declined in the last day: the link is answered, the next start opens the list
+link/after-refusal	0	test/onboarding/join_household_jh2_test.dart	offline at the join keeps the link for the next start
+link/after-refusal	0	test/onboarding/join_household_jh2_test.dart	the rate limit at the join keeps the link for the next start
+link/after-refusal	0	test/onboarding/join_household_jh2_test.dart	a server error at the join keeps the link for the next start
+code/joins	2	test/onboarding/join_household_jh2_test.dart	Join signed in joins without asking again and lands on the list
+code/invalid	0	test/onboarding/join_household_jh2_test.dart	a made up code shows one line and no way to join
+code/invalid	0	test/onboarding/join_household_jh2_test.dart	a full code shows one line and no way to join
+code/ratelimited	0	test/onboarding/join_household_jh2_test.dart	a rate-limited code shows one line and no way to join
+code/offline	0	test/onboarding/join_household_jh2_test.dart	offline says so and tries again on its button
+code/refused-at-join	0	test/onboarding/join_household_jh2_test.dart	a code the join refuses after its preview says so at the join, and Cancel leaves it
+typed/joins	3	test/household/onboarding_test.dart	a typed code is checked, then joined by code
+typed/invalid	0	test/onboarding/join_household_jh2_test.dart	a code nobody made says so once; the code stays to edit
+typed/ratelimited	0	test/onboarding/join_household_jh2_test.dart	the rate limit says so; Weiter tries again
+typed/offline-preview	0	test/onboarding/join_household_jh2_test.dart	offline at the preview says so; Weiter tries again
+typed/offline-join	0	test/onboarding/join_household_jh2_test.dart	offline at the join keeps the household; Join joins once back
+typed/cap	0	test/onboarding/join_household_jh2_test.dart	Mit Code beitreten (job 460) in 20 households the join says so and adds nothing
+any/unreadable-answer	0	test/onboarding/join_household_jh2_test.dart	an answer the app cannot read at the preview says so and keeps the link

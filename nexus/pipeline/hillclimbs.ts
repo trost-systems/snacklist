@@ -52,6 +52,13 @@ export const hillClimbDocs: readonly HillClimbDoc[] = [
     target: null,
   },
   {
+    id: 'hc-invite-join',
+    metric: 'failed tests x 100 + untested join errors x 10 + join steps',
+    direction: 'lower',
+    baseline: /^Baseline score \*\*([\d.]+)\*\*/m,
+    target: null,
+  },
+  {
     id: 'hc-onboarding-enabled-flow',
     metric: 'onboarding dead-ends (10 per failing test)',
     direction: 'lower',

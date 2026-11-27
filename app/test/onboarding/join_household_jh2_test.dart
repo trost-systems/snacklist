@@ -236,6 +236,34 @@ void main() {
       expect(o.pending.code, 'ABCD2345');
     });
 
+    testWidgets('a code the join refuses after its preview says so at the '
+        'join, and Cancel leaves it (job 460)', (tester) async {
+      final invites = FakeInvites()
+        ..publicAnswers['WXYZ6789'] = const PublicInviteOpen(
+          household: 'Familie Trost',
+          inviter: 'Peter',
+          members: 2,
+          openItems: 3,
+          premium: false,
+        );
+      final o = await pumpJoinStep(
+        tester,
+        session: const NeedsHousehold('peter'),
+        invites: invites,
+      );
+      await enter(tester, 'WXYZ6789');
+      await tapKey(tester, 'join-code-join');
+      expect(location(o), '/join/WXYZ6789');
+      expect(
+        find.text('Dieser Code ist ungültig oder abgelaufen.'),
+        findsOneWidget,
+      );
+      expect(o.session.joins, isEmpty);
+      expect(o.pending.code, isNull);
+      await tapKey(tester, 'join-cancel');
+      expect(location(o), isNot(startsWith('/join')));
+    });
+
     testWidgets('Join signed in joins without asking again and lands on the '
         'list', (tester) async {
       final o = await pumpJoinStep(
@@ -353,6 +381,275 @@ void main() {
       expect(key('join-problem'), findsOneWidget);
       expect(key('invite-code'), findsOneWidget);
       expect(o.session.joins, isEmpty);
+    });
+  });
+
+  group('an invite link that is not joined (job 460)', () {
+    const offline =
+        'Keine Internetverbindung. Versuche es erneut, sobald du online bist.';
+
+    /// The link at `/join/ABCD2345` with JH2 coming on after the preview,
+    /// so [joinFails] is set before the join without asking runs.
+    Future<Onboarding> pumpLink(
+      WidgetTester tester, {
+      required HouseholdProblem joinFails,
+      Session session = const NeedsHousehold('peter'),
+    }) async {
+      final flags = Flags();
+      addTearDown(flags.close);
+      final o = await pumpOnboarding(
+        tester,
+        location: '/join/ABCD2345',
+        session: session,
+        flags: flags,
+      );
+      o.session.fail = joinFails;
+      flags.replace({joinHouseholdJh2Flag: true});
+      await tester.pumpAndSettle();
+      return o;
+    }
+
+    testWidgets('an invalid link says so once and keeps the code to edit', (
+      tester,
+    ) async {
+      final o = await pumpOnboarding(
+        tester,
+        location: '/join/ZZZZ2345',
+        flags: jh2On(),
+      );
+      expect(
+        find.text('Dieser Code ist ungültig oder abgelaufen.'),
+        findsOneWidget,
+      );
+      expect(find.widgetWithText(TextField, 'ZZZZ2345'), findsOneWidget);
+      expect(key('invite-check'), findsOneWidget);
+      expect(o.session.joins, isEmpty);
+      expect(location(o), '/join/ZZZZ2345');
+    });
+
+    testWidgets('the rate limit at the preview says so; Weiter tries again', (
+      tester,
+    ) async {
+      final invites = FakeInvites()..next = HouseholdProblem.tooManyAttempts;
+      final o = await pumpOnboarding(
+        tester,
+        location: '/join/ABCD2345',
+        invites: invites,
+        flags: jh2On(),
+      );
+      expect(
+        find.text('Zu viele Versuche. Bitte später noch einmal.'),
+        findsOneWidget,
+      );
+      expect(o.session.joins, isEmpty);
+      await tapKey(tester, 'invite-check');
+      expect(o.session.joins, [('ABCD2345', JoinMethod.link)]);
+      expect(location(o), '/');
+    });
+
+    testWidgets('offline at the preview says so; Weiter joins once back', (
+      tester,
+    ) async {
+      final invites = FakeInvites()..next = HouseholdProblem.offline;
+      final o = await pumpOnboarding(
+        tester,
+        location: '/join/ABCD2345',
+        invites: invites,
+        flags: jh2On(),
+      );
+      expect(find.text(offline), findsOneWidget);
+      expect(o.pending.code, 'ABCD2345', reason: 'offline is no answer');
+      expect(o.session.joins, isEmpty);
+      await tapKey(tester, 'invite-check');
+      expect(o.session.joins, [('ABCD2345', JoinMethod.link)]);
+      expect(location(o), '/');
+    });
+
+    testWidgets('offline at the join keeps the household; its Join joins', (
+      tester,
+    ) async {
+      final o = await pumpLink(tester, joinFails: HouseholdProblem.offline);
+      expect(find.text(offline), findsOneWidget);
+      expect(find.text('Familie Trost'), findsOneWidget);
+      expect(o.pending.code, 'ABCD2345');
+      await tapKey(tester, 'join-confirm');
+      expect(o.session.joins, hasLength(2));
+      expect(location(o), '/');
+    });
+
+    testWidgets('in 20 households the join says so and adds nothing', (
+      tester,
+    ) async {
+      final o = await pumpLink(
+        tester,
+        joinFails: HouseholdProblem.tooManyHouseholds,
+        session: inHome,
+      );
+      expect(
+        find.text(
+          'Du bist schon in 20 Haushalten. Verlasse einen, bevor du einen '
+          'neuen anlegst oder beitrittst.',
+        ),
+        findsOneWidget,
+      );
+      expect((o.session.state as InHousehold).households, hasLength(1));
+      expect(location(o), '/join/ABCD2345');
+    });
+
+    testWidgets('declined in the last day is said plainly', (tester) async {
+      final o = await pumpLink(
+        tester,
+        joinFails: HouseholdProblem.declinedRecently,
+      );
+      expect(
+        find.text(
+          'Deine Anfrage für diesen Haushalt wurde vor Kurzem abgelehnt. Du '
+          'kannst nach 24 Stunden wieder anfragen.',
+        ),
+        findsOneWidget,
+      );
+      expect(o.session.state, isA<NeedsHousehold>());
+    });
+
+    for (final (what, problem) in [
+      ('offline', HouseholdProblem.offline),
+      ('the rate limit', HouseholdProblem.tooManyAttempts),
+      ('a server error', HouseholdProblem.other),
+    ]) {
+      testWidgets('$what at the join keeps the link for the next start', (
+        tester,
+      ) async {
+        final o = await pumpLink(tester, joinFails: problem, session: inHome);
+        expect(key('join-problem'), findsOneWidget);
+        expect(o.pending.code, 'ABCD2345');
+        o.router.go('/');
+        await tester.pumpAndSettle();
+        expect(location(o), '/join/ABCD2345');
+      });
+    }
+
+    testWidgets('an answer the app cannot read at the preview says so and '
+        'keeps the link', (tester) async {
+      final invites = FakeInvites()..next = HouseholdProblem.other;
+      final o = await pumpOnboarding(
+        tester,
+        location: '/join/ABCD2345',
+        invites: invites,
+        flags: jh2On(),
+      );
+      expect(find.text('Etwas ist schiefgelaufen: other'), findsOneWidget);
+      expect(o.pending.code, 'ABCD2345');
+      expect(o.session.joins, isEmpty);
+      await tapKey(tester, 'invite-check');
+      expect(o.session.joins, [('ABCD2345', JoinMethod.link)]);
+      expect(location(o), '/');
+    });
+
+    for (final (what, problem) in [
+      ('in 20 households', HouseholdProblem.tooManyHouseholds),
+      ('declined in the last day', HouseholdProblem.declinedRecently),
+    ]) {
+      testWidgets('$what: the link is answered, the next start opens the '
+          'list', (tester) async {
+        final o = await pumpLink(tester, joinFails: problem, session: inHome);
+        expect(key('join-problem'), findsOneWidget);
+        expect(o.pending.code, isNull);
+        o.router.go('/');
+        await tester.pumpAndSettle();
+        expect(location(o), '/');
+      });
+    }
+  });
+
+  group("a code typed at the switcher's Mit Code beitreten (job 460)", () {
+    const offline =
+        'Keine Internetverbindung. Versuche es erneut, sobald du online bist.';
+
+    Future<Onboarding> pumpTyped(WidgetTester tester, {FakeInvites? invites}) =>
+        pumpOnboarding(
+          tester,
+          location: '/join',
+          session: inHome,
+          invites: invites,
+          flags: jh2On(),
+        );
+
+    Future<void> typeAndCheck(WidgetTester tester, String code) async {
+      await tester.enterText(key('invite-code'), code);
+      await tapKey(tester, 'invite-check');
+    }
+
+    testWidgets('a code nobody made says so once; the code stays to edit', (
+      tester,
+    ) async {
+      final o = await pumpTyped(tester);
+      await typeAndCheck(tester, 'ZZZZ2345');
+      expect(
+        find.text('Dieser Code ist ungültig oder abgelaufen.'),
+        findsOneWidget,
+      );
+      expect(find.widgetWithText(TextField, 'ZZZZ2345'), findsOneWidget);
+      await typeAndCheck(tester, 'ABCD2345');
+      await tapKey(tester, 'join-confirm');
+      expect(o.session.joins, [('ABCD2345', JoinMethod.code)]);
+      expect(location(o), '/');
+    });
+
+    testWidgets('the rate limit says so; Weiter tries again', (tester) async {
+      final invites = FakeInvites()..next = HouseholdProblem.tooManyAttempts;
+      final o = await pumpTyped(tester, invites: invites);
+      await typeAndCheck(tester, 'ABCD2345');
+      expect(
+        find.text('Zu viele Versuche. Bitte später noch einmal.'),
+        findsOneWidget,
+      );
+      expect(find.widgetWithText(TextField, 'ABCD2345'), findsOneWidget);
+      await tapKey(tester, 'invite-check');
+      expect(find.text('Familie Trost'), findsOneWidget);
+      expect(o.session.joins, isEmpty);
+    });
+
+    testWidgets('offline at the preview says so; Weiter tries again', (
+      tester,
+    ) async {
+      final invites = FakeInvites()..next = HouseholdProblem.offline;
+      final o = await pumpTyped(tester, invites: invites);
+      await typeAndCheck(tester, 'ABCD2345');
+      expect(find.text(offline), findsOneWidget);
+      await tapKey(tester, 'invite-check');
+      await tapKey(tester, 'join-confirm');
+      expect(o.session.joins, [('ABCD2345', JoinMethod.code)]);
+      expect(location(o), '/');
+    });
+
+    testWidgets('offline at the join keeps the household; Join joins once '
+        'back', (tester) async {
+      final o = await pumpTyped(tester);
+      await typeAndCheck(tester, 'ABCD2345');
+      o.session.fail = HouseholdProblem.offline;
+      await tapKey(tester, 'join-confirm');
+      expect(find.text(offline), findsOneWidget);
+      expect(find.text('Familie Trost'), findsOneWidget);
+      await tapKey(tester, 'join-confirm');
+      expect(o.session.joins, hasLength(2));
+      expect(location(o), '/');
+    });
+
+    testWidgets('in 20 households the join says so and adds nothing', (
+      tester,
+    ) async {
+      final o = await pumpTyped(tester);
+      await typeAndCheck(tester, 'ABCD2345');
+      o.session.fail = HouseholdProblem.tooManyHouseholds;
+      await tapKey(tester, 'join-confirm');
+      expect(
+        find.text(
+          'Du bist schon in 20 Haushalten. Verlasse einen, bevor du einen '
+          'neuen anlegst oder beitrittst.',
+        ),
+        findsOneWidget,
+      );
+      expect((o.session.state as InHousehold).households, hasLength(1));
     });
   });
 

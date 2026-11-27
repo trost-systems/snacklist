@@ -3349,3 +3349,15 @@ reversing job 29b), for the last tick only; Undo is `ListCubit.untick`. New ARB 
 tick-and-undo and quick-add feature files, FEATURES-FOR-WRITERS, the journey and the e2e spec.
 Screenshots DE/EN (widget goldens and the real web build) in `docs/screenshots/471-tick-undo-snackbar/`. Review 0: list-walk-order recipe fixed; the snackbar now closes when its item is open again another way (trip „Zurücknehmen“, partner, refusal). Details:
 [docs/done/471-tick-undo-snackbar.md](docs/done/471-tick-undo-snackbar.md).
+
+## Job 460: hill-climb of household invite and join (enabled paths)
+
+PR #736. The score went from 146 to 16 (lower is better) in 4 kept steps, and to 6 with the
+review-0 fix. 0 of 636 tests failed, and the uncovered error cells dropped from 14 of 20 to 0. One bug is fixed. Some invite links are
+refused for good: the person is in 20 households, or their request was declined in the last 24
+hours. Such a link stayed pending for 7 days, and the app kept reopening its join. Now that link
+is forgotten; offline, the rate limit and server errors still keep it for a retry. 16 widget tests now pin every error the link, code-step and typed-code paths can
+show. Five design ideas are written up as prototype candidates and not built. Copy findings for job
+456 are in the done file. Ships with the next green main build to TestFlight and Play internal,
+with no flag (the fix holds whatever the flags say). Details: [docs/done/460.md](docs/done/460.md),
+`docs/hillclimb/hc-invite-join.md`.

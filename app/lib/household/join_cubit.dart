@@ -228,8 +228,14 @@ class JoinCubit(
 
   void _refused(String code, HouseholdProblem problem) {
     _checked = null;
-    if (problem == HouseholdProblem.invalidInvite) {
-      // A link to a dead invite should not come back after the next start.
+    // A final answer (a dead invite, 20 households, a decline) should not
+    // come back after the next start: the router would open its join again
+    // from every page. Anything else (offline, the rate limit, a server
+    // error) keeps the link for a retry.
+    if (problem
+        case HouseholdProblem.invalidInvite ||
+            HouseholdProblem.tooManyHouseholds ||
+            HouseholdProblem.declinedRecently) {
       pendingInvite?.refused(code);
     }
     emit(state.copyWith(phase: JoinPhase.entering, problem: problem));

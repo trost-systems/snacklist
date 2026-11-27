@@ -18800,3 +18800,20 @@ last tick only). The job 29b and job 455 entries above stay as they were.
    another way: the trip question's „Zurücknehmen“ (which otherwise left „Abgehakt: Milch“ on
    screen after the sheet closed), a partner's put-back, or a refused tick. `_tick` listens to the
    list until its snackbar closes.
+
+## Job 460: hill-climb of the enabled invite and join paths
+
+- **The metric counts tests, not time.** A cell is a path (invite link, the guided start's code
+  step, the switcher's typed code) paired with an outcome the user can meet. It is covered when a
+  test with JH2 on asserts the text the user reads. Steps were frozen too, but they only go down
+  through a design change, so they stay at 6 and the ideas are prototype candidates.
+- **Only a final answer forgets the link.** Invalid, 20 households and declined in the last 24
+  hours forget the pending invite. Everything else keeps it: offline, the rate limit, and `other`,
+  which is how the app reads a 502, 503 or statement timeout (review 0 found the first version
+  dropped the link on those). An allowlist, so a new problem keeps the link by default. Forgetting
+  it so the router stops reopening that join from every page for 7 days. After leaving a
+  household (or after the 24 hours), the person opens the link again.
+- **„Etwas ist schiefgelaufen: other“ stays.** `genericError(<code>)` is the app's way to show an
+  error code, so the wording goes to the copy job (456) and not into this climb.
+- **The measure runs CI's Flutter (3.50.0).** The box's default 3.47.8 failed 12 unrelated
+  `default_list_test` cases (`!timersPending`).
