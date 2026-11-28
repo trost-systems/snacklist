@@ -9,6 +9,9 @@ import 'package:family_groceries/list/catalog/suggest_entries.dart';
 import 'package:family_groceries/list/category_guess.dart';
 import 'package:family_groceries/list/entry.dart';
 import 'package:family_groceries/list/list_cubit.dart';
+import 'package:family_groceries/list/list_view/item_row.dart'
+    show quantityLabel;
+import 'package:family_groceries/list/list_view/sheet_peek.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -42,6 +45,10 @@ class const AddSheetState({
   /// `add-feedback-list`): the list behind the sheet shows them last.
   final List<String> session = const [],
 
+  /// The open items merged into since the sheet opened, in order (flag
+  /// `add-ae2-list-peeks`): the list behind the sheet marks them.
+  final List<String> raised = const [],
+
   /// The rows answer an earlier text and wait for those of [text]: they
   /// may still change (shown dimmed with the flag `add-feedback-list`).
   final bool carried = false,
@@ -64,6 +71,35 @@ class const AddSheetState({
 }) {
   /// Whether [suggestions] answer what is typed now.
   bool get fresh => answered.isNotEmpty && answered == text.trim();
+
+  /// The list's marks behind the open sheet (AE2, job 490): this opening's
+  /// adds and merges, and the open item that is the same thing as what is
+  /// typed, which overrides them and is the row kept in view; else the
+  /// last add or merge, until the next letter.
+  PeekMarks get peekMarks {
+    final match = matches.where((row) => row is! ReaddRow).firstOrNull?.item;
+    final merged = [
+      for (final row in matches)
+        if (row case MergeRow(:final item, :final quantity)
+            when item.id == match?.id)
+          quantity,
+    ].firstOrNull;
+    return PeekMarks(
+      marks: {
+        for (final id in raised) id: PeekMark.raised,
+        for (final id in session) id: PeekMark.added,
+        if (match != null) match.id: PeekMark.match,
+      },
+      target:
+          match?.id ??
+          switch ((taken, added)) {
+            (MergeRow(:final item), _) => item.id,
+            (_, Added(:final item)) => item.id,
+            _ => null,
+          },
+      matchQuantity: merged == null ? null : quantityLabel(merged) ?? merged,
+    );
+  }
 
   /// The server's rows for what is typed are on the way.
   bool get loading => text.trim().isNotEmpty && !fresh;
@@ -96,6 +132,7 @@ class AddSheetCubit(
   bool Function() addFeedback = _off,
   bool Function() compact = _off,
   bool Function() matchRows = _off,
+  bool Function() listPeeks = _off,
   Duration detailsPause = const Duration(milliseconds: 500),
 }) extends Cubit<AddSheetState> {
   this : super(const AddSheetState()) {
@@ -118,6 +155,7 @@ class AddSheetCubit(
   final _addFeedback = addFeedback;
   final _compact = compact;
   final _matchRows = matchRows;
+  final _listPeeks = listPeeks;
   final _detailsPause = detailsPause;
 
   /// The catalog the device parses and guesses with: the bundled one with
@@ -150,6 +188,10 @@ class AddSheetCubit(
   /// Whether the flag `add-match-rows` (job 324, AM2) is on now; it builds
   /// on [compact] and counts only with it.
   bool get matchRows => compact && _matchRows();
+
+  /// Whether the flag `add-ae2-list-peeks` (job 490, AE2) is on now; it
+  /// builds on [compact] and counts only with it.
+  bool get listPeeks => compact && _listPeeks();
 
   ItemMatcher? _matcher;
 
@@ -185,9 +227,11 @@ class AddSheetCubit(
   }
 
   /// What Enter takes instead of the first row: the first ticked match
-  /// when there is no open one.
-  ReaddRow? get enterMatch => switch (state.matches.firstOrNull) {
+  /// when there is no open one; with [listPeeks] (AE-Q2) the first open
+  /// one's merge, so Enter raises its Menge instead of adding a second row.
+  MatchRow? get enterMatch => switch (state.matches.firstOrNull) {
     final ReaddRow row => row,
+    final MergeRow row when listPeeks => row,
     _ => null,
   };
 
@@ -230,7 +274,17 @@ class AddSheetCubit(
     }
     _list.matchTaken(outcome);
     _forget();
-    emit(AddSheetState(open: state.open, session: state.session, taken: done));
+    emit(
+      AddSheetState(
+        open: state.open,
+        session: state.session,
+        raised: [
+          ...state.raised,
+          if (listPeeks && done is MergeRow) done.item.id,
+        ],
+        taken: done,
+      ),
+    );
     return true;
   }
 
@@ -501,6 +555,7 @@ class AddSheetCubit(
             ...state.session,
             if (result case Added(:final item)) item.id,
           ],
+          raised: state.raised,
         ),
       );
     }
@@ -898,6 +953,7 @@ class AddSheetCubit(
     hint: hint == null ? (added == null ? state.hint : null) : hint(),
     merge: merge == null ? (added == null ? state.merge : null) : merge(),
     session: state.session,
+    raised: state.raised,
     carried: carried ?? (suggestions == null && state.carried),
     unsaved: unsaved ?? state.unsaved,
     // A new text waits for its own request.

@@ -64,6 +64,10 @@
       "rollout": "full",
       "note": "AM2, the add sheet's match rows on top of add-sheet-compact (while typing, the items already on the list that are the same thing, also as a plural or a synonym, show as rows: merge into the open one, tick it off, or put a ticked one back on the list, each one tap; the + row and Enter add the typed item separately next to an open one, and Enter puts a ticked one back) shows only while the PostHog flag add-match-rows is on (job 324); full since 2026-11-25 (Peter kept the 100 % everyone rollout; the earlier launch-plan 'off' was outdated)"
     },
+    "add-ae2-list-peeks": {
+      "rollout": "partial",
+      "note": "AE2, the list in view while adding, on top of add-sheet-compact and add-match-rows (no scrim and no swap for the last two adds: the real list stays above the add sheet, adds marked New in their place and scrolled into view, a tap on the list closes the sheet, two suggestion rows, an item already on the list is one row that merges on Enter or ticks it off with its own button) shows only while the PostHog flag add-ae2-list-peeks is on (job 490); internal installs only (Peter and the internal testers, via the flag sync's is_internal condition)"
+    },
     "display-name": {
       "rollout": "full",
       "note": "the name step after sign-in (Wie sollen wir dich nennen?, prefilled from Google or Apple, required before a household is created or joined, once with Jetzt nicht for members whose name is still their e-mail prefix) and Konto > Dein Name show only while the PostHog flag display-name is on (job 297)"

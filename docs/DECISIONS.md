@@ -19078,3 +19078,25 @@ CP4, ML1, Addendum 2 (26 Nov 2026); details in `docs/done/470-english-catalog.md
 - **The journey fails a stop that is not drawn.** `knownFill` is gone, and it walks Mehr as well. A stop
   counts as the add field's caret only when focus is in a text input and nothing but a ≤ 3 px area gained
   focus colour. The caret is drawn in the focus colour, and the row before loses its ring on the same Tab.
+
+## Job 490: AE2 in the app (2026-11-28)
+
+- **AE-Q2 read as one row with two actions.** Peter: "the item on the list is split up into an option to
+  merge/add and one to tick off". Production already had separate merge and tick rows; with AE2's two
+  visible rows they pushed „Wie getippt“ out of view. The first open match's merge and tick now share one
+  row (main part merges, a 60 px mint button ticks), so the second visible row is the + row. Other matches
+  (further open items, ticked ones) keep today's tiles.
+- **Enter merges, with one exception.** Under the flag `enterMatch` is the first open match's merge row.
+  When the merged Menge would be too long (`QuantityTooLong`, no merge row exists, as today), Enter takes the
+  + row, which carries Enter's tint, so it is not silent. Refusing Enter there would leave no way to record
+  that Menge from the keyboard.
+- **The list behind the sheet stays readable by screen readers, with its actions blocked.** It used to be
+  `ExcludeSemantics` because it was swapped out; now it is the real list, and the „Neu“ marks are in the
+  rows' labels. `SliverIgnorePointer` blocks taps and semantics actions; Tab stays in the sheet
+  (`ExcludeFocus`).
+- **Marks are one value compared by content** (`PeekMarks`), read with `context.select`, so a key that
+  changes no mark rebuilds no list.
+- **The flag builds on `add-sheet-compact`**, like `add-match-rows`; all three are full, so the internal
+  rollout of `add-ae2-list-peeks` alone decides who sees AE2.
+- **No new strings.** „Neu“ reuses `newItem` (already the label of a partner's unseen add); the button
+  labels reuse `dedupeMerge` and `addMatchTickOff`. The match tag is „→ 7×“ (arrow and Menge).

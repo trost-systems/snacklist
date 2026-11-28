@@ -42,6 +42,10 @@ const _topGap = 28.0;
 /// longer leave room for a single row cut by the input.
 const _firstOpenRows = 3;
 
+/// AE-Q4 (flag `add-ae2-list-peeks`, job 490): two rows, typing or not, so
+/// the list above the sheet keeps its room.
+const _peekRows = 2;
+
 /// A suggestion row's height (its minimum; a larger text scale grows it).
 const _rowHeight = 60.0;
 
@@ -282,8 +286,9 @@ class _AddSheetState() extends State<AddSheet> {
                   child: const SizedBox.shrink(),
                 ),
               // A tap target for the pointer only: Schließen and Escape
-              // close the sheet for everyone else.
-              if (open || _shown)
+              // close the sheet for everyone else. AE2's list behind the
+              // sheet takes that tap itself (job 490).
+              if ((open || _shown) && !cubit.listPeeks)
                 Positioned.fill(
                   child: IgnorePointer(
                     ignoring: !open,
@@ -682,6 +687,16 @@ class _ContentState() extends State<_Content> {
     final firstOpen = sheet.text.trim().isEmpty;
     final scaler = MediaQuery.textScalerOf(context);
     final Widget body;
+    // AE-Q2 (flag `add-ae2-list-peeks`): the first open match's merge and
+    // tick off as one row.
+    final split = cubit.listPeeks
+        ? switch (sheet.matches) {
+            [final MergeRow merge, final TickRow tick, ...]
+                when tick.item.id == merge.item.id =>
+              (merge, tick),
+            _ => null,
+          }
+        : null;
     if (compact) {
       body = _CompactBody(
         onClose: onClose,
@@ -710,14 +725,28 @@ class _ContentState() extends State<_Content> {
             Flexible(
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  maxHeight: _firstOpenRows * _rowExtent(scaler),
+                  maxHeight:
+                      (cubit.listPeeks ? _peekRows : _firstOpenRows) *
+                      _rowExtent(scaler),
                 ),
                 child: ListView(
                   key: const ValueKey('add-suggestions'),
                   shrinkWrap: true,
                   padding: EdgeInsets.zero,
                   children: [
-                    for (final match in sheet.matches)
+                    if (split case (final merge, final tick))
+                      _SplitMatchTile(
+                        key: ValueKey('match-split-${merge.item.id}'),
+                        merge: merge,
+                        tick: tick,
+                        catalog: catalog,
+                        enter: cubit.enterMatch == merge,
+                        onMerge: () => onMatch(merge),
+                        onTick: () => onMatch(tick),
+                      ),
+                    for (final match in sheet.matches.skip(
+                      split == null ? 0 : 2,
+                    ))
                       _MatchTile(
                         key: ValueKey(
                           'match-${match.runtimeType}-${match.item.id}',
@@ -1240,6 +1269,134 @@ class const _MatchTile({
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// AE-Q2 (flag `add-ae2-list-peeks`, job 490): an open item's [merge] and
+/// [tick] off as one row with two buttons. The main part merges, in accent
+/// blue with the Menge it would have, outlined when Enter takes it; the
+/// mint key at its end ticks the item off.
+class const _SplitMatchTile({
+  required final MergeRow merge,
+  required final TickRow tick,
+  required final Catalog catalog,
+  required final bool enter,
+  required final VoidCallback onMerge,
+  required final VoidCallback onTick,
+  super.key,
+}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final t = SnacklistColors.of(Theme.of(context).brightness);
+    final item = merge.item;
+    final text = _withQuantity(merge.quantity, item.name);
+    final details = _matchDetails(item, catalog);
+    final border = Border(bottom: BorderSide(color: scheme.outlineVariant));
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: Semantics(
+              key: const ValueKey('match-split-merge'),
+              container: true,
+              button: true,
+              label: [
+                l10n.dedupeMerge,
+                text,
+                if (details.isNotEmpty) details,
+              ].join(', '),
+              excludeSemantics: true,
+              onTap: onMerge,
+              child: Material(
+                color: scheme.primaryContainer,
+                child: FocusRingInkWell(
+                  outline: _rowOutline,
+                  onTap: onMerge,
+                  child: Container(
+                    constraints: const BoxConstraints(minHeight: _rowHeight),
+                    padding: const EdgeInsets.fromLTRB(16, 6, 12, 5),
+                    foregroundDecoration: enter
+                        ? BoxDecoration(
+                            border: Border.all(color: scheme.primary, width: 2),
+                          )
+                        : null,
+                    decoration: BoxDecoration(border: border),
+                    child: Row(
+                      spacing: 12,
+                      children: [
+                        Icon(
+                          Icons.call_merge,
+                          size: 20,
+                          color: scheme.onPrimaryContainer,
+                        ),
+                        Expanded(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                text,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  height: _nameLeading,
+                                  fontWeight: FontWeight.w700,
+                                  color: scheme.onPrimaryContainer,
+                                ),
+                              ),
+                              if (details.isNotEmpty)
+                                Text(
+                                  details,
+                                  style: TextStyle(
+                                    fontSize: _detailSize,
+                                    height: _detailLeading,
+                                    fontWeight: FontWeight.w500,
+                                    color: t.textMuted,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Semantics(
+            key: const ValueKey('match-split-tick'),
+            container: true,
+            button: true,
+            label: [l10n.addMatchTickOff, item.name].join(', '),
+            excludeSemantics: true,
+            onTap: onTick,
+            child: Material(
+              color: scheme.tertiaryContainer,
+              child: FocusRingInkWell(
+                outline: _rowOutline,
+                onTap: onTick,
+                child: Container(
+                  constraints: const BoxConstraints(
+                    minWidth: _rowHeight,
+                    minHeight: HlSize.target,
+                  ),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(border: border),
+                  child: Icon(
+                    Icons.check_circle_outline,
+                    size: 24,
+                    color: scheme.onTertiaryContainer,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

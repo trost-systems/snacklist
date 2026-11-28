@@ -104,6 +104,15 @@ const addSheetCompactFlag = 'add-sheet-compact';
 /// first back.
 const addMatchRowsFlag = 'add-match-rows';
 
+/// The flag for AE2, the list in view while adding (job 490), on top of
+/// [addSheetCompactFlag] (and with [addMatchRowsFlag] for its merge row):
+/// no scrim and no „last two adds“ swap, the real list stays above the
+/// sheet with its top bar, each add marked „Neu“ in its place and kept in
+/// view, a tap on the list closes the sheet; the sheet shows two rows, and
+/// an item already on the list is one row whose main part merges (Enter's)
+/// and whose tick button ticks it off.
+const addAe2ListPeeksFlag = 'add-ae2-list-peeks';
+
 /// The flag that asks for the user's name (job 297, DN3 and DE1): right
 /// after the sign-in a screen asks „Wie sollen wir dich nennen?“, prefilled
 /// with a Google or Apple name and required without one (once, with „Jetzt

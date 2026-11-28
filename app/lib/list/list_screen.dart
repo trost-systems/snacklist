@@ -31,6 +31,7 @@ import 'package:family_groceries/list/list_parts.dart';
 import 'package:family_groceries/list/list_switcher_button.dart';
 import 'package:family_groceries/list/list_tabs.dart';
 import 'package:family_groceries/list/list_view/price_views.dart';
+import 'package:family_groceries/list/list_view/sheet_peek.dart';
 import 'package:family_groceries/list/list_view/shopping_list_view.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/sync_indicator.dart';
@@ -122,6 +123,8 @@ class const ShoppingList({
                   context.read<Flags?>()?.isOn(addSheetCompactFlag) ?? false,
               matchRows: () =>
                   context.read<Flags?>()?.isOn(addMatchRowsFlag) ?? false,
+              listPeeks: () =>
+                  context.read<Flags?>()?.isOn(addAe2ListPeeksFlag) ?? false,
             );
           },
         ),
@@ -528,6 +531,19 @@ class _ShoppingListState() extends State<_ShoppingList> {
         context.select<Flags?, bool>(
           (flags) => flags?.isOn(addSheetCompactFlag) ?? false,
         );
+    // AddSheetCubit.listPeeks's rule (AE2, job 490): the list stays in view
+    // behind the open sheet, its rows marked.
+    final peeks =
+        compact &&
+        open &&
+        context.select<Flags?, bool>(
+          (flags) => flags?.isOn(addAe2ListPeeksFlag) ?? false,
+        );
+    final marks = context.select<AddSheetCubit, PeekMarks?>(
+      (c) => peeks ? c.state.peekMarks : null,
+    );
+    // The bar and the new adds below it go behind the sheet, but not AE2's.
+    final barAway = session != null && open && !peeks;
     return ReviewPromptTrigger(
       cubit: context.read<ListCubit>(),
       listening: _listening,
@@ -596,13 +612,14 @@ class _ShoppingListState() extends State<_ShoppingList> {
                 ExcludeFocus(
                   excluding: open,
                   child: ExcludeSemantics(
-                    excluding: open,
+                    // AE2's list stays readable, its actions blocked.
+                    excluding: open && !peeks,
                     child: SyncIndicator(
                       rowTop: _Header._gap,
                       rowHeight: _Header.height,
                       cardTop: _Header.extentFor(tabs: tabs),
                       pillInset: _chipWidth,
-                      barAway: session != null && open,
+                      barAway: barAway,
                       // A screen reader reads the new adds below the chip
                       // before the list, not after its last row: one node, so
                       // the sync shell beside it doesn't split their order.
@@ -619,7 +636,14 @@ class _ShoppingListState() extends State<_ShoppingList> {
                                 child: ShoppingListView(
                                   onInteract: _leaveField,
                                   pricing: _pricing,
-                                  behindSheet: session != null && open
+                                  peek: marks == null
+                                      ? null
+                                      : SheetPeek(
+                                          marks: marks,
+                                          sheetExtent: _sheetExtent,
+                                          onTap: _close,
+                                        ),
+                                  behindSheet: session != null && open && !peeks
                                       ? BehindSheet(
                                           added: session,
                                           sheetExtent: _sheetExtent,
@@ -636,11 +660,12 @@ class _ShoppingListState() extends State<_ShoppingList> {
                                 ),
                               ),
                             ),
-                            // With the bar, behind the add sheet.
+                            // With the bar, behind the add sheet; with AE2's
+                            // a tap goes through to the list, which closes it.
                             IgnorePointer(
                               ignoring: session != null && open,
                               child: AnimatedOpacity(
-                                opacity: session != null && open ? 0 : 1,
+                                opacity: barAway ? 0 : 1,
                                 duration: hlMotion(context, glideDuration),
                                 curve: HlEasing.standard,
                                 child: _StatusBelow(
