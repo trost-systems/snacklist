@@ -54,10 +54,10 @@
           "name": "AddToListIntent",
           "slots": [
             {
-              "name": "items",
+              "name": "itemphrase",
               "type": "ITEM_PHRASE",
               "samples": [
-                "{items}"
+                "{itemphrase}"
               ]
             },
             {
@@ -66,13 +66,13 @@
             }
           ],
           "samples": [
-            "add {items} to the {list} list",
-            "add {items} to my {list} list",
-            "add {items} to our {list} list",
-            "add {items} onto the {list} list",
-            "add {items} to {list}",
-            "put {items} on the {list} list",
-            "put {items} on my {list} list"
+            "add {itemphrase} to the {list} list",
+            "add {itemphrase} to my {list} list",
+            "add {itemphrase} to our {list} list",
+            "add {itemphrase} onto the {list} list",
+            "add {itemphrase} to {list}",
+            "put {itemphrase} on the {list} list",
+            "put {itemphrase} on my {list} list"
           ]
         },
         {
@@ -326,12 +326,12 @@
           "prompts": {},
           "slots": [
             {
-              "name": "items",
+              "name": "itemphrase",
               "type": "ITEM_PHRASE",
               "elicitationRequired": true,
               "confirmationRequired": false,
               "prompts": {
-                "elicitation": "Elicit.Slot.AddToListIntent.items"
+                "elicitation": "Elicit.Slot.AddToListIntent.itemphrase"
               }
             },
             {
@@ -357,7 +357,7 @@
         ]
       },
       {
-        "id": "Elicit.Slot.AddToListIntent.items",
+        "id": "Elicit.Slot.AddToListIntent.itemphrase",
         "variations": [
           {
             "type": "PlainText",

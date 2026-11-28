@@ -288,7 +288,7 @@ test("Alexa: Peter's sentence with the list slot, the same swallowed into the it
   withHome(async (home) => {
     await setDefault(home, home.lists.Alltag);
     assertEquals(
-      await alexa(home, 'AddToListIntent', { items: 'Luftballons', list: 'Geburtstag Liste' }),
+      await alexa(home, 'AddToListIntent', { itemphrase: 'Luftballons', list: 'Geburtstag Liste' }),
       'Ich habe Luftballons auf die Liste Geburtstag gesetzt.',
     );
     assertEquals(
@@ -296,7 +296,7 @@ test("Alexa: Peter's sentence with the list slot, the same swallowed into the it
       'Ich habe Kerzen auf die Liste Geburtstag gesetzt.',
     );
     assertEquals(
-      await alexa(home, 'AddToListIntent', { items: 'Konfetti', list: 'Party' }),
+      await alexa(home, 'AddToListIntent', { itemphrase: 'Konfetti', list: 'Party' }),
       'Eine Liste „Party“ habe ich nicht gefunden. Ich habe Konfetti auf die Liste Alltag gesetzt.',
     );
     assertEquals(

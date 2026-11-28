@@ -85,8 +85,12 @@ function world(catalog: ListCatalog = peters) {
       {},
   ): Promise<Reply> => {
     const user = { userId: 'amzn1.ask.account.PETER', accessToken: 'tok' };
+    const phraseSlot = intent.name === 'AddToListIntent' ? 'itemphrase' : 'items';
     const slots: Record<string, { name: string; value?: string }> = {
-      items: { name: 'items', ...(intent.items !== undefined && { value: intent.items }) },
+      [phraseSlot]: {
+        name: phraseSlot,
+        ...(intent.items !== undefined && { value: intent.items }),
+      },
       ...(intent.name === 'AddToListIntent' && {
         list: { name: 'list', ...(intent.list !== undefined && { value: intent.list }) },
       }),
@@ -223,7 +227,7 @@ Deno.test('Q79 on a named list: the question keeps the intent and its list, the 
       name: 'AddToListIntent',
       confirmationStatus: 'NONE',
       slots: {
-        items: { name: 'items', value: 'Butter', confirmationStatus: 'NONE' },
+        itemphrase: { name: 'itemphrase', value: 'Butter', confirmationStatus: 'NONE' },
         list: { name: 'list', value: 'geburtstag', confirmationStatus: 'NONE' },
       },
     },
@@ -248,7 +252,7 @@ Deno.test('a list slot without items asks for them on AddToListIntent, the list 
     name: 'AddToListIntent',
     confirmationStatus: 'NONE',
     slots: {
-      items: { name: 'items', confirmationStatus: 'NONE' },
+      itemphrase: { name: 'itemphrase', confirmationStatus: 'NONE' },
       list: { name: 'list', value: 'geburtstag', confirmationStatus: 'NONE' },
     },
   });

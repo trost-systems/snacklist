@@ -262,7 +262,8 @@ Deno.test('the interaction models: required built-ins, one SearchQuery with carr
         assert(words(sample).length > 1, `SearchQuery needs a carrier phrase: "${sample}"`);
       } else if (intent === 'AddToListIntent') {
         // A SearchQuery may be the only slot of a sample, so the list gets its own intent (job 207).
-        assertEquals(slots, ['{items}', '{list}'], sample);
+        // The phrase slot is itemphrase: Amazon forbids the name `items` with two types.
+        assertEquals(slots, ['{itemphrase}', '{list}'], sample);
       } else {
         assertEquals(slots, [], sample);
       }
@@ -278,7 +279,7 @@ Deno.test('the dialog models elicit the items with the prompt the handler speaks
     for (const name of ['AddItemIntent', 'AddToListIntent']) {
       const dialog = model.dialog.intents.find((i) => i.name === name)!;
       const slot = dialog.slots[0];
-      assertEquals(slot.name, 'items');
+      assertEquals(slot.name, name === 'AddToListIntent' ? 'itemphrase' : 'items');
       const prompt = model.prompts.find((p) => p.id === slot.prompts.elicitation);
       assertEquals(
         prompt?.variations[0].value,
@@ -294,7 +295,7 @@ Deno.test('AddToListIntent: items and a list name in custom slot types the model
     const model = language(locale);
     const intent = model.intents.find((i) => i.name === 'AddToListIntent')!;
     assertEquals(intent.slots?.map((s) => [s.name, s.type]), [
-      ['items', 'ITEM_PHRASE'],
+      ['itemphrase', 'ITEM_PHRASE'],
       ['list', 'LIST_NAME'],
     ]);
     const types = new Map(model.types.map((t) => [t.name, t.values.map((v) => v.name.value)]));
@@ -312,9 +313,26 @@ Deno.test('AddToListIntent: items and a list name in custom slot types the model
       i.name === 'AddToListIntent'
     )!;
     assertEquals(dialog.slots.map((s) => [s.name, s.type]), [
-      ['items', 'ITEM_PHRASE'],
+      ['itemphrase', 'ITEM_PHRASE'],
       ['list', 'LIST_NAME'],
     ]);
+  }
+});
+
+Deno.test('a slot name keeps one type across the skill (Amazon model build)', () => {
+  for (const locale of Object.keys(models)) {
+    const types = new Map<string, string>();
+    for (const intent of language(locale).intents) {
+      for (const slot of intent.slots ?? []) {
+        const prev = types.get(slot.name);
+        assertEquals(
+          prev ?? slot.type,
+          slot.type,
+          `${locale}: slot "${slot.name}" has types ${prev} and ${slot.type}`,
+        );
+        types.set(slot.name, slot.type);
+      }
+    }
   }
 });
 
@@ -379,7 +397,12 @@ Deno.test('every intent of each model has its own answer in the handler', async 
               type: 'IntentRequest',
               locale,
               timestamp: new Date().toISOString(),
-              intent: { name: intent.name, slots: { items: { name: 'items', value: 'Milch' } } },
+              intent: {
+                name: intent.name,
+                slots: intent.name === 'AddToListIntent'
+                  ? { itemphrase: { name: 'itemphrase', value: 'Milch' } }
+                  : { items: { name: 'items', value: 'Milch' } },
+              },
             },
           }),
         }),

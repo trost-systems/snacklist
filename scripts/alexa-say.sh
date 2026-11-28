@@ -5,7 +5,7 @@
 #
 #   scripts/alexa-say.sh [options] "Milch und Eier"     AddItemIntent with that slot value
 #   scripts/alexa-say.sh [options] --list Geburtstag "Luftballons"
-#                                                       AddToListIntent with slots items and list
+#                                                       AddToListIntent with slots itemphrase and list
 #   scripts/alexa-say.sh [options] --read               ReadListIntent
 #   scripts/alexa-say.sh [options] --launch             "Alexa, öffne snacklist"
 #   scripts/alexa-say.sh [options] --disable            AlexaSkillEvent.SkillDisabled
@@ -52,7 +52,7 @@ timestamp="$(date -u -d "-$skew seconds" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date
 case $kind in
   add)
     if [[ -n $list ]]; then
-      request="$(jq -n --arg v "$items" --arg l "$list" --arg c "$confirm" '{type: "IntentRequest", intent: {name: "AddToListIntent", confirmationStatus: $c, slots: {items: {name: "items", value: $v}, list: {name: "list", value: $l}}}}')"
+      request="$(jq -n --arg v "$items" --arg l "$list" --arg c "$confirm" '{type: "IntentRequest", intent: {name: "AddToListIntent", confirmationStatus: $c, slots: {itemphrase: {name: "itemphrase", value: $v}, list: {name: "list", value: $l}}}}')"
     else
       request="$(jq -n --arg v "$items" --arg c "$confirm" '{type: "IntentRequest", intent: {name: "AddItemIntent", confirmationStatus: $c, slots: {items: {name: "items", value: $v}}}}')"
     fi ;;
