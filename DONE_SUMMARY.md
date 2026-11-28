@@ -3462,3 +3462,30 @@ one-ring and unbroken-ring tests. Also the add sheet's Tab walk, `reveal_focus_t
 updated goldens. Full suite: 5202 passed, 0 failed. Lint passes. Web journey `theme-focus.mjs`, light and dark: PASS,
 with no `knownFill` exception and no off-screen stop. Not driven: iOS and Android. Ships with the next
 green main build after the merge, with no flag targeting needed.
+
+## Job 490: AE2, the list stays in view while adding (flag add-ae2-list-peeks)
+
+Peter's pick from round AE (#787, which stays open for the lead to close after this merges). Behind the new
+PostHog flag `add-ae2-list-peeks`, rollout `partial` in `releases/flags.json`: internal installs only (Peter
+and the internal testers, the flag sync's `is_internal = true` condition at 100 %), off for everyone else.
+With it, the add sheet no longer covers the list with a scrim or swaps it for the last two adds: the real
+list and its top bar stay above the sheet. Each add shows in its place marked „Neu“/„New“ until the sheet
+closes, and one that lands off screen scrolls just into view. A tap on the list closes the sheet; dragging
+scrolls it. The sheet shows two rows. AE-Q2, Peter's change: an item already on the list is one row whose
+main part merges („7× Bananen“) and whose own button ticks it off; **Enter merges** and never adds a second
+row (only when the merged Menge is too long to store does Enter add separately, the + row tinted). Flag off:
+unchanged. Details, screenshots: [docs/done/490.md](docs/done/490.md).
+
+COPY-CHANGES: no new strings; existing ones in new places: `newItem` „Neu“ / „New“ (visible tag on rows
+added while the sheet is open, and their screen-reader label), `dedupeMerge` „Zusammenführen“ / „Merge“
+(the split row's merge button label), `addMatchTickOff` „Abhaken“ / „Tick off“ (its tick button label).
+New changelog item (flag-held): de „Beim Hinzufügen bleibt deine Liste sichtbar, neue Artikel erscheinen an
+ihrem Platz mit „Neu“, und ein Artikel, der schon auf der Liste steht, lässt sich mit Enter zusammenführen
+oder mit einem Tipp abhaken.“; en “While you add, your list stays in view, new items show up in their place
+marked “New”, and an item already on the list merges with Enter or ticks off with one tap.”
+
+Tests: `add_ae2_list_peeks_test.dart` (20 tests, every rule, DE and EN, 200 %, focus, flag off); full app
+suite 5222 passed; lint passes. Web (release build, flag on, DE, EN, dark): journey `add-ae2.mjs`, 7 of 7
+checks PASS with database reads (Enter on „Bananen“ 6× gives one active row, 7). Not driven: iOS and
+Android. Ships with the next green main build after the merge; Peter sees it once the flag sync has run.
+Not merged by this job: the lead merges after the Legal ask and Legal's GO.

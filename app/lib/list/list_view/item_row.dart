@@ -7,6 +7,7 @@ import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_view/hold.dart';
 import 'package:family_groceries/list/list_view/item_icon.dart';
 import 'package:family_groceries/list/list_view/leaving_rows.dart';
+import 'package:family_groceries/list/list_view/sheet_peek.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:flutter/rendering.dart' show OverflowBoxFit;
 import 'package:flutter/semantics.dart';
@@ -57,6 +58,12 @@ class const ItemRow({
 
   /// The open price editor under the row, outside its tap and semantics.
   final Widget? pricePanel,
+
+  /// Its mark behind the open AE2 sheet (job 490): added and raised rows
+  /// take the fresh tint and a tag („Neu“, a merge icon), the match an
+  /// outline and its Menge after a merge ([matchQuantity], „→ 7×“).
+  final PeekMark? mark,
+  final String? matchQuantity,
   super.key,
 }) extends StatefulWidget {
   @override
@@ -185,7 +192,7 @@ class _ItemRowState()
       if (details.isNotEmpty) details,
       ?item.quantity,
       ?widget.claims,
-      if (widget.fresh) l10n.newItem,
+      if (widget.fresh || widget.mark == PeekMark.added) l10n.newItem,
     ].join('\n');
     // With a price chip the row keeps its child nodes, so the chip stays
     // a button of its own; the tile leaves its text and ink out.
@@ -274,7 +281,10 @@ class const _Tile({
     final hl = SnacklistColors.of(theme.brightness);
     final drawn = _draw.transform(t);
     // Yellow means new, mint means done, like the homepage hero (Peter).
-    final base = row.fresh ? hl.honeySoft : scheme.surface;
+    final base =
+        row.fresh || row.mark == PeekMark.added || row.mark == PeekMark.raised
+        ? hl.honeySoft
+        : scheme.surface;
     // A ticked name turns muted as its line draws, like the site's done row.
     final ink = Color.lerp(scheme.onSurface, hl.textMuted, drawn)!;
     final name = TextSpan(
@@ -394,6 +404,15 @@ class const _Tile({
                         ),
                       ),
                     ),
+                    // A match without a merge has only its outline.
+                    if (row.mark case final mark?
+                        when mark != PeekMark.match ||
+                            row.matchQuantity != null)
+                      _PeekTag(
+                        key: ValueKey('peek-tag-${item.id}'),
+                        mark: mark,
+                        matchQuantity: row.matchQuantity,
+                      ),
                     // Holds the chip's width, not its height; the chip
                     // itself sits over the row's full height below, a
                     // bigger target.
@@ -422,6 +441,17 @@ class const _Tile({
                   bottom: row.last ? 0 : _hairline,
                   child: chip,
                 ),
+              if (row.mark == PeekMark.match)
+                Positioned.fill(
+                  key: ValueKey('peek-match-${item.id}'),
+                  child: IgnorePointer(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: scheme.primary, width: 2),
+                      ),
+                    ),
+                  ),
+                ),
               // Between rows of a section, a hairline from the name's start
               // to the content's end, like the category dividers' rules.
               if (!row.last)
@@ -433,6 +463,55 @@ class const _Tile({
                   child: ColoredBox(color: scheme.outlineVariant),
                 ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The tag at the end of a row marked behind the AE2 sheet: „Neu“ on honey
+/// for an add, a merge icon for a merge, „→ 7×“ for the match; its words
+/// are in the row's label already, or are none.
+class const _PeekTag({
+  required final PeekMark mark,
+  required final String? matchQuantity,
+  super.key,
+}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final hl = SnacklistColors.of(Theme.of(context).brightness);
+    final (face, ink) = mark == PeekMark.added
+        ? (hl.honey, hl.onHoney)
+        : (hl.accentSoft, hl.onAccentSoft);
+    final style = TextStyle(
+      fontSize: 12,
+      height: 1.3,
+      fontWeight: FontWeight.w700,
+      color: ink,
+    );
+    return Padding(
+      padding: const EdgeInsets.only(top: 2),
+      child: ExcludeSemantics(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: face,
+            borderRadius: BorderRadius.circular(HlSoft.sm),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            child: switch (mark) {
+              PeekMark.added => Text(
+                AppLocalizations.of(context).newItem,
+                style: style,
+              ),
+              PeekMark.raised => Icon(
+                Icons.call_merge,
+                size: MediaQuery.textScalerOf(context).scale(14),
+                color: ink,
+              ),
+              PeekMark.match => Text('→ ${matchQuantity ?? ''}', style: style),
+            },
           ),
         ),
       ),
