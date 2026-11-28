@@ -1,0 +1,6 @@
+node_modules
+dist
+verify-screenshots
+.vercel
+.env
+.env.*
