@@ -19100,3 +19100,22 @@ CP4, ML1, Addendum 2 (26 Nov 2026); details in `docs/done/470-english-catalog.md
   rollout of `add-ae2-list-peeks` alone decides who sees AE2.
 - **No new strings.** „Neu“ reuses `newItem` (already the label of a partner's unseen add); the button
   labels reuse `dedupeMerge` and `addMatchTickOff`. The match tag is „→ 7×“ (arrow and Menge).
+
+## Job 496: prototype round DM, add / merge / tick off (2026-11-28, Europe/Berlin)
+
+- **Today comes from the real AE2 code and job 490's real web-build screenshots, not a new drive.** The brief's
+  `reference-today-ae2-split.png` was not in the job folder. `docs/screenshots/490/ae2-*-duplicate-split-row.png`
+  are the release web build of the code now on main (#789, b41a60e1), and `_SplitMatchTile`
+  (`add_sheet.dart`) gives the sizes and colours, so a fourth local stack was not started.
+- **Today's Menge follows production, measured, not assumed.** A throwaway `flutter test` probe on main
+  (deleted, not committed) gave: `parseEntry('Omega 3 2')` is name „Omega 3 2“, no quantity, key „omega“ (so
+  it matches Omega 3 and Enter gives 2×); `mergeQuantities('500 g', null)` is „500 g“ (merging „Mehl“ changes
+  nothing); „Mehl 1kg“ is 1 kg and merges to 1,5 kg. The sandbox's `model.ts` ports those rules.
+- **DM1 is the required option (actions under the matching row).** Its amount comes from the input first,
+  else from two preset chips („+1“, „+2“; for a weight one pack and two packs). A stepper was given to DM5
+  instead, so the round compares presets with a stepper.
+- **„No icon-only action“ is checked as: the button's visible text holds a letter or digit.** DM5's stepper
+  says „− weniger“ / „+ mehr“ for that reason. The verify also checks 4.5:1 text contrast on each action in
+  light and dark, after the first build drew the tick-off words in `on-mint` on `mint-soft`, about 1.5:1 in dark.
+- **German is the page default; the page controls stay English**, like rounds FH and AE.
+- **Recommendation DM1, runner-up DM3**, from the measurements on `/add/dm/`.

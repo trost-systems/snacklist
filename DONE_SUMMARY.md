@@ -3489,3 +3489,14 @@ suite 5222 passed; lint passes. Web (release build, flag on, DE, EN, dark): jour
 checks PASS with database reads (Enter on „Bananen“ 6× gives one active row, 7). Not driven: iOS and
 Android. Ships with the next green main build after the merge; Peter sees it once the flag sync has run.
 Not merged by this job: the lead merges after the Legal ask and Legal's GO.
+
+## Job 496: add, merge, tick off, prototype round DM (2026-11-28, Europe/Berlin)
+
+Prototype round only: Today (the AE2 split row on main) plus DM1–DM5 at `/add/dm/` in `docs/design/rounds/`
+(`src/dm/`, `scripts/verify-dm.mjs`). Draft PR https://github.com/trost-systems/snacklist/pull/792, `DO NOT MERGE`,
+labelled `do-not-merge`, never merged. No production UI shipped, no real user data, Changelog `none`.
+Slugs: `dm1-row-actions` (required: actions under the matching row), `dm2-worded-buttons`, `dm3-sentence`,
+`dm4-on-list-card`, `dm5-choose-confirm`. Recommendation DM1, runner-up DM3; questions DM-Q1 to DM-Q9 with
+defaults. Measurements, labels and questions: `docs/done/496.md`. Verify: `npm run verify:dm`, exit 0, 156
+screenshots. Protected preview https://family-groceries-design-fxuzd163u-peter-trost.vercel.app/add/dm/
+(`dpl_99bzkRu7PZESeu5btpAkaWAywiq2`); share link waits on the lead (NEEDS_LEAD), not ready for Peter yet.
