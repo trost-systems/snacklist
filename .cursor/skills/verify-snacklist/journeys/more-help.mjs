@@ -1,6 +1,6 @@
 // Feature more-help (vmaint-20261125): More's rows top to bottom on the users' build, every button
-// from Konto to Abmelden so an unknown row fails („Mitteilungen“ only where the build has
-// push-household-add, which the web needs for it since #726; off for users), the legal rows' pages (Nutzungsbedingungen opens Snacklist's own terms since #695; the Apple EULA row is
+// from Konto to Abmelden so an unknown row fails („Benachrichtigungen & Erinnerungen“ on every build
+// since #759: on the web its page holds only the name switch, since push needs a phone), the legal rows' pages (Nutzungsbedingungen opens Snacklist's own terms since #695; the Apple EULA row is
 // iPhone-only, so the web has none) and the version line from app/pubspec.yaml. snacklist.app is
 // stubbed, so only the popup's URL is checked, never the live site.
 //
@@ -8,7 +8,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import process from 'node:process';
-import { accessibleName, capture, flagOn, instance, logger, member, openApp, openTab, repo, signIn } from '../helpers/lib.mjs';
+import { accessibleName, capture, instance, logger, member, openApp, openTab, repo, signIn } from '../helpers/lib.mjs';
 
 const [dir, ...rest] = process.argv.slice(2);
 const lang = rest.includes('--lang') ? rest[rest.indexOf('--lang') + 1] : 'de';
@@ -21,7 +21,7 @@ const { browser, context, page, L, errors } = await openApp(inst, { lang, videoD
 await context.route('https://snacklist.app/**', (route) => route.fulfill({ status: 200, contentType: 'text/html', body: '<p>stub</p>' }));
 const site = 'https://snacklist.app';
 const expected = [
-  L('account'), L('accessTitle'), L('settingsTitle'), ...(flagOn('push-household-add') ? [L('settingsPush')] : []),
+  L('account'), L('accessTitle'), L('settingsTitle'), L('settingsPush'),
   L('analyticsSection'), L('hintsTitle'),
   L('feedbackHubRow'), L('helpRow'), L('imprint'), L('privacyPolicy'), L('premiumTermsLink'),
   L('licenses'), L('signOut'),
@@ -59,6 +59,14 @@ try {
   await page.getByText(L('appVersion', { version }), { exact: true }).waitFor({ timeout: 5_000 });
   log(`version line „${L('appVersion', { version })}“`);
   await capture(page, dir, '02-more-after-links');
+  await page.getByRole('button', { name: L('settingsPush'), exact: true }).click();
+  await page.getByRole('switch', { name: new RegExp(`^${L('pushNameHidden')}`) }).waitFor({ timeout: 10_000 });
+  if (!page.url().endsWith('/more/notifications')) throw new Error(`the row opened ${page.url()}`);
+  for (const key of ['pushHouseholdAdd', 'shoppingDayTitle', 'remindersTitle']) {
+    if (await page.getByText(L(key), { exact: true }).count()) throw new Error(`„${L(key)}“ shows on the web, which has no push`);
+  }
+  log(`„${L('settingsPush')}“ opened /more/notifications with only „${L('pushNameHidden')}“`);
+  await capture(page, dir, '03-notifications');
   if (errors.length) throw new Error(`page errors: ${errors.join('; ')}`);
 } catch (error) {
   failed = error;
