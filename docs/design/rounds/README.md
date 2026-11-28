@@ -22,7 +22,7 @@ npm run build
 npm run verify:sr      # needs a Chromium; VERIFY_CHROME=/path/to/chrome to override
 npm run verify:fh      # round FH; about 3 minutes
 npm run verify:ae      # round AE; about 8 minutes (--quick: 310 % only, --print: the rows)
-npm run verify:dm      # round DM; about 2 minutes (--print: the rows)
+npm run verify:dm      # round DM; about 2 minutes (--print: the rows); Playwright from e2e/: (cd ../../../e2e && npm ci) first
 ```
 
 `scripts/verify-fh.mjs` screenshots every control of round FH unfocused and focused (Today and FH1–FH5, light and
@@ -50,8 +50,8 @@ measured. Today's sizes come from the real web build (origin/main 151458422), no
 `scripts/verify-dm.mjs` measures Today and DM1–DM5 at 390×844 from the sheet open with „Omega 3“ typed: it taps merge,
 tick off and „2 more without typing“ and checks the list after each, reads what Enter does on „Omega 3 2“, „Mehl“
 (500 g) and „Mehl 1kg“, reads every action's visible words, text contrast and accessible name in DE and EN, light and
-dark, counts the list rows in view (keyboard hidden, shown, shown at 200 %) and, at 200 % and 310 %, clipped text and
-how many of merge, tick off and new entry are on screen without scrolling. It screenshots every option in both themes,
+dark, counts the list rows in view (keyboard hidden, shown, shown at 200 %) and, at 200 % and 310 %, text cut at the
+sides and how many of merge, tick off and new entry are readable without scrolling (at least 90 % of the label visible). It screenshots every option in both themes,
 both languages and 100/200/310 % text, each scenario, the keyboard and the closed list (156 PNGs in `VERIFY_OUT`, default
 `verify-screenshots/dm/`, not committed) and exits 1 when a DM action has no visible word or less than 4.5:1 contrast,
 an action does the wrong thing, or the table on `/add/dm/` (`src/dm/meta.ts`) differs from what it measured.

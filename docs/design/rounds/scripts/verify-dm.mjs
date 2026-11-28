@@ -87,6 +87,22 @@ function probe(o) {
   const unworded = [...screen.querySelectorAll('button, [role="button"], [role="radio"]')]
     .filter((el) => !el.matches(CHROME) && !/[\p{L}\p{N}]/u.test(clean(el.innerText)))
     .map((el) => el.className);
+  // The share of an action's label text a person can see: points every 4 px over its text lines, each counted when it is
+  // inside the phone and the action itself is on top there (not the add field, the keyboard or the sheet's edge).
+  const labelShown = (el) => {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    let all = 0;
+    let seen = 0;
+    for (const line of range.getClientRects()) {
+      for (let y = line.top + 2; y < line.bottom - 1; y += 4)
+        for (let x = line.left + 1; x < line.right - 1; x += 4) {
+          all++;
+          if (y >= S.top && y <= S.bottom && x >= S.left && x <= S.right && owns(el, x, y)) seen++;
+        }
+    }
+    return all ? seen / all : 0;
+  };
   const actions = [...screen.querySelectorAll('[data-dm-action]')].map((el) => {
     const r = el.getBoundingClientRect();
     const visible = clean(el.innerText);
@@ -99,6 +115,7 @@ function probe(o) {
       name: clean(el.getAttribute('aria-label') || el.innerText),
       contrast: Math.min(...[...el.querySelectorAll('[data-text]'), el].filter((t) => t.innerText?.trim()).map(contrast)),
       reachable: inside && owns(el, r.left + r.width / 2, r.top + r.height / 2),
+      shown: labelShown(el),
     };
   });
   let clipped = 0;
@@ -277,23 +294,27 @@ async function main() {
       visible.push((await read(o)).rows);
     }
 
-    // Large text, keyboard hidden: clipped text, and how many of the three choices (merge, tick off, new entry) are on
-    // screen without scrolling, the fewest over both languages and themes.
-    const CORE = o === 'dm5' ? [['merge'], ['tick', 'choose-tick'], ['new', 'choose-new']] : [['merge'], ['tick'], ['new']];
+    // Large text, keyboard hidden: how many of the three choices (merge, tick off, new entry) a person can read without
+    // scrolling, at least 90 % of the label visible, the fewest over both languages and themes; each choice below that
+    // is named with the smallest share seen. Text cut off at the phone's sides is counted apart.
+    const CORE = o === 'dm5'
+      ? [['merge', ['merge']], ['tick off', ['tick', 'choose-tick']], ['new entry', ['new', 'choose-new']]]
+      : [['merge', ['merge']], ['tick off', ['tick']], ['new entry', ['new']]];
     const large = {};
     for (const scale of ['200', '310']) {
       let clipped = 0;
-      let fewest = 3;
+      const least = Object.fromEntries(CORE.map(([n]) => [n, 1]));
       for (const lang of LANGS)
         for (const theme of THEMES) {
           await go(o, { lang, theme, text: scale });
           const r = await read(o);
           clipped += r.clipped;
-          const inView = CORE.filter((names) => r.actions.some((a) => names.includes(a.action) && a.reachable)).length;
-          fewest = Math.min(fewest, inView);
+          for (const [n, names] of CORE) least[n] = Math.min(least[n], Math.max(0, ...r.actions.filter((a) => names.includes(a.action)).map((a) => a.shown)));
         }
-      large[scale] = `${fewest}/3 in view, ${clipped} clipped`;
-      if (isDm && scale === '200') check(clipped === 0, `${code}: 200 % clips ${clipped} texts`);
+      const short = CORE.map(([n]) => n).filter((n) => least[n] < 0.9);
+      const pct = short.map((n) => `${n} ${Math.round(least[n] * 100)} %`).join(', ');
+      large[scale] = `${3 - short.length}/3 readable${pct ? ` (${pct})` : ''}, ${clipped} cut at the sides`;
+      if (isDm && scale === '200') check(clipped === 0, `${code}: 200 % cuts ${clipped} texts at the sides`);
     }
 
     rows.push([

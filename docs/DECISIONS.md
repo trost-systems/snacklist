@@ -19126,3 +19126,8 @@ CP4, ML1, Addendum 2 (26 Nov 2026); details in `docs/done/470-english-catalog.md
   light and dark, after the first build drew the tick-off words in `on-mint` on `mint-soft`, about 1.5:1 in dark.
 - **German is the page default; the page controls stay English**, like rounds FH and AE.
 - **Recommendation DM1, runner-up DM3**, from the measurements on `/add/dm/`.
+- **Large text counts what can be read, not where a choice's centre is** (review 1). A choice is readable when at
+  least 90 % of its label text is on top and inside the phone, sampled every 4 px. The centre-point test had given
+  DM3 and DM4 3/3 at 200 % with their „new entry“ label half under the field. With the new measure DM1 still leads
+  at 200 % (3/3, with Today and DM5) but loses all three choices at 310 %, which the recommendation now says and
+  DM-Q10 asks about; DM3 stays runner-up for its words, not for large text.

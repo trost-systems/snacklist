@@ -3498,8 +3498,11 @@ labelled `do-not-merge`, never merged. No production UI shipped, no real user da
 Slugs: `dm1-row-actions` (required: actions under the matching row), `dm2-worded-buttons`, `dm3-sentence`,
 `dm4-on-list-card`, `dm5-choose-confirm`. Recommendation DM1, runner-up DM3; questions DM-Q1 to DM-Q9 with
 defaults. Measurements, labels and questions: `docs/done/496.md`. Verify: `npm run verify:dm`, exit 0, 156
-screenshots. Protected preview https://family-groceries-design-eykw9ckin-peter-trost.vercel.app/add/dm/
-(`dpl_4XVZhAg6FqSVXGr4QAxk3dPD8uJM`, 15:01, after review 0); share link waits on the lead (NEEDS_LEAD), not ready
+screenshots. Protected preview https://family-groceries-design-397viinvt-peter-trost.vercel.app/add/dm/
+(`dpl_EStRV7RU6TqkjS1uuiMKUACrk3zK`, 15:21, after review 1); share link waits on the lead (NEEDS_LEAD), not ready
 for Peter yet. Review 0 fixes: the sheet's top row follows the sheet's rounded corners in every option, Today
 included (Peter, 28 Nov 14:08; production's fix is job 497), checked by verify-dm; Today compared with Peter's
-reference screenshot, which was in the job folder after all; accessible names contain the visible labels.
+reference screenshot, which was in the job folder after all; accessible names contain the visible labels. Review 1
+fix: large text is measured by how much of each choice's label is visible (≥ 90 % counts as readable). At 200 % only
+Today, DM1 and DM5 keep all three choices readable; at 310 % DM1's chips sit behind the sheet (0/3, DM-Q10). DM1
+stays the recommendation, DM3 the runner-up, with the reasons corrected.

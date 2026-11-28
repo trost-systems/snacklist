@@ -13,7 +13,7 @@ export const MEASURED = {
     'Every action has a visible word',
     'Labels: merge / tick off / new entry',
     'List rows in view (kbd hidden · shown · shown at 200 %)',
-    'Large text, kbd hidden (DE+EN, light+dark): merge, tick off, new in view without scrolling',
+    'Large text, kbd hidden (DE+EN, light+dark): choices readable without scrolling (≥ 90 % of the label visible; below that, the smallest share seen)',
     'Screen-reader names in words',
   ],
   rows: [
@@ -26,7 +26,7 @@ export const MEASURED = {
           "no",
           "DE „2× Omega 3 dm“ / (icon only) / „Omega 3 Wie getippt“ · EN „2× Omega 3 dm“ / (icon only) / „Omega 3 As typed“",
           "8 · 3 · 2",
-          "200 %: 3/3 in view, 0 clipped · 310 %: 3/3 in view, 0 clipped",
+          "200 %: 3/3 readable, 0 cut at the sides · 310 %: 2/3 readable (new entry 64 %), 0 cut at the sides",
           "yes"
       ],
       [
@@ -38,7 +38,7 @@ export const MEASURED = {
           "yes",
           "DE „+1 → 2×“ / „Abhaken“ / „Omega 3 Als neuen Eintrag“ · EN „+1 → 2×“ / „Tick off“ / „Omega 3 As a new entry“",
           "7 · 3 · 1",
-          "200 %: 3/3 in view, 0 clipped · 310 %: 2/3 in view, 0 clipped",
+          "200 %: 3/3 readable, 0 cut at the sides · 310 %: 0/3 readable (merge 86 %, tick off 0 %, new entry 77 %), 0 cut at the sides",
           "yes"
       ],
       [
@@ -50,7 +50,7 @@ export const MEASURED = {
           "yes",
           "DE „+1 dazu 2× Omega 3 dm“ / „Abhaken“ / „Omega 3 Als zweiter Eintrag“ · EN „Add 1 2× Omega 3 dm“ / „Tick off“ / „Omega 3 As a second entry“",
           "8 · 3 · 2",
-          "200 %: 2/3 in view, 0 clipped · 310 %: 2/3 in view, 0 clipped",
+          "200 %: 2/3 readable (new entry 22 %), 0 cut at the sides · 310 %: 2/3 readable (new entry 0 %), 0 cut at the sides",
           "yes"
       ],
       [
@@ -62,7 +62,7 @@ export const MEASURED = {
           "yes",
           "DE „Auf 2× erhöhen“ / „Abhaken: hab ich schon“ / „Omega 3 zusätzlich als eigenen Eintrag“ · EN „Raise it to 2×“ / „Tick off: I have it already“ / „Add Omega 3 as a separate entry“",
           "6 · 2 · 0",
-          "200 %: 3/3 in view, 0 clipped · 310 %: 2/3 in view, 0 clipped",
+          "200 %: 2/3 readable (new entry 58 %), 0 cut at the sides · 310 %: 2/3 readable (new entry 0 %), 0 cut at the sides",
           "yes"
       ],
       [
@@ -74,7 +74,7 @@ export const MEASURED = {
           "yes",
           "DE „+1 → 2×“ / „Abhaken“ / „Omega 3 Wie getippt“ · EN „+1 → 2×“ / „Tick off“ / „Omega 3 As typed“",
           "6 · 2 · 0",
-          "200 %: 3/3 in view, 0 clipped · 310 %: 2/3 in view, 0 clipped",
+          "200 %: 2/3 readable (new entry 55 %), 0 cut at the sides · 310 %: 2/3 readable (new entry 10 %), 0 cut at the sides",
           "yes"
       ],
       [
@@ -86,7 +86,7 @@ export const MEASURED = {
           "yes",
           "DE „Auf 2× erhöhen“ / „Omega 3 abhaken“ / „Omega 3 neu hinzufügen“ · EN „Raise to 2×“ / „Tick off Omega 3“ / „Add Omega 3 as new“",
           "6 · 2 · 0",
-          "200 %: 3/3 in view, 0 clipped · 310 %: 2/3 in view, 0 clipped",
+          "200 %: 3/3 readable, 0 cut at the sides · 310 %: 2/3 readable (merge 0 %), 0 cut at the sides",
           "yes"
       ]
   ],
@@ -95,20 +95,23 @@ export const MEASURED = {
     'DM1–DM5 read a bare number after a name on the list as its amount, and an untyped merge on a weight or volume as one more pack (DM-Q3, DM-Q4). DM5 tick off is 2 taps (choose, then confirm). Only DM1 (preset chip) and DM5 (stepper) add 2 without typing; elsewhere one types „Omega 3 x2“.',
     'List rows counts complete rows of the list not covered by the sheet, the keyboard or the top bar. DM1 counts its matched row once; its chips under it are extra height. Today\'s tick tile has only a check mark: its screen-reader name is „Abhaken, Omega 3“, but nothing on screen says so.',
     'The sheet\'s top row follows the sheet\'s rounded corners in every option, Today included (Peter, 28 Nov 14:08). Production clips the corners of the top row (the mint tile in Peter\'s screenshot); its fix is job 497, so Today here shows the fixed corners and is otherwise production. Today and DM2: the split row\'s outer top corners are rounded by the sheet\'s 24 px minus the 12 px grab strip, on the sheet\'s arc. DM1, DM3 and DM5 start with a line of text, so nothing painted reaches the corners. DM4\'s card is inset 12 px with its own 20 px corners. The verify fails when anything painted in the sheet reaches past the arc, in every option, scenario, text size and both themes.',
-    'Clipped counts text cut or pushed past the phone edge; none in any option. The add field itself is a fixed 52 px in production and cuts its own text at 310 % in every option (AE-Q8); it is not counted. The page controls stay English; the phones follow the language.',
+    'Readable counts merge, tick off and new entry, each when at least 90 % of its label text is visible without scrolling: the script samples the label every 4 px and asks which element is on top there, so text under the add field, the keyboard or the sheet\'s edge counts as hidden. The column gives the fewest over DE and EN, light and dark. „Cut at the sides“ is text pushed past the phone\'s left or right edge: none anywhere. The add field itself is a fixed 52 px in production and cuts its own text at 310 % in every option (AE-Q8); it is not counted.',
+    'At 310 % every option loses a choice: the sheet and the field leave little room. DM1 loses all three: its chips under the row sit behind the sheet (tick off 0 %), and the pointer line takes three lines. DM5\'s amount and result button fall under the field (merge 0 %), so its result button is out of view. The page controls stay English; the phones follow the language.',
   ],
 };
 
 export const RECOMMENDATION: Record<'en' | 'de', string[]> = {
   en: [
-    'DM1, actions under the row. The actions sit on the item they change, so how they relate to the list is shown, not explained. Every action has a word („+1 → 2×“, „+2 → 3×“, „Tick off“), merge, tick off and 2 more each take one tap, a typed amount comes first („Omega 3 2“ gives „+2 → 3×“), and a weight steps by its pack („+500 g → 1 kg“). It keeps 7 list rows in view (Today 8), and at 200 % with the keyboard up the matched row and its chips stay in view (DM3–DM5: no list row).',
-    'Runner-up: DM3, one sentence. Its words are the plainest („Omega 3 is already on the list (1×, dm).“, „Tick off: I have it already“) and all three choices stay in view at 200 %, but it covers more of the list (6 · 2 · 0) and links to the row only by the outline. Its tick-off wording could go onto DM1\'s chip if „Abhaken“ alone stays unclear (DM-Q5).',
-    'DM2 is the smallest change from Today, but at 200 % its taller merge row pushes „As a second entry“ half below the field (2/3 in view).',
+    'DM1, actions under the row. The actions sit on the item they change, so how they relate to the list is shown, not explained. Every action has a word („+1 → 2×“, „+2 → 3×“, „Tick off“), merge, tick off and 2 more each take one tap, a typed amount comes first („Omega 3 2“ gives „+2 → 3×“), and a weight steps by its pack („+500 g → 1 kg“). It keeps 7 list rows in view (Today 8), all three choices are readable at 200 % (only DM1, DM5 and Today manage that), and with the keyboard up at 200 % the matched row and its chips stay in view.',
+    'Its weak spot is 310 %: the chips under the row end up behind the sheet and none of the three choices is readable without scrolling (DM-Q10). The build should move the chips into the sheet at that size.',
+    'Runner-up: DM3, one sentence. Its words are the plainest („Omega 3 is already on the list (1×, dm).“, „Tick off: I have it already“), merge and tick off are readable at 200 % and 310 %, but its third row is only 58 % visible at 200 % (under the field, like DM2 and DM4), it covers more of the list (6 · 2 · 0) and it links to the row only by the outline. Its tick-off wording could go onto DM1\'s chip if „Abhaken“ alone stays unclear (DM-Q5). DM5 is the other option with all three choices readable at 200 %, but tick off takes 2 taps and at 310 % its result button falls under the field.',
+    'DM2 is the smallest change from Today, but at 200 % its taller merge row pushes „As a second entry“ under the field (22 % visible).',
   ],
   de: [
-    'DM1, Aktionen unter der Zeile. Die Aktionen stehen an dem Artikel, den sie ändern: wie sie mit der Liste zusammenhängen, sieht man, statt es zu lesen. Jede Aktion hat ein Wort („+1 → 2×“, „+2 → 3×“, „Abhaken“), Zusammenführen, Abhaken und 2 mehr kosten je einen Tipp, eine getippte Menge kommt zuerst („Omega 3 2“ ergibt „+2 → 3×“), und Gewichte zählen in Packungen („+500 g → 1 kg“). 7 Listenzeilen bleiben sichtbar (heute 8), und bei 200 % mit Tastatur bleiben die Zeile und ihre Knöpfe im Bild (DM3–DM5: keine Listenzeile).',
-    'Zweite Wahl: DM3, ein Satz. Die klarsten Worte („Omega 3 steht schon auf der Liste (1×, dm).“, „Abhaken: hab ich schon“), und alle drei Wahlen bleiben bei 200 % im Bild, aber es verdeckt mehr Liste (6 · 2 · 0) und zeigt den Bezug zur Zeile nur über die Umrandung. Seine Abhaken-Worte könnten auf DM1s Knopf, falls „Abhaken“ allein unklar bleibt (DM-Q5).',
-    'DM2 ist die kleinste Änderung gegenüber heute, aber bei 200 % schiebt seine höhere Zusammenführen-Zeile „Als zweiter Eintrag“ halb unter das Feld (2/3 im Bild).',
+    'DM1, Aktionen unter der Zeile. Die Aktionen stehen an dem Artikel, den sie ändern: wie sie mit der Liste zusammenhängen, sieht man, statt es zu lesen. Jede Aktion hat ein Wort („+1 → 2×“, „+2 → 3×“, „Abhaken“), Zusammenführen, Abhaken und 2 mehr kosten je einen Tipp, eine getippte Menge kommt zuerst („Omega 3 2“ ergibt „+2 → 3×“), und Gewichte zählen in Packungen („+500 g → 1 kg“). 7 Listenzeilen bleiben sichtbar (heute 8), alle drei Wahlen sind bei 200 % lesbar (nur DM1, DM5 und heute schaffen das), und bei 200 % mit Tastatur bleiben die Zeile und ihre Knöpfe im Bild.',
+    'Die Schwachstelle ist 310 %: die Knöpfe unter der Zeile liegen dann hinter dem Blatt, keine der drei Wahlen ist ohne Scrollen lesbar (DM-Q10). Der Bau sollte die Knöpfe bei dieser Größe ins Blatt holen.',
+    'Zweite Wahl: DM3, ein Satz. Die klarsten Worte („Omega 3 steht schon auf der Liste (1×, dm).“, „Abhaken: hab ich schon“), Zusammenführen und Abhaken sind bei 200 % und 310 % lesbar, aber die dritte Zeile ist bei 200 % nur zu 58 % sichtbar (unter dem Feld, wie bei DM2 und DM4), es verdeckt mehr Liste (6 · 2 · 0) und zeigt den Bezug zur Zeile nur über die Umrandung. Seine Abhaken-Worte könnten auf DM1s Knopf, falls „Abhaken“ allein unklar bleibt (DM-Q5). DM5 hat als einzige andere Option alle drei Wahlen bei 200 % lesbar, aber Abhaken kostet 2 Tipps, und bei 310 % rutscht sein Ergebnis-Knopf unter das Feld.',
+    'DM2 ist die kleinste Änderung gegenüber heute, aber bei 200 % schiebt seine höhere Zusammenführen-Zeile „Als zweiter Eintrag“ unter das Feld (22 % sichtbar).',
   ],
 };
 
@@ -124,4 +127,5 @@ export const QUESTIONS: ({ id: string; default: L10n } & L10n)[] = [
   q('DM-Q7', 'With two matches (the same thing open twice, or one in „Recently used“), where do the chips go?', 'Bei zwei Treffern (zweimal offen, oder einer unter „Zuletzt verwendet“): wo stehen die Knöpfe?', 'under the oldest open one; the others keep their rows in the sheet', 'unter dem ältesten offenen; die anderen behalten ihre Zeilen im Blatt'),
   q('DM-Q8', 'Should the merged row keep a tag after the tap?', 'Soll die Zeile nach dem Tipp eine Marke behalten?', 'yes, its new Menge („2×“) until the sheet closes, like „Neu“', 'ja, ihre neue Menge („2×“), bis das Blatt schließt, wie „Neu“'),
   q('DM-Q9', 'Flag, or straight to everyone?', 'Flag oder gleich für alle?', 'a new flag on top of add-ae2-list-peeks, Peter and internal testers first', 'ein neues Flag auf add-ae2-list-peeks, zuerst Peter und interne Tester'),
+  q('DM-Q10', 'At the largest text sizes (310 %), where do DM1\'s chips go? Under the row they end up behind the sheet.', 'Bei den größten Schriften (310 %): wo stehen DM1s Knöpfe? Unter der Zeile liegen sie hinter dem Blatt.', 'in the sheet, in place of the pointer line, from 200 % upward when they would be covered', 'im Blatt, statt der Hinweiszeile, ab 200 %, sobald sie verdeckt wären'),
 ];
