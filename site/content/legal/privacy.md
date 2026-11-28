@@ -4,7 +4,7 @@ description: "Privacy policy of Snacklist: which data the app and the website pr
 locale: en
 path: /en/privacy
 translation_key: privacy
-updated: 2026-11-26
+updated: 2026-11-27
 ---
 
 # Privacy policy

@@ -162,7 +162,7 @@
       "note": "the privacy policy's push sections go live with this hold (26 November 2026, Europe/Berlin); sending stays off until Legal's hash-bound enable GO: the server switches push_household_add and push_shopping_day stay off, and the PostHog flags push-household-add and push-shopping-day stay is_internal-only (push-household-add then goes straight to full, the Art. 21 name switch is gated on it)"
     },
     "shopping-reminders": {
-      "released": false,
+      "released": true,
       "note": "the privacy policy's shopping-reminder paragraphs (several reminders per person, a time, the day before or on the day; job 472, Legal review 2026-11-26 M1-M3) replace the 19:00 weekday text once released; release it in its own small PR after Legal's hash-bound GO and bump updated/Stand/Last updated to the Europe/Berlin publish day there; the PostHog flag push-shopping-reminders stays off until Legal has seen this text live"
     },
     "unified-keys": {
