@@ -61,7 +61,7 @@ Preconditions:
 
 ## Gotchas
 
-- Site copy (Legal N-366, #655): the guides and the landing page call it „der Snacklist-Skill für Alexa“ / "the Snacklist skill for Alexa", page footers and the llms files carry the Amazon trademark line, and a quoted utterance must work: `site/test/alexa.test.mjs` fails a page that quotes an own-list sentence such as „Alexa, setz Milch auf die Snacklist“.
+- Site copy (Legal N-366, #655): the guides and the landing page call it „der Snacklist-Skill für Alexa“ / "the Snacklist skill for Alexa" (BN-1, 27 November 2026, asks for „Snacklist-Skill für Amazon Alexa“ in new text; the site has not followed yet), page footers and the llms files carry the Amazon trademark line, and a quoted utterance must work: `site/test/alexa.test.mjs` fails a page that quotes an own-list sentence such as „Alexa, setz Milch auf die Snacklist“.
 - The skill is certified and live (2026-11-16); the hold `alexa-certification` is released.
 - Two languages: de-DE is German; every en-* locale gets the same English model and replies. A request without a locale is German.
 - A stack started before `scripts/alexa-test-ca.sh` ran does not trust the test CA: every signed request answers 400 before any intent. Restart the local stack after running the script.

@@ -14,7 +14,7 @@ In the iPhone and Android apps, More has a row „Snacklist bewerten“ / "Rate 
 ## How to get to it (user POV)
 
 - Rate row: „Mehr“ / "More" → „Snacklist bewerten“ / "Rate Snacklist" (iPhone and Android apps).
-- Prompt: tick off every item of a list with at least three items, then leave the phone alone for 3 seconds. Only in a public store build that passes every rule. With trip-mode on (off for users since 2026-11-22) do it during a running trip („Ja, Einkauf starten“, or Mehr › „Einkauf starten“): without one, the question „Kaufst du gerade ein?“ after the last tick takes the moment (with `rating-triggers-v2` off), unless a „Nein, nur abgehakt“ in the last hour snoozed it.
+- Prompt: tick off every item of a list with at least three items, then leave the phone alone for 3 seconds. Only in a public store build that passes every rule. With trip-mode on (off for users since 2026-11-22) and `rating-triggers-v2` (full): answer „Kaufst du gerade ein?“ after the last tick with „Nein, nur abgehakt“, which starts the 3 seconds again (ST2); during a running trip the moment waits for „Beenden“ and the summary left (SA1, ST1). With `rating-triggers-v2` off the question takes the moment unless the list is emptied during a trip or a „Nein, nur abgehakt“ in the last hour snoozed it.
 
 ## Driving it with Playwright
 

@@ -54,4 +54,4 @@ Preconditions:
 - The card's title is a heading of its own; until job 352's fix the whole card was a banner landmark on the web.
 - English labels: `labels('en')` (keys `placeNextTo`, `placeFirst`, `chipPlace`, `placeFilter`, `shopAskQuiet`, `detected*`, `tripNoDuration`, `tripNotShopping*`, `tripRemoved`, `detectedCard*`, `settingsTrips`, `detectTrips`, `detectTripsHint`).
 
-Last verified: branch `job/352-learned-order-io4`, f224e4faa, 22 November 2026 (the TD-Q5 steps of review 1, the declined walk and `decline_shop`, not driven yet), with `journeys/learned-order.mjs` and `e2e/tests/learned-order.spec.ts` (German; the list in English dark).
+Last verified: 2026-11-28 on main 15145842 (vmaint-20261128) with `drive.sh learned-order` on `VH_DEFINES="FLAGS_ON=learned-order,trip-mode,grocery-log"`: PASS, both walks including the declined one. Earlier: branch `job/352-learned-order-io4`, f224e4faa, 22 November 2026 (the TD-Q5 steps of review 1, the declined walk and `decline_shop`, not driven yet), with `journeys/learned-order.mjs` and `e2e/tests/learned-order.spec.ts` (German; the list in English dark).

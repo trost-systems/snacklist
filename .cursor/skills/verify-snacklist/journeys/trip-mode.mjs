@@ -259,7 +259,9 @@ try {
   for (const text of [L('shopSummaryTitle'), plural(L('shopTicked'), 5), L('shopLockedBody'), 'Lidl', 'Rewe', L('shopKeepShopping'), L('done')]) {
     check(free.includes(flat(text)), `the Free summary shows „${text}“`);
   }
-  for (const text of [L('shopPlannedSection'), L('shopPaidTotal'), 'Kaffee']) check(!free.includes(text), `the Free summary hides „${text}“`);
+  // The tick's screen-reader announcement („Kaffee abgehakt“, #758) can still be in the tree.
+  const freeShown = free.replaceAll(flat(L('itemTicked', { name: extra })), '');
+  for (const text of [L('shopPlannedSection'), L('shopPaidTotal'), extra]) check(!freeShown.includes(text), `the Free summary hides „${text}“`);
   await shot('04-summary-free');
   await until(() => sql(`select count(*) from public.trip_sessions where id = '${sessionId}'`) === '1', 'the session saved');
   const asFree = await rpc(api, 'trip_session', { p_household: household, p_id: sessionId });

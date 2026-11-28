@@ -14,7 +14,7 @@ const lang = opt('lang', 'de');
 const from = opt('from', 'Apfelsaft');
 const to = opt('to', 'Mineralwasser');
 const onto = opt('onto', to);
-if (!dir) throw new Error('usage: edit-item.mjs <evidence dir> [--lang de|en] [--from name] [--to name]');
+if (!dir) throw new Error('usage: edit-item.mjs <evidence dir> [--lang de|en] [--from name] [--to name] [--onto name]');
 
 const log = logger(dir);
 const inst = instance();
