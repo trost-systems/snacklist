@@ -445,6 +445,7 @@ class _ContentState() extends State<_Content> {
     required ValueChanged<Suggestion> onTake,
     bool plus = false,
     bool compact = false,
+    bool top = false,
   }) {
     final Suggestion(:source, :entry) = row;
     return _reuse(
@@ -462,6 +463,7 @@ class _ContentState() extends State<_Content> {
         first,
         plus,
         compact,
+        top,
         base?.brand,
         base?.properties,
         (catalog, ownStore, onTake),
@@ -473,6 +475,7 @@ class _ContentState() extends State<_Content> {
         first: first,
         plus: plus,
         compact: compact,
+        top: top,
         base: base,
         catalog: catalog,
         ownStore: ownStore,
@@ -631,6 +634,9 @@ class _ContentState() extends State<_Content> {
     final stale = cubit.addFeedback && sheet.carried && sheet.loading;
     // Job 340: under match rows the first suggestion is the + row.
     final plusRow = compact && sheet.matches.isNotEmpty;
+    // Job 497: the compact sheet's first row sits right under its rounded
+    // top, unless a note does.
+    final topRow = compact && notes.isEmpty;
     final suggestions = <Widget>[
       for (final (i, row) in rows.indexed)
         _row(
@@ -656,6 +662,7 @@ class _ContentState() extends State<_Content> {
               : null,
           onTake: onTake,
           compact: compact,
+          top: topRow && sheet.matches.isEmpty && i == 0,
         ),
       if (rows.isEmpty && sheet.added == null && !plusRow)
         Padding(
@@ -741,17 +748,18 @@ class _ContentState() extends State<_Content> {
                         tick: tick,
                         catalog: catalog,
                         enter: cubit.enterMatch == merge,
+                        top: topRow,
                         onMerge: () => onMatch(merge),
                         onTick: () => onMatch(tick),
                       ),
-                    for (final match in sheet.matches.skip(
-                      split == null ? 0 : 2,
-                    ))
+                    for (final (i, match)
+                        in sheet.matches.skip(split == null ? 0 : 2).indexed)
                       _MatchTile(
                         key: ValueKey(
                           'match-${match.runtimeType}-${match.item.id}',
                         ),
                         row: match,
+                        top: topRow && split == null && i == 0,
                         catalog: catalog,
                         onTap: () => onMatch(match),
                       ),
@@ -981,6 +989,9 @@ class const _SuggestionRow({
 
   /// The compact sheet has no return key: Enter's row is only tinted.
   required final bool compact,
+
+  /// Right under the compact sheet's rounded top (job 497).
+  required final bool top,
   required final ParsedEntry? base,
   required final Catalog catalog,
   required final Store? ownStore,
@@ -1006,6 +1017,7 @@ class const _SuggestionRow({
     final parts = [?entry.brand, ...splitProperties(entry.properties)];
     final store = entry.storeId == null ? null : catalog.store(entry.storeId!);
     final quantity = entry.quantity;
+    final corners = _rowCorners(context, top: top);
     final label = [
       [?quantityLabel(quantity), entry.name].join(' '),
       source,
@@ -1025,13 +1037,15 @@ class const _SuggestionRow({
         onPointerCancel: onPointerUp,
         child: Material(
           color: first ? scheme.secondaryContainer : Colors.transparent,
+          borderRadius: corners,
+          clipBehavior: corners == null ? Clip.none : Clip.antiAlias,
           // Still takes a tap: what it shows is what it adds.
           child: AnimatedOpacity(
             key: const ValueKey('suggestion-stale'),
             opacity: stale ? _staleOpacity : 1,
             duration: hlMotion(context, HlDuration.short),
             child: FocusRingInkWell(
-              outline: _rowOutline,
+              outline: _rowOutline(corners),
               onTap: onTap,
               child: Container(
                 constraints: const BoxConstraints(minHeight: _rowHeight),
@@ -1182,6 +1196,9 @@ class const _MatchTile({
   required final MatchRow row,
   required final Catalog catalog,
   required final VoidCallback onTap,
+
+  /// Right under the compact sheet's rounded top (job 497).
+  final bool top = false,
   super.key,
 }) extends StatelessWidget {
   @override
@@ -1214,6 +1231,7 @@ class const _MatchTile({
       ),
     };
     final details = _matchDetails(item, catalog);
+    final corners = _rowCorners(context, top: top);
     return Semantics(
       container: true,
       button: true,
@@ -1222,8 +1240,10 @@ class const _MatchTile({
       onTap: onTap,
       child: Material(
         color: face,
+        borderRadius: corners,
+        clipBehavior: corners == null ? Clip.none : Clip.antiAlias,
         child: FocusRingInkWell(
-          outline: _rowOutline,
+          outline: _rowOutline(corners),
           onTap: onTap,
           child: Container(
             constraints: const BoxConstraints(minHeight: _rowHeight),
@@ -1285,6 +1305,10 @@ class const _SplitMatchTile({
   required final bool enter,
   required final VoidCallback onMerge,
   required final VoidCallback onTick,
+
+  /// Right under the compact sheet's rounded top (job 497): the merge part
+  /// takes its top-start corner, the tick key its top-end.
+  final bool top = false,
   super.key,
 }) extends StatelessWidget {
   @override
@@ -1296,6 +1320,8 @@ class const _SplitMatchTile({
     final text = _withQuantity(merge.quantity, item.name);
     final details = _matchDetails(item, catalog);
     final border = Border(bottom: BorderSide(color: scheme.outlineVariant));
+    final mergeCorners = _rowCorners(context, top: top, end: false);
+    final tickCorners = _rowCorners(context, top: top, start: false);
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1314,8 +1340,10 @@ class const _SplitMatchTile({
               onTap: onMerge,
               child: Material(
                 color: scheme.primaryContainer,
+                borderRadius: mergeCorners,
+                clipBehavior: mergeCorners == null ? Clip.none : Clip.antiAlias,
                 child: FocusRingInkWell(
-                  outline: _rowOutline,
+                  outline: _rowOutline(mergeCorners),
                   onTap: onMerge,
                   child: Container(
                     constraints: const BoxConstraints(minHeight: _rowHeight),
@@ -1323,6 +1351,7 @@ class const _SplitMatchTile({
                     foregroundDecoration: enter
                         ? BoxDecoration(
                             border: Border.all(color: scheme.primary, width: 2),
+                            borderRadius: mergeCorners,
                           )
                         : null,
                     decoration: BoxDecoration(border: border),
@@ -1377,8 +1406,10 @@ class const _SplitMatchTile({
             onTap: onTick,
             child: Material(
               color: scheme.tertiaryContainer,
+              borderRadius: tickCorners,
+              clipBehavior: tickCorners == null ? Clip.none : Clip.antiAlias,
               child: FocusRingInkWell(
-                outline: _rowOutline,
+                outline: _rowOutline(tickCorners),
                 onTap: onTick,
                 child: Container(
                   constraints: const BoxConstraints(
@@ -1819,6 +1850,36 @@ class _AddedDetailsState() extends State<_AddedDetails> {
   }
 }
 
-/// A suggestion row's outline: its box, which the focus ring runs inside.
-Path _rowOutline(Rect rect, double outset) =>
+/// The top corners of the row right under the compact sheet's rounded [top]
+/// (job 497): the sheet's own radius, so the row's face, Enter outline and
+/// focus ring follow the sheet's curve and its clip cuts none of them. A
+/// part of a split row takes only its [start] or [end] corner. Null, square,
+/// for every other row.
+BorderRadius? _rowCorners(
+  BuildContext context, {
+  required bool top,
+  bool start = true,
+  bool end = true,
+}) {
+  if (!top) {
+    return null;
+  }
+  final round = Radius.circular(sheetRadius);
+  return BorderRadiusDirectional.only(
+    topStart: start ? round : Radius.zero,
+    topEnd: end ? round : Radius.zero,
+  ).resolve(Directionality.of(context));
+}
+
+/// A row's outline with its [corners]: its box, which the focus ring runs
+/// inside.
+Path Function(Rect rect, double outset) _rowOutline(BorderRadius? corners) {
+  if (corners == null) {
+    return _squareOutline;
+  }
+  return (rect, outset) =>
+      Path()..addRRect(corners.toRRect(rect).inflate(outset));
+}
+
+Path _squareOutline(Rect rect, double outset) =>
     Path()..addRect(rect.inflate(outset));

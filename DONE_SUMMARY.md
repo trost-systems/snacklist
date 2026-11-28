@@ -3499,3 +3499,26 @@ claim and stays. Title, meta, OG, JSON-LD and FAQ had none. No EN page exists (c
 only). Occurrence list: [docs/done/495.md](docs/done/495.md). A site test pins it and fails on either
 old string. Site tests: 285 passed. No cspell in this repo. Not merged by this job: the lead merges after
 Legal's SHA-bound GO and Peter's yes.
+
+## Job 497: the add sheet's top row follows the sheet's corners
+
+Peter's bug (t1419u): in the add sheet, the top row's highlight was cut off at the top-left corner by the
+sheet's rounded corner, and the green tick-off key at the top-right. The row right under the compact
+sheet's rounded top now takes the sheet's own radius (`sheetRadius`) on its top corners: its face, the
+Enter outline and the focus ring follow the curve, and the sheet cuts none of them. This holds for AE2's
+split row (`add-ae2-list-peeks` on: merge part top-left, tick key top-right), and with the flag off for the
+top match row or the first suggestion. Every other row is unchanged. Details, proof and screenshots:
+[docs/done/497.md](docs/done/497.md), `docs/screenshots/497/`.
+
+COPY-CHANGES: none.
+
+Changelog: one public `fixed` item, no flag (users without AE2 saw the cut corner on the top row's colour
+too): de „Beim Hinzufügen ist die oberste Zeile der Vorschläge an den runden Ecken nicht mehr
+abgeschnitten.“; en “While adding, the top suggestion row is no longer cut off at the rounded corners.”
+
+Tests: `add_sheet_top_row_test.dart` (47 pixel tests of both top corners, AE2 and flag off, light and dark,
+100 % and 200 %, DE and EN, soft look, focus ring; 47/47 fail on main, pass with the fix, fail with the
+radius at 0.5x or 1.6x), 16 goldens, `add_match_rows_test.dart` updated (first row rounded, the others
+square). Not driven: web build, iOS, Android (paint-only change, rendered in Flutter's test renderer).
+Ships with the next green main build after the merge; no flag targeting needed (with AE2 on, Peter's
+internal installs see the split row fixed). Not merged by this job: the lead merges.
