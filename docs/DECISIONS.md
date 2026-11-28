@@ -19100,3 +19100,14 @@ CP4, ML1, Addendum 2 (26 Nov 2026); details in `docs/done/470-english-catalog.md
   rollout of `add-ae2-list-peeks` alone decides who sees AE2.
 - **No new strings.** „Neu“ reuses `newItem` (already the label of a partner's unseen add); the button
   labels reuse `dedupeMerge` and `addMatchTickOff`. The match tag is „→ 7×“ (arrow and Menge).
+
+## Job 495: the "kostenlos" claim on the Bring comparison page (2026-11-28)
+
+- **The table cell loses „kostenlos“ instead of getting a second qualifier.** Acceptance (a) wants no
+  unqualified free claim left on the page, and the brief gives only one approved wording. Repeating LK1
+  inside a table cell would read oddly; dropping the word adds no new claim, and the Preis line carries
+  the qualified one.
+- **Bring!'s own quoted claims stay.** They are attributed, dated quotes from Bring!'s Play listing, not
+  claims about Snacklist; removing them would change the comparison itself.
+- **Worked from the brief's strings.** The Legal review file and an approved-strings manifest are not on
+  the Hetzner runner; the strings are the brief's, byte for byte.

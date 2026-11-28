@@ -29,7 +29,7 @@ Beide Apps sind öffentlich verfügbar. Snacklist gibt es im App Store, bei Goog
 
 | | Snacklist | Bring! |
 |---|---|---|
-| Gemeinsame Liste | Gemeinsame Listen für den Haushalt, kostenlos, live auf jedem Gerät | „Gemeinsame Einkaufsliste kostenlos“; „Einkaufsliste kostenlos in Echtzeit teilen“ mit Haushalt, WG, Büro |
+| Gemeinsame Liste | Gemeinsame Listen für den Haushalt, live auf jedem Gerät | „Gemeinsame Einkaufsliste kostenlos“; „Einkaufsliste kostenlos in Echtzeit teilen“ mit Haushalt, WG, Büro |
 | Werbung | Keine Werbung | Store-Label: „Enthält Werbung“ und „In-App-Käufe“ |
 | Dunkel- und Hellmodus | Ja (System, Hell oder Dunkel) | Dunkel- und Hellmodus |
 | Eintragen per Sprache | Mikrofon in der App, auf Deutsch oder Englisch | Per Sprachbefehl |
@@ -77,7 +77,7 @@ Wenn du Rezepte, Prospekte oder Kundenkarten in deiner Einkaufs-App haben willst
 - **Schnell eintragen:** Mengen und Vorschläge, dazu Einsprechen mit dem Mikrofon in der App, auf Deutsch oder Englisch.
 - **Datenschutz:** Nutzungsdaten werden nur mit deiner Einwilligung erfasst.
 - **Sprachen:** Deutsch und Englisch.
-- **Preis:** Die gemeinsame Einkaufsliste ist kostenlos, ohne Werbung.
+- **Preis:** Kostenlos nutzbar, ohne Werbung. Premium ist optional.
 
 ## Mit KI-Assistenten verbinden (MCP)
 
