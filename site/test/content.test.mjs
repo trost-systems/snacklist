@@ -141,3 +141,15 @@ test('every invocation phrase in the Alexa guides matches a sample of that langu
     for (const phrase of phrases) assert.ok(samples.some((s) => s.test(words(phrase))), `${locale}: no sample matches „${phrase}“`);
   }
 });
+
+test('the Bring comparison says free only with LK1\'s Premium qualifier; the other free claims are Bring!\'s own, quoted (job 495)', () => {
+  const doc = buildSite().page('/de/einkaufsliste-vergleich-bring');
+  for (const el of doc.querySelectorAll('script:not([type="application/ld+json"])')) el.remove();
+  const html = doc.toString();
+  assert.match(html, /Kostenlos nutzbar, ohne Werbung\. Premium ist optional\./);
+  const rest = html
+    .replace('Kostenlos nutzbar, ohne Werbung. Premium ist optional.', '')
+    .replace(/„[^“]*“/g, '');
+  const claim = /.{0,60}(kostenlos|gratis|umsonst|\bfree\b).{0,40}/i.exec(rest);
+  assert.equal(claim, null, `a free claim without LK1's qualifier: ${claim?.[0]}`);
+});

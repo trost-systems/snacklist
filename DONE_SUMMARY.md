@@ -3489,3 +3489,13 @@ suite 5222 passed; lint passes. Web (release build, flag on, DE, EN, dark): jour
 checks PASS with database reads (Enter on „Bananen“ 6× gives one active row, 7). Not driven: iOS and
 Android. Ships with the next green main build after the merge; Peter sees it once the flag sync has run.
 Not merged by this job: the lead merges after the Legal ask and Legal's GO.
+
+## Job 495: qualify the "kostenlos" claim on the Bring comparison page
+
+Legal Review MUST 2. On `snacklist.app/de/einkaufsliste-vergleich-bring` the Preis line now reads
+„Kostenlos nutzbar, ohne Werbung. Premium ist optional.“ (LK1), and the Snacklist cell of the shared-list
+table drops its bare „kostenlos“. Every other „kostenlos“ on the page is Bring!'s own quoted, sourced
+claim and stays. Title, meta, OG, JSON-LD and FAQ had none. No EN page exists (comparisons are German
+only). Occurrence list: [docs/done/495.md](docs/done/495.md). A site test pins it and fails on either
+old string. Site tests: 285 passed. No cspell in this repo. Not merged by this job: the lead merges after
+Legal's SHA-bound GO and Peter's yes.
