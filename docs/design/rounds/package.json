@@ -10,7 +10,8 @@
     "verify": "node scripts/verify.mjs",
     "verify:sr": "node scripts/verify-sr.mjs",
     "verify:fh": "node scripts/verify-fh.mjs",
-    "verify:ae": "node scripts/verify-ae.mjs"
+    "verify:ae": "node scripts/verify-ae.mjs",
+    "verify:dm": "node scripts/verify-dm.mjs"
   },
   "dependencies": {
     "react": "^19.3.1",

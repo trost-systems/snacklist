@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { App } from './App';
 import { AeRound } from './ae/AeRound';
+import { DmRound } from './dm/DmRound';
 import { Overview } from './Overview';
 import { FhRound } from './fh/FhRound';
 import { SrRound } from './sr/SrRound';
@@ -24,6 +25,7 @@ export function Root() {
   if (path === '/reminders/sr') return <SrRound />;
   if (path === '/focus/fh') return <FhRound />;
   if (path === '/add/ae') return <AeRound />;
+  if (path === '/add/dm') return <DmRound />;
 
   return (
     <div className="overview">

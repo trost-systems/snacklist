@@ -6,6 +6,7 @@ backend calls, nothing here ships in the app.
 | Path | Round |
 | --- | --- |
 | `/` | Overview of every round, newest first (older rounds link to their draft PR) |
+| `/add/dm/` | DM1–DM5 add, merge, tick off for an item already on the list (job 496), `src/dm/` |
 | `/add/ae/` | AE1–AE5 adding with the list in view (job 489), `src/ae/` |
 | `/focus/fh/` | FH1–FH5 focus highlight (job 485), `src/fh/` |
 | `/reminders/sr/` | SR1–SR5 shopping reminders (job 465), `src/sr/` |
@@ -21,6 +22,7 @@ npm run build
 npm run verify:sr      # needs a Chromium; VERIFY_CHROME=/path/to/chrome to override
 npm run verify:fh      # round FH; about 3 minutes
 npm run verify:ae      # round AE; about 8 minutes (--quick: 310 % only, --print: the rows)
+npm run verify:dm      # round DM; about 2 minutes (--print: the rows)
 ```
 
 `scripts/verify-fh.mjs` screenshots every control of round FH unfocused and focused (Today and FH1–FH5, light and
@@ -45,9 +47,19 @@ flight and its reduced-motion fallback, screenshots every option (`VERIFY_OUT`, 
 not committed) and exits 1 when a check fails or the table on `/add/ae/` (`src/ae/meta.ts`) differs from what it
 measured. Today's sizes come from the real web build (origin/main 151458422), noted on the page.
 
+`scripts/verify-dm.mjs` measures Today and DM1–DM5 at 390×844 from the sheet open with „Omega 3“ typed: it taps merge,
+tick off and „2 more without typing“ and checks the list after each, reads what Enter does on „Omega 3 2“, „Mehl“
+(500 g) and „Mehl 1kg“, reads every action's visible words, text contrast and accessible name in DE and EN, light and
+dark, counts the list rows in view (keyboard hidden, shown, shown at 200 %) and, at 200 % and 310 %, clipped text and
+how many of merge, tick off and new entry are on screen without scrolling. It screenshots every option in both themes,
+both languages and 100/200/310 % text, each scenario, the keyboard and the closed list (156 PNGs in `VERIFY_OUT`, default
+`verify-screenshots/dm/`, not committed) and exits 1 when a DM action has no visible word or less than 4.5:1 contrast,
+an action does the wrong thing, or the table on `/add/dm/` (`src/dm/meta.ts`) differs from what it measured.
+
 The page's URL keeps its state: `?o=sr2&f=passed&lang=de&theme=dark&text=140`, and for FH
 `/focus/fh/?o=fh1&f=field&look=hex&theme=dark&text=310&lang=de`, and for AE
-`/add/ae/?o=ae2&f=duplicate&m=typing&kb=on&theme=dark&text=200&lang=de`.
+`/add/ae/?o=ae2&f=duplicate&m=typing&kb=on&theme=dark&text=200&lang=de`, and for DM
+`/add/dm/?o=dm1&f=count&m=typing&kb=off&theme=dark&text=200&lang=de`.
 
 ## Deploy (preview only)
 

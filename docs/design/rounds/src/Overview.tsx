@@ -5,6 +5,13 @@ const PR = 'https://github.com/trost-systems/snacklist/pull/';
 // Rounds hosted on this deployment link to their page; older rounds live on their own draft PR.
 const ROUNDS = [
   {
+    href: '/add/dm/',
+    code: 'DM1–DM5',
+    title: 'Add, merge, tick off',
+    date: '28 November 2026',
+    question: 'When the typed text matches an item already on the list, how should the add sheet say what adding, merging and ticking off do, in words anyone can follow?',
+  },
+  {
     href: '/add/ae/',
     code: 'AE1–AE5',
     title: 'Adding, with the list in view',
@@ -65,7 +72,7 @@ export function Overview() {
         <p className="overview-kicker">Snacklist</p>
         <h1>Prototype rounds</h1>
         <p className="overview-lede">
-          Each round answers one design question with five distinct options. Newest first. The four newest open here; older rounds open their draft pull request.
+          Each round answers one design question with five distinct options. Newest first. The five newest open here; older rounds open their draft pull request.
         </p>
       </header>
       <ol className="overview-list">
