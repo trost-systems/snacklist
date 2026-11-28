@@ -3498,5 +3498,8 @@ labelled `do-not-merge`, never merged. No production UI shipped, no real user da
 Slugs: `dm1-row-actions` (required: actions under the matching row), `dm2-worded-buttons`, `dm3-sentence`,
 `dm4-on-list-card`, `dm5-choose-confirm`. Recommendation DM1, runner-up DM3; questions DM-Q1 to DM-Q9 with
 defaults. Measurements, labels and questions: `docs/done/496.md`. Verify: `npm run verify:dm`, exit 0, 156
-screenshots. Protected preview https://family-groceries-design-fxuzd163u-peter-trost.vercel.app/add/dm/
-(`dpl_99bzkRu7PZESeu5btpAkaWAywiq2`); share link waits on the lead (NEEDS_LEAD), not ready for Peter yet.
+screenshots. Protected preview https://family-groceries-design-eykw9ckin-peter-trost.vercel.app/add/dm/
+(`dpl_4XVZhAg6FqSVXGr4QAxk3dPD8uJM`, 15:01, after review 0); share link waits on the lead (NEEDS_LEAD), not ready
+for Peter yet. Review 0 fixes: the sheet's top row follows the sheet's rounded corners in every option, Today
+included (Peter, 28 Nov 14:08; production's fix is job 497), checked by verify-dm; Today compared with Peter's
+reference screenshot, which was in the job folder after all; accessible names contain the visible labels.

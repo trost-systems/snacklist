@@ -19103,10 +19103,17 @@ CP4, ML1, Addendum 2 (26 Nov 2026); details in `docs/done/470-english-catalog.md
 
 ## Job 496: prototype round DM, add / merge / tick off (2026-11-28, Europe/Berlin)
 
-- **Today comes from the real AE2 code and job 490's real web-build screenshots, not a new drive.** The brief's
-  `reference-today-ae2-split.png` was not in the job folder. `docs/screenshots/490/ae2-*-duplicate-split-row.png`
-  are the release web build of the code now on main (#789, b41a60e1), and `_SplitMatchTile`
-  (`add_sheet.dart`) gives the sizes and colours, so a fourth local stack was not started.
+- **Today comes from the real AE2 code, job 490's real web-build screenshots and Peter's screenshot.** The first
+  check of the job folder ran before `reference-today-ae2-split.png` arrived (14:16), so the first summary wrongly
+  said it was missing (review 0). Compared since: the prototype's Today matches it (the outlined row with „→ 2×“,
+  the blue merge row „2× Omega 3 / dm“, the mint tile with only a check mark, „+ Omega 3 / As typed“, clear and mic
+  in the field). It showed two chrome details the sandbox lacked, now added: the mic stays in the open field, and
+  each store heading has its open-store icon. No local stack was started for Today.
+- **The sheet's top row follows the sheet's corners in every option, Today included** (addendum, Peter 28 Nov
+  14:08; the production fix is job 497). Peter's screenshot shows production clipping the mint tile's top-right
+  corner. The sandbox rounds the first row's outer top corners by the sheet's 24 px minus the 12 px grab strip,
+  which puts them on the sheet's arc. `verify-dm.mjs` fails when any painted element in the sheet reaches past the
+  arc (every option, scenario, text size; it flagged exactly Today and DM2 before the fix).
 - **Today's Menge follows production, measured, not assumed.** A throwaway `flutter test` probe on main
   (deleted, not committed) gave: `parseEntry('Omega 3 2')` is name „Omega 3 2“, no quantity, key „omega“ (so
   it matches Omega 3 and Enter gives 2×); `mergeQuantities('500 g', null)` is „500 g“ (merging „Mehl“ changes

@@ -1256,3 +1256,23 @@
   background: var(--hl-color-honey);
   color: var(--hl-color-on-honey) !important;
 }
+
+/* Peter, 28 Nov 14:08: the sheet's top row follows the sheet's top corners. The row starts below the 12 px grab
+   strip, so a radius of the sheet's minus 12 px keeps its corners exactly on the sheet's arc. Production clips
+   instead (job 497 fixes it there); every option here, Today included, shows the fixed corners. */
+.dm-sheet {
+  --dm-top-r: calc(var(--hl-shape-soft-xl) - 12px);
+}
+.dm-grab + .dm-sug-list > :first-child,
+.dm-grab + .dm-sug-list > .dm-split:first-child > .dm-split-merge {
+  border-top-left-radius: var(--dm-top-r);
+}
+.dm-grab + .dm-sug-list > :first-child,
+.dm-grab + .dm-sug-list > .dm-split:first-child > .dm-split-tick {
+  border-top-right-radius: var(--dm-top-r);
+}
+.dm-section-open {
+  display: flex;
+  margin-left: var(--hl-space-2);
+  color: var(--hl-color-brand);
+}

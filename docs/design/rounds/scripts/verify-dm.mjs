@@ -47,6 +47,7 @@ async function loadPlaywright() {
 }
 
 const failures = [];
+const norm = (t) => t.toLowerCase().replace(/[^\p{L}\p{N}×→]+/gu, ' ').trim();
 const check = (ok, msg) => {
   if (!ok) failures.push(msg);
 };
@@ -81,6 +82,11 @@ function probe(o) {
     return (a + 0.05) / (b + 0.05);
   };
   const clean = (s) => (s ?? '').replace(/\s+/g, ' ').trim();
+  // Production chrome that stays an icon: the grab handle („Schließen“), the clear button and the system keyboard.
+  const CHROME = '.dm-grab, .dm-field-btn, .dm-key';
+  const unworded = [...screen.querySelectorAll('button, [role="button"], [role="radio"]')]
+    .filter((el) => !el.matches(CHROME) && !/[\p{L}\p{N}]/u.test(clean(el.innerText)))
+    .map((el) => el.className);
   const actions = [...screen.querySelectorAll('[data-dm-action]')].map((el) => {
     const r = el.getBoundingClientRect();
     const visible = clean(el.innerText);
@@ -103,12 +109,59 @@ function probe(o) {
     if (el.scrollWidth > el.clientWidth + 1 || r.right > S.right + 0.5 || r.left < S.left - 0.5) clipped++;
   }
   return {
+    unworded,
     rows: [...screen.querySelectorAll('[data-dm-row="list"]')].filter(rowShown).length,
     actions,
     clipped,
     qty: Object.fromEntries([...screen.querySelectorAll('[data-dm-row="list"]')].map((r) => [r.dataset.id, r.dataset.qty])),
     note: screen.querySelector('[data-dm-note]')?.dataset.dmNote ?? null,
   };
+}
+
+/** Runs in the page: painted things in the sheet that reach past its rounded top corners (Peter, 28 Nov 14:08). */
+function cornerProbe(o) {
+  const sheet = document.querySelector(`[data-testid="phone-${o}"] [data-dm-sheet]`);
+  if (!sheet) return [];
+  const cs = getComputedStyle(sheet);
+  const R = parseFloat(cs.borderTopLeftRadius);
+  const S = sheet.getBoundingClientRect();
+  const alpha = (c) => {
+    const m = c.match(/[\d.]+/g) ?? [];
+    return m.length > 3 ? Number(m[3]) : m.length ? 1 : 0;
+  };
+  const painted = (st) =>
+    (alpha(st.backgroundColor) > 0 && st.backgroundColor !== cs.backgroundColor) ||
+    st.boxShadow !== 'none' ||
+    (st.outlineStyle !== 'none' && parseFloat(st.outlineWidth) > 0) ||
+    ['Top', 'Left', 'Right'].some((side) => parseFloat(st[`border${side}Width`]) > 0 && alpha(st[`border${side}Color`]) > 0);
+  const out = [];
+  for (const el of sheet.querySelectorAll('*')) {
+    const st = getComputedStyle(el);
+    if (!painted(st)) continue;
+    const pad = st.outlineStyle !== 'none' ? parseFloat(st.outlineWidth) + parseFloat(st.outlineOffset || '0') : 0;
+    const r = el.getBoundingClientRect();
+    const box = { l: r.left - pad, t: r.top - pad, w: r.width + 2 * pad };
+    if (r.width < 1 || box.t > S.top + R) continue;
+    for (const side of ['Left', 'Right']) {
+      const re = parseFloat(st[`borderTop${side}Radius`]) + pad;
+      const cx = side === 'Left' ? S.left + R : S.right - R;
+      const cy = S.top + R;
+      const ex = side === 'Left' ? box.l : box.l + box.w;
+      const dir = side === 'Left' ? 1 : -1;
+      const pts = [];
+      for (let a = 0; a <= 90; a += 5) {
+        const rad = (a * Math.PI) / 180;
+        pts.push([ex + dir * (re - re * Math.cos(rad)), box.t + re - re * Math.sin(rad)]);
+      }
+      for (let d = re; d <= R + 1; d += 1) pts.push([ex + dir * d, box.t], [ex, box.t + d]);
+      const bad = pts.some(([x, y]) => {
+        const inZone = side === 'Left' ? x < cx && y < cy : x > cx && y < cy;
+        return inZone && Math.hypot(x - cx, y - cy) > R + 0.75;
+      });
+      if (bad) out.push(`${el.className || el.tagName} (${side.toLowerCase()})`);
+    }
+  }
+  return out;
 }
 
 async function main() {
@@ -197,7 +250,9 @@ async function main() {
         for (const st of states) {
           await go(o, { lang, theme });
           if (st) await click(o, `[data-dm-action="${st}"]`);
-          seen.push(...(await read(o)).actions);
+          const r = await read(o);
+          seen.push(...r.actions);
+          if (isDm) check(r.unworded.length === 0, `${code} ${lang} ${theme}: buttons without a visible word: ${r.unworded.join(', ')}`);
         }
       for (const a of seen) {
         if (!a.worded) allWorded = false;
@@ -205,6 +260,8 @@ async function main() {
         if (isDm) check(a.contrast >= 4.5, `${code} ${lang}: action „${a.action}“ text contrast ${a.contrast.toFixed(2)} < 4.5`);
         if (isDm) check(a.worded, `${code} ${lang}: action „${a.action}“ has no visible word (${JSON.stringify(a.visible)})`);
         check(/\p{L}/u.test(a.name), `${code} ${lang}: action „${a.action}“ has no accessible name in words`);
+        if (isDm) check(norm(a.name).includes(norm(a.visible)), `${code} ${lang}: action „${a.action}“: its name „${a.name}“ does not contain its visible label „${a.visible}“ (WCAG 2.5.3)`);
+        if (isDm && ['merge', 'tick', 'new'].includes(a.action)) check(/\p{L}{3,}/u.test(a.name.replace(/Omega|dm|REWE/g, '')), `${code} ${lang}: action „${a.action}“: its name „${a.name}“ has no word besides the item`);
       }
       const first = (k) => seen.find((a) => a.action === k);
       labels[lang] = ['merge', 'tick', 'new'].map((k) => {
@@ -252,6 +309,23 @@ async function main() {
       named ? 'yes' : 'no',
     ]);
   }
+
+  // The sheet's top row follows its rounded corners in every option, Today included, every scenario and text size.
+  for (const o of OPTIONS)
+    for (const f of FIXTURES)
+      for (const text of SCALES)
+        for (const [theme, lang] of [['light', 'de'], ['dark', 'en']]) {
+          await go(o, { f, text, theme, lang });
+          const bad = await page.evaluate(cornerProbe, o);
+          check(bad.length === 0, `${CODE[o]} ${f} ${text} % ${theme}: painted past the sheet's top corner: ${bad.join(', ')}`);
+          if (o === 'dm5' && f === 'exact') {
+            for (const st of ['choose-tick', 'choose-new']) {
+              await click(o, `[data-dm-action="${st}"]`);
+              const b2 = await page.evaluate(cornerProbe, o);
+              check(b2.length === 0, `DM5 ${st} ${text} %: painted past the sheet's top corner: ${b2.join(', ')}`);
+            }
+          }
+        }
 
   // Screenshots: every option, light and dark, DE and EN, 100/200/310 %, keyboard hidden and shown; and each scenario.
   for (const o of OPTIONS)

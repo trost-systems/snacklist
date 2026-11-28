@@ -112,6 +112,9 @@ function SectionHeader({ store, count, lang }: { store: StoreId; count: number; 
         <b>{count}</b> {c.items(count)}
       </span>
       <DmIcon name="expand" />
+      <span className="dm-section-open" aria-hidden="true">
+        <DmIcon name="openStore" />
+      </span>
     </div>
   );
 }
@@ -282,7 +285,7 @@ export function Phone({ option, fixture, lang, keyboard, moment }: PhoneProps) {
   const dm1Under = (it: Item) => (
     <div className="dm-under" data-dm-under={it.id} data-dm-match-ui>
       {offer.amounts.map((amount, n) => (
-        <Act key={amount} action="merge" amount={amount} cls={n === 0 ? 'dm-chip dm-chip--merge dm-chip--enter' : 'dm-chip dm-chip--merge'} onClick={() => doMerge(amount)} label={`${c.plus(amount, qtyLabel(mergedQty(it, amount)))}, ${it.name[lang]}`}>
+        <Act key={amount} action="merge" amount={amount} cls={n === 0 ? 'dm-chip dm-chip--merge dm-chip--enter' : 'dm-chip dm-chip--merge'} onClick={() => doMerge(amount)} label={`${c.plus(amount, qtyLabel(mergedQty(it, amount)))}, ${c.raise(it.name[lang], qtyLabel(mergedQty(it, amount)))}`}>
           <span data-text>{c.plus(amount, qtyLabel(mergedQty(it, amount)))}</span>
         </Act>
       ))}
@@ -362,7 +365,7 @@ export function Phone({ option, fixture, lang, keyboard, moment }: PhoneProps) {
     rows = (
       <>
         <div className="dm-split" data-dm-match-ui>
-          <Act action="merge" amount={offer.amounts[0]} cls="dm-split-merge" onClick={() => doMerge()} label={[c.merge, withQty(offer.result, name), details].join(', ')}>
+          <Act action="merge" amount={offer.amounts[0]} cls="dm-split-merge" onClick={() => doMerge()} label={[worded ? c.dm2Kicker(offer.amounts[0] ?? '1') : c.merge, withQty(offer.result, name), details].join(', ')}>
             <DmIcon name="merge" />
             <span className="dm-sug-text">
               {worded && (
@@ -433,7 +436,7 @@ export function Phone({ option, fixture, lang, keyboard, moment }: PhoneProps) {
         </p>
         <ItemRow item={item} lang={lang} place="card" cls="dm-row--last" tag={<span className="dm-row-store" data-text>{details}</span>} />
         <div className="dm-card-actions">
-          <Act action="merge" amount={offer.amounts[0]} cls="dm-chip dm-chip--merge dm-chip--enter" onClick={() => doMerge()} label={`${c.plus(offer.amounts[0] ?? '1', resultLabel)}, ${name}`}>
+          <Act action="merge" amount={offer.amounts[0]} cls="dm-chip dm-chip--merge dm-chip--enter" onClick={() => doMerge()} label={`${c.plus(offer.amounts[0] ?? '1', resultLabel)}, ${c.raise(name, resultLabel)}`}>
             <span data-text>{c.plus(offer.amounts[0] ?? '1', resultLabel)}</span>
           </Act>
           <Act action="tick" cls="dm-chip dm-chip--tick" onClick={doTick} label={`${c.tickOff}, ${name}`}>
@@ -479,13 +482,13 @@ export function Phone({ option, fixture, lang, keyboard, moment }: PhoneProps) {
             <span className="dm-amount-label" data-text>
               {c.dm5Amount}
             </span>
-            <Act action="less" cls="dm-step" onClick={() => dispatch({ type: 'k', k: k - 1 })} label={`${c.dm5Amount}: ${c.dm5Less}`}>
+            <Act action="less" cls="dm-step" onClick={() => dispatch({ type: 'k', k: k - 1 })} label={`− ${c.dm5Less}, ${c.dm5Amount}`}>
               <span data-text>− {c.dm5Less}</span>
             </Act>
             <b className="dm-amount-n" data-text data-dm-amount-n>
               +{amount}
             </b>
-            <Act action="more" cls="dm-step" onClick={() => dispatch({ type: 'k', k: k + 1 })} label={`${c.dm5Amount}: ${c.dm5More}`}>
+            <Act action="more" cls="dm-step" onClick={() => dispatch({ type: 'k', k: k + 1 })} label={`+ ${c.dm5More}, ${c.dm5Amount}`}>
               <span data-text>+ {c.dm5More}</span>
             </Act>
           </div>
@@ -547,11 +550,9 @@ export function Phone({ option, fixture, lang, keyboard, moment }: PhoneProps) {
           <DmIcon name="close" />
         </button>
       )}
-      {!open && (
-        <span className="dm-field-btn dm-field-mic" aria-hidden="true">
-          <DmIcon name="mic" />
-        </span>
-      )}
+      <span className="dm-field-btn dm-field-mic" aria-hidden="true">
+        <DmIcon name="mic" />
+      </span>
     </div>
   );
 

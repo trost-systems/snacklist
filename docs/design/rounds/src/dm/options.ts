@@ -18,8 +18,8 @@ export const OPTIONS: Record<OptionId, OptionSpec> = {
     slug: 'today',
     name: { en: 'AE2 split row (main, b41a60e1)', de: 'AE2-Zeile heute (main, b41a60e1)' },
     line: {
-      en: 'The matching row is outlined with „→ 2×“. The sheet shows a blue merge row („2× Omega 3 / dm“, merge icon), a mint tile with only a check mark (tick off), then „+ Omega 3 / As typed“. Enter merges. The typed Menge is merged as production does: „Omega 3 2“ gives 2×, and „Mehl“ on 500 g stays 500 g.',
-      de: 'Die passende Zeile ist umrandet, mit „→ 2×“. Im Blatt: eine blaue Zusammenführen-Zeile („2× Omega 3 / dm“, Symbol), ein mintgrünes Feld nur mit Haken (abhaken), dann „+ Omega 3 / Wie getippt“. Enter führt zusammen. Die Menge rechnet wie in der App: „Omega 3 2“ ergibt 2×, „Mehl“ auf 500 g bleibt 500 g.',
+      en: 'The matching row is outlined with „→ 2×“. The sheet shows a blue merge row („2× Omega 3 / dm“, merge icon), a mint tile with only a check mark (tick off), then „+ Omega 3 / As typed“. Enter merges. The typed Menge is merged as production does: „Omega 3 2“ gives 2×, and „Mehl“ on 500 g stays 500 g. One change from production: the top row\'s corners follow the sheet\'s (Peter, 28 Nov; production clips them, job 497 fixes it).',
+      de: 'Die passende Zeile ist umrandet, mit „→ 2×“. Im Blatt: eine blaue Zusammenführen-Zeile („2× Omega 3 / dm“, Symbol), ein mintgrünes Feld nur mit Haken (abhaken), dann „+ Omega 3 / Wie getippt“. Enter führt zusammen. Die Menge rechnet wie in der App: „Omega 3 2“ ergibt 2×, „Mehl“ auf 500 g bleibt 500 g. Eine Abweichung von der App: die Ecken der obersten Zeile folgen denen des Blatts (Peter, 28. Nov; die App schneidet sie ab, Job 497 behebt das).',
     },
     smart: false,
   },

@@ -91,9 +91,10 @@ export const MEASURED = {
       ]
   ],
   notes: [
-    'Today is the AE2 split row as main (b41a60e1, #789) draws it; the real web build is in docs/screenshots/490/ae2-*-duplicate-split-row.png. Its Menge column is production\'s own rule, measured on main with parseEntry and mergeQuantities: „Omega 3 2“ keys to „omega“ and matches Omega 3, but the 2 is not read as an amount (a number after a word with a digit is a size, like „Windeln Größe 4“), so Enter gives 2× and „As typed“ would add an item named „Omega 3 2“. „Mehl“ on „500 g Mehl“ merges to 500 g: nothing changes.',
+    'Today is the AE2 split row as main (b41a60e1, #789) draws it, checked against Peter\'s screenshot (28 Nov, 14:00) and the real web build in docs/screenshots/490/ae2-*-duplicate-split-row.png. Its Menge column is production\'s own rule, measured on main with parseEntry and mergeQuantities: „Omega 3 2“ keys to „omega“ and matches Omega 3, but the 2 is not read as an amount (a number after a word with a digit is a size, like „Windeln Größe 4“), so Enter gives 2× and „As typed“ would add an item named „Omega 3 2“. „Mehl“ on „500 g Mehl“ merges to 500 g: nothing changes.',
     'DM1–DM5 read a bare number after a name on the list as its amount, and an untyped merge on a weight or volume as one more pack (DM-Q3, DM-Q4). DM5 tick off is 2 taps (choose, then confirm). Only DM1 (preset chip) and DM5 (stepper) add 2 without typing; elsewhere one types „Omega 3 x2“.',
     'List rows counts complete rows of the list not covered by the sheet, the keyboard or the top bar. DM1 counts its matched row once; its chips under it are extra height. Today\'s tick tile has only a check mark: its screen-reader name is „Abhaken, Omega 3“, but nothing on screen says so.',
+    'The sheet\'s top row follows the sheet\'s rounded corners in every option, Today included (Peter, 28 Nov 14:08). Production clips the corners of the top row (the mint tile in Peter\'s screenshot); its fix is job 497, so Today here shows the fixed corners and is otherwise production. Today and DM2: the split row\'s outer top corners are rounded by the sheet\'s 24 px minus the 12 px grab strip, on the sheet\'s arc. DM1, DM3 and DM5 start with a line of text, so nothing painted reaches the corners. DM4\'s card is inset 12 px with its own 20 px corners. The verify fails when anything painted in the sheet reaches past the arc, in every option, scenario, text size and both themes.',
     'Clipped counts text cut or pushed past the phone edge; none in any option. The add field itself is a fixed 52 px in production and cuts its own text at 310 % in every option (AE-Q8); it is not counted. The page controls stay English; the phones follow the language.',
   ],
 };
@@ -102,10 +103,12 @@ export const RECOMMENDATION: Record<'en' | 'de', string[]> = {
   en: [
     'DM1, actions under the row. The actions sit on the item they change, so how they relate to the list is shown, not explained. Every action has a word („+1 → 2×“, „+2 → 3×“, „Tick off“), merge, tick off and 2 more each take one tap, a typed amount comes first („Omega 3 2“ gives „+2 → 3×“), and a weight steps by its pack („+500 g → 1 kg“). It keeps 7 list rows in view (Today 8), and at 200 % with the keyboard up the matched row and its chips stay in view (DM3–DM5: no list row).',
     'Runner-up: DM3, one sentence. Its words are the plainest („Omega 3 is already on the list (1×, dm).“, „Tick off: I have it already“) and all three choices stay in view at 200 %, but it covers more of the list (6 · 2 · 0) and links to the row only by the outline. Its tick-off wording could go onto DM1\'s chip if „Abhaken“ alone stays unclear (DM-Q5).',
+    'DM2 is the smallest change from Today, but at 200 % its taller merge row pushes „As a second entry“ half below the field (2/3 in view).',
   ],
   de: [
     'DM1, Aktionen unter der Zeile. Die Aktionen stehen an dem Artikel, den sie ändern: wie sie mit der Liste zusammenhängen, sieht man, statt es zu lesen. Jede Aktion hat ein Wort („+1 → 2×“, „+2 → 3×“, „Abhaken“), Zusammenführen, Abhaken und 2 mehr kosten je einen Tipp, eine getippte Menge kommt zuerst („Omega 3 2“ ergibt „+2 → 3×“), und Gewichte zählen in Packungen („+500 g → 1 kg“). 7 Listenzeilen bleiben sichtbar (heute 8), und bei 200 % mit Tastatur bleiben die Zeile und ihre Knöpfe im Bild (DM3–DM5: keine Listenzeile).',
     'Zweite Wahl: DM3, ein Satz. Die klarsten Worte („Omega 3 steht schon auf der Liste (1×, dm).“, „Abhaken: hab ich schon“), und alle drei Wahlen bleiben bei 200 % im Bild, aber es verdeckt mehr Liste (6 · 2 · 0) und zeigt den Bezug zur Zeile nur über die Umrandung. Seine Abhaken-Worte könnten auf DM1s Knopf, falls „Abhaken“ allein unklar bleibt (DM-Q5).',
+    'DM2 ist die kleinste Änderung gegenüber heute, aber bei 200 % schiebt seine höhere Zusammenführen-Zeile „Als zweiter Eintrag“ halb unter das Feld (2/3 im Bild).',
   ],
 };
 

@@ -95,6 +95,7 @@ export const COPY = {
     added: (name: string) => `Hinzugefügt: ${name}`,
     // DM1 actions under the row
     plus: (amount: string, result: string) => `+${amount} → ${result}`,
+    raise: (name: string, result: string) => `${name} auf ${result} erhöhen`,
     dm1Hint: (name: string) => `${name} steht schon auf der Liste: oben`,
     newEntry: 'Als neuen Eintrag',
     enterDoes: (what: string) => `↵ ${what}`,
@@ -143,6 +144,7 @@ export const COPY = {
     ticked: (name: string) => `${name} ticked off`,
     added: (name: string) => `Added: ${name}`,
     plus: (amount: string, result: string) => `+${amount} → ${result}`,
+    raise: (name: string, result: string) => `raise ${name} to ${result}`,
     dm1Hint: (name: string) => `${name} is already on the list: above`,
     newEntry: 'As a new entry',
     enterDoes: (what: string) => `↵ ${what}`,
