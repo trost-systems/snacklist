@@ -5,6 +5,7 @@ import 'package:family_groceries/analytics/events.dart';
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/core/theme.dart';
+import 'package:family_groceries/design/look.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/add_sheet/add_sheet_cubit.dart';
 import 'package:family_groceries/list/add_sheet/match_rows.dart';
@@ -228,8 +229,15 @@ void main() {
           matching: find.byType(Material),
         ),
       );
-      expect(materials, isNotEmpty);
-      for (final material in materials) {
+      expect(materials, hasLength(greaterThan(1)));
+      // Job 497: the first row takes the sheet's top corners, the
+      // add_sheet_top_row_test pins how they look.
+      expect(
+        materials.first.borderRadius,
+        BorderRadius.vertical(top: Radius.circular(sheetRadius)),
+        reason: 'the top row follows the sheet',
+      );
+      for (final material in materials.skip(1)) {
         expect(material.borderRadius, isNull, reason: 'square rows');
         expect(material.shape, isNull, reason: 'no rounded tiles');
       }

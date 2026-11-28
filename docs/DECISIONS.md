@@ -19111,3 +19111,25 @@ CP4, ML1, Addendum 2 (26 Nov 2026); details in `docs/done/470-english-catalog.md
   claims about Snacklist; removing them would change the comparison itself.
 - **Worked from the brief's strings.** The Legal review file and an approved-strings manifest are not on
   the Hetzner runner; the strings are the brief's, byte for byte.
+
+## Job 497: the add sheet's top row follows the sheet's corners (2026-11-28)
+
+- **The sheet's full radius, not an inner one.** The compact sheet's first row starts 12 px below the
+  sheet's top edge, flush with its sides. A concentric inner radius needs the same inset on both axes,
+  which this row does not have. The sheet's own radius (`sheetRadius`) moved 12 px down lies wholly inside
+  the sheet's clip, so no part of the row's face, Enter outline or focus ring is cut. The brief asks for
+  this radius too.
+- **Only the row right under the sheet's top changes.** The compact sheet with no note above its rows
+  (`topRow`). Under a note (merge, duplicate hint, taken match) the rows sit lower, and every other row
+  keeps no radius and no clip, so `screens_golden_test` is unchanged. A clip on every row had moved 2 px in
+  the wide add sheet golden.
+- **A split row rounds per part.** The merge part takes the top-start corner and the tick key the top-end
+  corner (directional, resolved with the text direction).
+- **Pinned by pixels, not by widget fields.** The test reads the rendered corners, so it holds whether the
+  shape comes from a `Material`, a clip or a decoration. It fails on main (47/47) and with the radius
+  halved or raised by 60 %.
+- **Changelog public.** Users without AE2 also saw the cut corner on the top row's coloured fill, so the
+  `fixed` item carries no flag.
+- **Scrolled rows stay square.** When the sheet's two or three visible rows are scrolled, a later row
+  passes under the rounded top and is clipped like any scrolled content. The fix is for the row that rests
+  there; rounding whichever row is scrolled to the top would make a row change shape while it moves.
